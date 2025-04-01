@@ -8,7 +8,36 @@
         <h2 class="card-title mb-4">{% if object %}Editar Usuario{% else %}Nuevo Usuario{% endif %}</h2>
         <form method="post">
           {% csrf_token %}
-          {{ form.as_p }}
+          <div class="mb-3">
+            {{ form.username.label_tag }} {{ form.username }}
+            {% for error in form.username.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.email.label_tag }} {{ form.email }}
+            {% for error in form.email.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.estado.label_tag }} {{ form.estado }}
+            {% for error in form.estado.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.empleado.label_tag }} {{ form.empleado }}
+            {% for error in form.empleado.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.rol.label_tag }} {{ form.rol }}
+            {% for error in form.rol.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
           <button type="submit" class="btn btn-custom">{% if object %}Actualizar{% else %}Guardar{% endif %}</button>
           <a href="{% url 'usuario_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>

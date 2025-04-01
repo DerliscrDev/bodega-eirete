@@ -1,0 +1,25 @@
+{% extends 'bodega/base.html' %}
+{% block title %}Asignar Permisos - {{ rol.nombre }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">Asignar Permisos al Rol: <strong>{{ rol.nombre }}</strong></h2>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">{{ form.permisos.label }}</label>
+            {{ form.permisos }}
+            {% for error in form.permisos.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-custom">Guardar Permisos</button>
+          <a href="{% url 'rol_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

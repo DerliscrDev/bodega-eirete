@@ -8,20 +8,26 @@ from django.conf import settings
 from django.urls import reverse, reverse_lazy
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from .tokens import token_generator
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.views import PasswordResetConfirmView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from .models import Empleado, Usuario, Rol, Permiso
 from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm
+from .tokens import token_generator
+from .decorators import permiso_requerido
+from django.views import View
+from django.shortcuts import get_object_or_404
+from django.contrib import messages
+from django import forms
 
-# Vista Home
+# Home
 @login_required
 def home(request):
     return render(request, 'bodega/home.html')
 
 # --- Empleados ---
-@login_required
+@permiso_requerido('crear_empleado')
 def crear_empleado(request):
     if request.method == 'POST':
         form = EmpleadoForm(request.POST)
@@ -32,17 +38,20 @@ def crear_empleado(request):
         form = EmpleadoForm()
     return render(request, 'bodega/empleado_form.html', {'form': form})
 
+@method_decorator(permiso_requerido('ver_empleado'), name='dispatch')
 class EmpleadoListView(LoginRequiredMixin, ListView):
     model = Empleado
     template_name = 'bodega/empleado_list.html'
     context_object_name = 'empleados'
 
+@method_decorator(permiso_requerido('editar_empleado'), name='dispatch')
 class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
     model = Empleado
     form_class = EmpleadoForm
     template_name = 'bodega/empleado_form.html'
     success_url = reverse_lazy('empleado_list')
 
+@method_decorator(permiso_requerido('inactivar_empleado'), name='dispatch')
 class EmpleadoInactivateView(LoginRequiredMixin, DeleteView):
     model = Empleado
     template_name = 'bodega/empleado_confirm_delete.html'
@@ -55,6 +64,7 @@ class EmpleadoInactivateView(LoginRequiredMixin, DeleteView):
         return redirect(self.success_url)
 
 # --- Usuarios ---
+@method_decorator(permiso_requerido('crear_usuario'), name='dispatch')
 class UsuarioCreateView(LoginRequiredMixin, CreateView):
     model = Usuario
     form_class = UsuarioForm
@@ -71,35 +81,31 @@ class UsuarioCreateView(LoginRequiredMixin, CreateView):
 
         token = token_generator.make_token(usuario)
         uid = urlsafe_base64_encode(force_bytes(usuario.pk))
-
         reset_url = self.request.build_absolute_uri(
             reverse('cambiar_password', kwargs={'uidb64': uid, 'token': token})
         )
 
         subject = 'Bienvenido a Bodega Eirete - Cambia tu contraseña'
-        message = (
-            f"Hola {usuario.username},\n\n"
-            f"Se ha creado tu cuenta en Bodega Eirete.\n\n"
-            f"Tu contraseña temporal es: {temp_password}\n\n"
-            f"Por seguridad, ingresa en el siguiente enlace para cambiar tu contraseña:\n{reset_url}\n\n"
-            f"Gracias."
-        )
+        message = f"Hola {usuario.username},\n\nTu contraseña temporal es: {temp_password}\n\nCambia tu contraseña aquí:\n{reset_url}\n"
         recipient_email = usuario.email
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient_email])
 
         return HttpResponseRedirect(self.success_url)
 
+@method_decorator(permiso_requerido('ver_usuario'), name='dispatch')
 class UsuarioListView(LoginRequiredMixin, ListView):
     model = Usuario
     template_name = 'bodega/usuario_list.html'
     context_object_name = 'usuarios'
 
+@method_decorator(permiso_requerido('editar_usuario'), name='dispatch')
 class UsuarioUpdateView(LoginRequiredMixin, UpdateView):
     model = Usuario
     form_class = UsuarioForm
     template_name = 'bodega/usuario_form.html'
     success_url = reverse_lazy('usuario_list')
 
+@method_decorator(permiso_requerido('inactivar_usuario'), name='dispatch')
 class UsuarioInactivateView(LoginRequiredMixin, DeleteView):
     model = Usuario
     template_name = 'bodega/usuario_confirm_delete.html'
@@ -115,56 +121,54 @@ class UsuarioInactivateView(LoginRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 # --- Roles ---
+@method_decorator(permiso_requerido('ver_rol'), name='dispatch')
 class RolListView(LoginRequiredMixin, ListView):
     model = Rol
     template_name = 'bodega/rol_list.html'
     context_object_name = 'roles'
 
+@method_decorator(permiso_requerido('crear_rol'), name='dispatch')
 class RolCreateView(LoginRequiredMixin, CreateView):
     model = Rol
     form_class = RolForm
     template_name = 'bodega/rol_form.html'
     success_url = reverse_lazy('rol_list')
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        self.object.permisos.set(form.cleaned_data['permisos'])
-        return response
-
+@method_decorator(permiso_requerido('editar_rol'), name='dispatch')
 class RolUpdateView(LoginRequiredMixin, UpdateView):
     model = Rol
     form_class = RolForm
     template_name = 'bodega/rol_form.html'
     success_url = reverse_lazy('rol_list')
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        self.object.permisos.set(form.cleaned_data['permisos'])
-        return response
-
+@method_decorator(permiso_requerido('eliminar_rol'), name='dispatch')
 class RolDeleteView(LoginRequiredMixin, DeleteView):
     model = Rol
     template_name = 'bodega/rol_confirm_delete.html'
     success_url = reverse_lazy('rol_list')
 
 # --- Permisos ---
+@method_decorator(permiso_requerido('ver_permiso'), name='dispatch')
 class PermisoListView(LoginRequiredMixin, ListView):
     model = Permiso
     template_name = 'bodega/permiso_list.html'
     context_object_name = 'permisos'
 
+@method_decorator(permiso_requerido('crear_permiso'), name='dispatch')
 class PermisoCreateView(LoginRequiredMixin, CreateView):
     model = Permiso
     form_class = PermisoForm
     template_name = 'bodega/permiso_form.html'
     success_url = reverse_lazy('permiso_list')
 
+@method_decorator(permiso_requerido('editar_permiso'), name='dispatch')
 class PermisoUpdateView(LoginRequiredMixin, UpdateView):
     model = Permiso
     form_class = PermisoForm
     template_name = 'bodega/permiso_form.html'
     success_url = reverse_lazy('permiso_list')
 
+@method_decorator(permiso_requerido('inactivar_permiso'), name='dispatch')
 class PermisoInactivateView(LoginRequiredMixin, DeleteView):
     model = Permiso
     template_name = 'bodega/permiso_confirm_delete.html'
@@ -179,16 +183,12 @@ class PermisoInactivateView(LoginRequiredMixin, DeleteView):
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-# --- Cambio de contraseña inicial ---
-from django.contrib.auth.forms import SetPasswordForm
-
+# --- Cambio inicial de contraseña ---
 class PrimerCambioPasswordView(PasswordResetConfirmView):
     template_name = 'bodega/cambiar_password.html'
-    form_class = SetPasswordForm
     success_url = reverse_lazy('login')
 
     def get_token_generator(self):
-        from .tokens import token_generator
         return token_generator
 
     def form_valid(self, form):
@@ -197,8 +197,30 @@ class PrimerCambioPasswordView(PasswordResetConfirmView):
         self.user.save()
         return response
 
+class RolPermisosForm(forms.Form):
+    permisos = forms.ModelMultipleChoiceField(
+        queryset=Permiso.objects.filter(activo=True),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
 
+class RolAsignarPermisosView(LoginRequiredMixin, View):
+    template_name = 'bodega/rol_asignar_permisos.html'
 
+    def get(self, request, pk):
+        rol = get_object_or_404(Rol, pk=pk)
+        form = RolPermisosForm(initial={'permisos': rol.permisos.all()})
+        return render(request, self.template_name, {'form': form, 'rol': rol})
+
+    def post(self, request, pk):
+        rol = get_object_or_404(Rol, pk=pk)
+        form = RolPermisosForm(request.POST)
+        if form.is_valid():
+            permisos = form.cleaned_data['permisos']
+            rol.permisos.set(permisos)
+            messages.success(request, 'Permisos asignados correctamente.')
+            return redirect('rol_list')
+        return render(request, self.template_name, {'form': form, 'rol': rol})
 
 
 

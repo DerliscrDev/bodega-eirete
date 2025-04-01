@@ -1,0 +1,254 @@
+[
+    {
+      "model": "bodega.permiso",
+      "pk": 1,
+      "fields": {
+        "nombre": "ver_empleado",
+        "descripcion": "Ver Empleado",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 2,
+      "fields": {
+        "nombre": "crear_empleado",
+        "descripcion": "Crear Empleado",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 3,
+      "fields": {
+        "nombre": "editar_empleado",
+        "descripcion": "Editar Empleado",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 4,
+      "fields": {
+        "nombre": "inactivar_empleado",
+        "descripcion": "Inactivar Empleado",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 5,
+      "fields": {
+        "nombre": "ver_usuario",
+        "descripcion": "Ver Usuario",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 6,
+      "fields": {
+        "nombre": "crear_usuario",
+        "descripcion": "Crear Usuario",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 7,
+      "fields": {
+        "nombre": "editar_usuario",
+        "descripcion": "Editar Usuario",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 8,
+      "fields": {
+        "nombre": "inactivar_usuario",
+        "descripcion": "Inactivar Usuario",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 9,
+      "fields": {
+        "nombre": "ver_rol",
+        "descripcion": "Ver Rol",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 10,
+      "fields": {
+        "nombre": "crear_rol",
+        "descripcion": "Crear Rol",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 11,
+      "fields": {
+        "nombre": "editar_rol",
+        "descripcion": "Editar Rol",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 12,
+      "fields": {
+        "nombre": "eliminar_rol",
+        "descripcion": "Eliminar Rol",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 13,
+      "fields": {
+        "nombre": "ver_permiso",
+        "descripcion": "Ver Permiso",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 14,
+      "fields": {
+        "nombre": "crear_permiso",
+        "descripcion": "Crear Permiso",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 15,
+      "fields": {
+        "nombre": "editar_permiso",
+        "descripcion": "Editar Permiso",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 16,
+      "fields": {
+        "nombre": "inactivar_permiso",
+        "descripcion": "Inactivar Permiso",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 17,
+      "fields": {
+        "nombre": "ver_compra",
+        "descripcion": "Ver Compra",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 18,
+      "fields": {
+        "nombre": "crear_compra",
+        "descripcion": "Crear Compra",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 19,
+      "fields": {
+        "nombre": "editar_compra",
+        "descripcion": "Editar Compra",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 20,
+      "fields": {
+        "nombre": "eliminar_compra",
+        "descripcion": "Eliminar Compra",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 21,
+      "fields": {
+        "nombre": "ver_inventario",
+        "descripcion": "Ver Inventario",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 22,
+      "fields": {
+        "nombre": "registrar_ingreso_inventario",
+        "descripcion": "Registrar ingreso Inventario",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 23,
+      "fields": {
+        "nombre": "registrar_salida_inventario",
+        "descripcion": "Registrar salida Inventario",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 24,
+      "fields": {
+        "nombre": "ver_stock_bajo_inventario",
+        "descripcion": "Ver stock bajo Inventario",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 25,
+      "fields": {
+        "nombre": "ver_venta",
+        "descripcion": "Ver Venta",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 26,
+      "fields": {
+        "nombre": "crear_venta",
+        "descripcion": "Crear Venta",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 27,
+      "fields": {
+        "nombre": "editar_venta",
+        "descripcion": "Editar Venta",
+        "activo": true
+      }
+    },
+    {
+      "model": "bodega.permiso",
+      "pk": 28,
+      "fields": {
+        "nombre": "eliminar_venta",
+        "descripcion": "Eliminar Venta",
+        "activo": true
+      }
+    }
+]  

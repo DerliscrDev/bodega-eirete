@@ -30,6 +30,7 @@ urlpatterns = [
     path('roles/nuevo/', RolCreateView.as_view(), name='rol_create'),
     path('roles/editar/<int:pk>/', RolUpdateView.as_view(), name='rol_update'),
     path('roles/eliminar/<int:pk>/', RolDeleteView.as_view(), name='rol_delete'),
+    path('roles/permisos/<int:pk>/', RolAsignarPermisosView.as_view(), name='rol_asignar_permisos'),
     # Permisos:
     path('permisos/', PermisoListView.as_view(), name='permiso_list'),
     path('permisos/nuevo/', PermisoCreateView.as_view(), name='permiso_create'),

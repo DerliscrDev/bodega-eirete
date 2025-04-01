@@ -1,0 +1,96 @@
+[
+  {
+    "model": "bodega.rol",
+    "pk": 1,
+    "fields": {
+      "nombre": "Administrador",
+      "descripcion": "Rol del sistema: Administrador",
+      "permisos": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ]
+    }
+  },
+  {
+    "model": "bodega.rol",
+    "pk": 2,
+    "fields": {
+      "nombre": "Encargado de Inventario",
+      "descripcion": "Rol del sistema: Encargado de Inventario",
+      "permisos": [
+        21,
+        22,
+        23,
+        24
+      ]
+    }
+  },
+  {
+    "model": "bodega.rol",
+    "pk": 3,
+    "fields": {
+      "nombre": "Vendedor",
+      "descripcion": "Rol del sistema: Vendedor",
+      "permisos": [
+        25,
+        26,
+        27
+      ]
+    }
+  },
+  {
+    "model": "bodega.rol",
+    "pk": 4,
+    "fields": {
+      "nombre": "Comprador",
+      "descripcion": "Rol del sistema: Comprador",
+      "permisos": [
+        17,
+        18,
+        19
+      ]
+    }
+  },
+  {
+    "model": "bodega.rol",
+    "pk": 5,
+    "fields": {
+      "nombre": "Supervisor de Personal",
+      "descripcion": "Rol del sistema: Supervisor de Personal",
+      "permisos": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7
+      ]
+    }
+  }
+]
