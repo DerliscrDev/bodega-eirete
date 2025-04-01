@@ -5,7 +5,7 @@ from .views import (
     crear_empleado, EmpleadoListView, EmpleadoUpdateView, EmpleadoInactivateView,
     UsuarioListView, UsuarioCreateView, UsuarioUpdateView, UsuarioInactivateView,
     PrimerCambioPasswordView,
-    RolListView, RolCreateView, RolUpdateView, RolDeleteView,
+    RolListView, RolCreateView, RolUpdateView, RolDeleteView, RolAsignarPermisosView,
     PermisoListView, PermisoCreateView, PermisoUpdateView, PermisoInactivateView,
 )
 

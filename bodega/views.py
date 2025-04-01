@@ -148,6 +148,18 @@ class RolDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'bodega/rol_confirm_delete.html'
     success_url = reverse_lazy('rol_list')
 
+@method_decorator(permiso_requerido('editar_rol'), name='dispatch')
+class RolAsignarPermisosView(LoginRequiredMixin, UpdateView):
+    model = Rol
+    form_class = RolForm
+    template_name = 'bodega/rol_form.html'
+    success_url = reverse_lazy('rol_list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.permisos.set(form.cleaned_data['permisos'])
+        return response
+
 # --- Permisos ---
 @method_decorator(permiso_requerido('ver_permiso'), name='dispatch')
 class PermisoListView(LoginRequiredMixin, ListView):
