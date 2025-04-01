@@ -1,0 +1,46 @@
+{% extends 'bodega/base.html' %}
+{% block title %}Inicio - Bodega Eirete{% endblock %}
+{% block content %}
+  <div class="alert alert-info text-center mt-3" role="alert">
+    <strong>Bienvenido</strong> al Sistema de Gestión de Bodega Eirete.
+  </div>
+  <div class="row mt-4">
+    <!-- Tarjetas para navegar a cada módulo -->
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Empleados</h5>
+          <p class="card-text">Gestiona el registro de empleados.</p>
+          <a href="{% url 'empleado_list' %}" class="btn btn-custom">Ver Empleados</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Usuarios</h5>
+          <p class="card-text">Gestiona usuarios del sistema.</p>
+          <a href="{% url 'usuario_list' %}" class="btn btn-custom">Ver Usuarios</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Roles</h5>
+          <p class="card-text">Gestiona roles asignados.</p>
+          <a href="{% url 'rol_list' %}" class="btn btn-custom">Ver Roles</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Permisos</h5>
+          <p class="card-text">Gestiona permisos del sistema.</p>
+          <a href="{% url 'permiso_list' %}" class="btn btn-custom">Ver Permisos</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'bodega/base.html' %}
+{% block title %}Roles - Bodega Eirete{% endblock %}
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="card-title mb-0">Roles</h2>
+      <a href="{% url 'rol_create' %}" class="btn btn-custom">Nuevo Rol</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rol in roles %}
+          <tr>
+            <td>{{ rol.id }}</td>
+            <td>{{ rol.nombre }}</td>
+            <td>{{ rol.descripcion }}</td>
+            <td>
+              <a href="{% url 'rol_update' rol.id %}" class="btn btn-sm btn-warning">Editar</a>
+              <!-- Botón que abre el modal para confirmar la inactivación -->
+              <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ rol.id }}">
+                Inactivar
+              </button>
+            </td>
+          </tr>
+          <!-- Modal de confirmación para inactivar el rol -->
+          <div class="modal fade" id="inactivateModal-{{ rol.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ rol.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="post" action="{% url 'rol_delete' rol.id %}">
+                  {% csrf_token %}
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="inactivateModalLabel-{{ rol.id }}">Confirmar Inactivación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  <div class="modal-body">
+                    ¿Estás seguro de inactivar el rol <strong>{{ rol.nombre }}</strong>?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Inactivar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center">No se encontraron roles.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

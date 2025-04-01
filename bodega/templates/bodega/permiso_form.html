@@ -1,0 +1,19 @@
+{% extends 'bodega/base.html' %}
+{% block title %}{% if object %}Editar Permiso{% else %}Nuevo Permiso{% endif %} - Bodega Eirete{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">{% if object %}Editar Permiso{% else %}Nuevo Permiso{% endif %}</h2>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-custom">{% if object %}Actualizar{% else %}Guardar{% endif %}</button>
+          <a href="{% url 'permiso_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
