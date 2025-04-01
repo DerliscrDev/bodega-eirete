@@ -5,13 +5,26 @@
   <div class="col-md-8 offset-md-2">
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h2 class="card-title mb-4">{% if object %}Editar Empleado{% else %}Nuevo Empleado{% endif %}</h2>
+        <h2 class="card-title mb-4">
+          {% if object %}Editar Empleado{% else %}Nuevo Empleado{% endif %}
+        </h2>
+
+        {% if request.user|tiene_permiso:"crear_empleado" or request.user|tiene_permiso:"editar_empleado" %}
         <form method="post">
           {% csrf_token %}
+          {{ form.non_field_errors }}
           {{ form.as_p }}
-          <button type="submit" class="btn btn-custom">{% if object %}Actualizar{% else %}Guardar{% endif %}</button>
+          <button type="submit" class="btn btn-custom">
+            {% if object %}Actualizar{% else %}Guardar{% endif %}
+          </button>
           <a href="{% url 'empleado_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
+        {% else %}
+        <div class="alert alert-warning">
+          No tienes permiso para crear o editar empleados.
+        </div>
+        {% endif %}
+
       </div>
     </div>
   </div>

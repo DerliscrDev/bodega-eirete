@@ -1,13 +1,14 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
 {% block title %}Roles - Bodega Eirete{% endblock %}
+
 {% block content %}
 <div class="card shadow-sm mb-4">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="card-title mb-0">Roles</h2>
-      {% if request.user|tiene_permiso:'crear_rol' %}
-        <a href="{% url 'rol_create' %}" class="btn btn-custom">Nuevo Rol</a>
+      {% if user|tiene_permiso:"crear_rol" %}
+      <a href="{% url 'rol_create' %}" class="btn btn-custom">Nuevo Rol</a>
       {% endif %}
     </div>
     <div class="table-responsive">
@@ -17,7 +18,9 @@
             <th>ID</th>
             <th>Nombre</th>
             <th>Descripción</th>
+            {% if user|tiene_permiso:"editar_rol" or user|tiene_permiso:"eliminar_rol" %}
             <th>Acciones</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -26,17 +29,20 @@
             <td>{{ rol.id }}</td>
             <td>{{ rol.nombre }}</td>
             <td>{{ rol.descripcion }}</td>
+            {% if user|tiene_permiso:"editar_rol" or user|tiene_permiso:"eliminar_rol" %}
             <td>
-              {% if request.user|tiene_permiso:'editar_rol' %}
-                <a href="{% url 'rol_update' rol.id %}" class="btn btn-sm btn-warning">Editar</a>
+              {% if user|tiene_permiso:"editar_rol" %}
+              <a href="{% url 'rol_update' rol.id %}" class="btn btn-sm btn-warning">Editar</a>
               {% endif %}
-              {% if request.user|tiene_permiso:'eliminar_rol' %}
-                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ rol.id }}">
-                  Inactivar
-                </button>
+              {% if user|tiene_permiso:"eliminar_rol" %}
+              <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ rol.id }}">
+                Inactivar
+              </button>
               {% endif %}
             </td>
+            {% endif %}
           </tr>
+          <!-- Modal de confirmación -->
           <div class="modal fade" id="inactivateModal-{{ rol.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ rol.id }}" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">

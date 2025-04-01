@@ -1,44 +1,56 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
+
 {% block title %}Usuarios - Bodega Eirete{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
   <h2>Listado de Usuarios</h2>
-  {% if request.user|tiene_permiso:"crear_usuario" %}
+
+  {% if user|tiene_permiso:"crear_usuario" %}
     <a href="{% url 'usuario_create' %}" class="btn btn-custom mb-3">Nuevo Usuario</a>
   {% endif %}
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Usuario</th>
-        <th>Email</th>
-        <th>Empleado</th>
-        <th>Rol</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for usuario in usuarios %}
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Empleado</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          {% if user|tiene_permiso:"editar_usuario" or user|tiene_permiso:"inactivar_usuario" %}
+          <th>Acciones</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for usuario in usuarios %}
         <tr>
           <td>{{ usuario.username }}</td>
           <td>{{ usuario.email }}</td>
           <td>{{ usuario.empleado }}</td>
           <td>{{ usuario.rol.nombre }}</td>
           <td>{{ usuario.estado }}</td>
+          {% if user|tiene_permiso:"editar_usuario" or user|tiene_permiso:"inactivar_usuario" %}
           <td>
-            {% if request.user|tiene_permiso:"editar_usuario" %}
-              <a href="{% url 'usuario_update' usuario.pk %}" class="btn btn-sm btn-primary">Editar</a>
+            {% if user|tiene_permiso:"editar_usuario" %}
+              <a href="{% url 'usuario_update' usuario.pk %}" class="btn btn-sm btn-warning">Editar</a>
             {% endif %}
-            {% if request.user|tiene_permiso:"inactivar_usuario" %}
+            {% if user|tiene_permiso:"inactivar_usuario" %}
               <a href="{% url 'usuario_inactivate' usuario.pk %}" class="btn btn-sm btn-danger">Inactivar</a>
             {% endif %}
           </td>
+          {% endif %}
         </tr>
-      {% empty %}
-        <tr><td colspan="6">No hay usuarios registrados.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">No hay usuarios registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}
