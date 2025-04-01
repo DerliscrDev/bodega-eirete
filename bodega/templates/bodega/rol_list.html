@@ -1,11 +1,14 @@
 {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
 {% block title %}Roles - Bodega Eirete{% endblock %}
 {% block content %}
 <div class="card shadow-sm mb-4">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="card-title mb-0">Roles</h2>
-      <a href="{% url 'rol_create' %}" class="btn btn-custom">Nuevo Rol</a>
+      {% if request.user|tiene_permiso:'crear_rol' %}
+        <a href="{% url 'rol_create' %}" class="btn btn-custom">Nuevo Rol</a>
+      {% endif %}
     </div>
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
@@ -24,14 +27,16 @@
             <td>{{ rol.nombre }}</td>
             <td>{{ rol.descripcion }}</td>
             <td>
-              <a href="{% url 'rol_update' rol.id %}" class="btn btn-sm btn-warning">Editar</a>
-              <!-- Botón que abre el modal para confirmar la inactivación -->
-              <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ rol.id }}">
-                Inactivar
-              </button>
+              {% if request.user|tiene_permiso:'editar_rol' %}
+                <a href="{% url 'rol_update' rol.id %}" class="btn btn-sm btn-warning">Editar</a>
+              {% endif %}
+              {% if request.user|tiene_permiso:'eliminar_rol' %}
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ rol.id }}">
+                  Inactivar
+                </button>
+              {% endif %}
             </td>
           </tr>
-          <!-- Modal de confirmación para inactivar el rol -->
           <div class="modal fade" id="inactivateModal-{{ rol.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ rol.id }}" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">

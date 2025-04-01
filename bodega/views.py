@@ -8,20 +8,17 @@ from django.conf import settings
 from django.urls import reverse, reverse_lazy
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils.decorators import method_decorator
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.views import PasswordResetConfirmView
+from django.utils.decorators import method_decorator
+
 from .models import Empleado, Usuario, Rol, Permiso
 from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm
 from .tokens import token_generator
 from .decorators import permiso_requerido
-from django.views import View
-from django.shortcuts import get_object_or_404
-from django.contrib import messages
-from django import forms
 
-# Home
+# Vista Home
 @login_required
 def home(request):
     return render(request, 'bodega/home.html')
@@ -86,10 +83,14 @@ class UsuarioCreateView(LoginRequiredMixin, CreateView):
         )
 
         subject = 'Bienvenido a Bodega Eirete - Cambia tu contraseña'
-        message = f"Hola {usuario.username},\n\nTu contraseña temporal es: {temp_password}\n\nCambia tu contraseña aquí:\n{reset_url}\n"
-        recipient_email = usuario.email
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient_email])
-
+        message = (
+            f"Hola {usuario.username},\n\n"
+            f"Se ha creado tu cuenta en Bodega Eirete.\n\n"
+            f"Tu contraseña temporal es: {temp_password}\n\n"
+            f"Por seguridad, ingresa en el siguiente enlace para cambiar tu contraseña:\n{reset_url}\n\n"
+            f"Gracias."
+        )
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [usuario.email])
         return HttpResponseRedirect(self.success_url)
 
 @method_decorator(permiso_requerido('ver_usuario'), name='dispatch')
@@ -183,12 +184,12 @@ class PermisoInactivateView(LoginRequiredMixin, DeleteView):
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-# --- Cambio inicial de contraseña ---
 class PrimerCambioPasswordView(PasswordResetConfirmView):
     template_name = 'bodega/cambiar_password.html'
     success_url = reverse_lazy('login')
 
     def get_token_generator(self):
+        from .tokens import token_generator
         return token_generator
 
     def form_valid(self, form):
@@ -196,34 +197,6 @@ class PrimerCambioPasswordView(PasswordResetConfirmView):
         self.user.is_active = True
         self.user.save()
         return response
-
-class RolPermisosForm(forms.Form):
-    permisos = forms.ModelMultipleChoiceField(
-        queryset=Permiso.objects.filter(activo=True),
-        widget=forms.CheckboxSelectMultiple,
-        required=False
-    )
-
-class RolAsignarPermisosView(LoginRequiredMixin, View):
-    template_name = 'bodega/rol_asignar_permisos.html'
-
-    def get(self, request, pk):
-        rol = get_object_or_404(Rol, pk=pk)
-        form = RolPermisosForm(initial={'permisos': rol.permisos.all()})
-        return render(request, self.template_name, {'form': form, 'rol': rol})
-
-    def post(self, request, pk):
-        rol = get_object_or_404(Rol, pk=pk)
-        form = RolPermisosForm(request.POST)
-        if form.is_valid():
-            permisos = form.cleaned_data['permisos']
-            rol.permisos.set(permisos)
-            messages.success(request, 'Permisos asignados correctamente.')
-            return redirect('rol_list')
-        return render(request, self.template_name, {'form': form, 'rol': rol})
-
-
-
 
 
 

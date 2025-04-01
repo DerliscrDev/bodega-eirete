@@ -1,11 +1,14 @@
 {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
 {% block title %}Permisos - Bodega Eirete{% endblock %}
 {% block content %}
 <div class="card shadow-sm mb-4">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="card-title mb-0">Permisos</h2>
-      <a href="{% url 'permiso_create' %}" class="btn btn-custom">Nuevo Permiso</a>
+      {% if request.user|tiene_permiso:'crear_permiso' %}
+        <a href="{% url 'permiso_create' %}" class="btn btn-custom">Nuevo Permiso</a>
+      {% endif %}
     </div>
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
@@ -20,56 +23,46 @@
         </thead>
         <tbody>
           {% for permiso in permisos %}
-          {% if permiso.activo %}
-          <tr>
-            <td>{{ permiso.id }}</td>
-            <td>{{ permiso.nombre }}</td>
-            <td>{{ permiso.descripcion }}</td>
-            <td>Activo</td>
-            <td>
-              <a href="{% url 'permiso_update' permiso.id %}" class="btn btn-sm btn-warning">Editar</a>
-              <!-- Botón para abrir el modal de confirmación -->
-              <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ permiso.id }}">
-                Inactivar
-              </button>
-            </td>
-          </tr>
-          <!-- Modal para confirmar la inactivación del permiso -->
-          <div class="modal fade" id="inactivateModal-{{ permiso.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ permiso.id }}" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="post" action="{% url 'permiso_inactivate' permiso.id %}">
-                  {% csrf_token %}
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="inactivateModalLabel-{{ permiso.id }}">Confirmar Inactivación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                  </div>
-                  <div class="modal-body">
-                    ¿Estás seguro de inactivar el permiso <strong>{{ permiso.nombre }}</strong>?
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Inactivar</button>
-                  </div>
-                </form>
+            <tr>
+              <td>{{ permiso.id }}</td>
+              <td>{{ permiso.nombre }}</td>
+              <td>{{ permiso.descripcion }}</td>
+              <td>{% if permiso.activo %}Activo{% else %}Inactivo{% endif %}</td>
+              <td>
+                {% if request.user|tiene_permiso:'editar_permiso' %}
+                  <a href="{% url 'permiso_update' permiso.id %}" class="btn btn-sm btn-warning">Editar</a>
+                {% endif %}
+                {% if permiso.activo and request.user|tiene_permiso:'inactivar_permiso' %}
+                  <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ permiso.id }}">
+                    Inactivar
+                  </button>
+                {% endif %}
+              </td>
+            </tr>
+            <div class="modal fade" id="inactivateModal-{{ permiso.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ permiso.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="post" action="{% url 'permiso_inactivate' permiso.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="inactivateModalLabel-{{ permiso.id }}">Confirmar Inactivación</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                      ¿Estás seguro de inactivar el permiso <strong>{{ permiso.nombre }}</strong>?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-danger">Inactivar</button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
-          </div>
-          {% else %}
-          <tr>
-            <td>{{ permiso.id }}</td>
-            <td>{{ permiso.nombre }}</td>
-            <td>{{ permiso.descripcion }}</td>
-            <td>Inactivo</td>
-            <td>
-              <a href="{% url 'permiso_update' permiso.id %}" class="btn btn-sm btn-warning">Editar</a>
-            </td>
-          </tr>
-          {% endif %}
           {% empty %}
-          <tr>
-            <td colspan="5" class="text-center">No se encontraron permisos.</td>
-          </tr>
+            <tr>
+              <td colspan="5" class="text-center">No se encontraron permisos.</td>
+            </tr>
           {% endfor %}
         </tbody>
       </table>

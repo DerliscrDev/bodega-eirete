@@ -1,11 +1,15 @@
+### empleado_list.html
 {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
 {% block title %}Empleados - Bodega Eirete{% endblock %}
 {% block content %}
 <div class="card shadow-sm mb-4">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="card-title mb-0">Empleados</h2>
+      {% if request.user|tiene_permiso:"crear_empleado" %}
       <a href="{% url 'empleado_create' %}" class="btn btn-custom">Nuevo Empleado</a>
+      {% endif %}
     </div>
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
@@ -26,24 +30,20 @@
             <td>{{ empleado.nombre }} {{ empleado.apellido }}</td>
             <td>{{ empleado.email }}</td>
             <td>{{ empleado.cargo }}</td>
+            <td>{% if empleado.activo %}Activo{% else %}Inactivo{% endif %}</td>
             <td>
-              {% if empleado.activo %}
-                Activo
-              {% else %}
-                Inactivo
-              {% endif %}
-            </td>
-            <td>
+              {% if request.user|tiene_permiso:"editar_empleado" %}
               <a href="{% url 'empleado_update' empleado.id %}" class="btn btn-sm btn-warning">Editar</a>
-              <!-- Botón para abrir el modal de inactivación -->
-              {% if empleado.activo %}
+              {% endif %}
+              {% if empleado.activo and request.user|tiene_permiso:"inactivar_empleado" %}
               <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ empleado.id }}">
                 Inactivar
               </button>
               {% endif %}
             </td>
           </tr>
-          <!-- Modal para confirmar inactivación del empleado -->
+          <!-- Modal -->
+          {% if empleado.activo and request.user|tiene_permiso:"inactivar_empleado" %}
           <div class="modal fade" id="inactivateModal-{{ empleado.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ empleado.id }}" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
@@ -64,10 +64,9 @@
               </div>
             </div>
           </div>
+          {% endif %}
           {% empty %}
-          <tr>
-            <td colspan="6" class="text-center">No se encontraron empleados.</td>
-          </tr>
+          <tr><td colspan="6" class="text-center">No se encontraron empleados.</td></tr>
           {% endfor %}
         </tbody>
       </table>
