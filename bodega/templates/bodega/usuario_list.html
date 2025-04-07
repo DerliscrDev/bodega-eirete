@@ -4,6 +4,97 @@
 {% block title %}Usuarios - Bodega Eirete{% endblock %}
 
 {% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="card-title mb-0">Usuarios</h2>
+      {% if request.user|tiene_permiso:"crear_usuario" %}
+        <a href="{% url 'usuario_create' %}" class="btn btn-custom">Nuevo Usuario</a>
+      {% endif %}
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Empleado</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            {% if request.user|tiene_permiso:"editar_usuario" or request.user|tiene_permiso:"inactivar_usuario" %}
+              <th>Acciones</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for usuario in usuarios %}
+          <tr>
+            <td>{{ usuario.username }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{{ usuario.empleado }}</td>
+            <td>{{ usuario.rol.nombre }}</td>
+            <td>{{ usuario.estado|title }}</td>
+            {% if request.user|tiene_permiso:"editar_usuario" or request.user|tiene_permiso:"inactivar_usuario" %}
+            <td>
+              {% if request.user|tiene_permiso:"editar_usuario" %}
+                <a href="{% url 'usuario_update' usuario.pk %}" class="btn btn-sm btn-warning">Editar</a>
+              {% endif %}
+              {% if request.user|tiene_permiso:"inactivar_usuario" %}
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ usuario.id }}">
+                  Inactivar
+                </button>
+              {% endif %}
+            </td>
+            {% endif %}
+          </tr>
+
+          <!-- Modal de confirmación -->
+          {% if request.user|tiene_permiso:"inactivar_usuario" %}
+          <div class="modal fade" id="inactivateModal-{{ usuario.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ usuario.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="post" action="{% url 'usuario_inactivate' usuario.pk %}">
+                  {% csrf_token %}
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="inactivateModalLabel-{{ usuario.id }}">Confirmar Inactivación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  <div class="modal-body">
+                    ¿Estás seguro de inactivar al usuario <strong>{{ usuario.username }}</strong>?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Inactivar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center">No hay usuarios registrados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+{% comment %} {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}Usuarios - Bodega Eirete{% endblock %}
+
+{% block content %}
 <div class="container mt-4">
   <h2>Listado de Usuarios</h2>
 
@@ -53,4 +144,4 @@
     </table>
   </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

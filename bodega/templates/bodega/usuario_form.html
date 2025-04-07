@@ -1,4 +1,68 @@
 {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}{% if object %}Editar Usuario{% else %}Nuevo Usuario{% endif %} - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          {% if object %}Editar Usuario{% else %}Nuevo Usuario{% endif %}
+        </h2>
+
+        {% if request.user|tiene_permiso:"crear_usuario" or request.user|tiene_permiso:"editar_usuario" %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.estado.label_tag }}
+            {{ form.estado }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.rol.label_tag }}
+            {{ form.rol }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.empleado.label_tag }}
+            {{ form.empleado }}
+          </div>
+
+          <button type="submit" class="btn btn-custom">
+            {% if object %}Actualizar{% else %}Guardar{% endif %}
+          </button>
+          <a href="{% url 'usuario_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">
+          No tienes permiso para crear o editar usuarios.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+{% comment %} {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
 {% block title %}{% if object %}Editar Usuario{% else %}Nuevo Usuario{% endif %} - Bodega Eirete{% endblock %}
 {% block content %}
 <div class="row">
@@ -55,4 +119,4 @@
     </div>
   </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}
