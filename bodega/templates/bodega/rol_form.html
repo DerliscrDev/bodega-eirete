@@ -1,27 +1,42 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
-{% block title %}{% if object %}Editar Rol{% else %}Nuevo Rol{% endif %} - Bodega Eirete{% endblock %}
+
+{% block title %}
+  {% if object %}Editar Rol{% else %}Nuevo Rol{% endif %} - Bodega Eirete
+{% endblock %}
+
 {% block content %}
 <div class="row">
   <div class="col-md-8 offset-md-2">
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h2 class="card-title mb-4">{% if object %}Editar Rol{% else %}Nuevo Rol{% endif %}</h2>
+        <h2 class="card-title mb-4">
+          {% if object %}Editar Rol{% else %}Nuevo Rol{% endif %}
+        </h2>
 
         {% if request.user|tiene_permiso:"crear_rol" or request.user|tiene_permiso:"editar_rol" %}
         <form method="post">
           {% csrf_token %}
           {{ form.non_field_errors }}
+
           <div class="mb-3">
-            {{ form.nombre.label_tag }} {{ form.nombre }}
+            {{ form.nombre.label_tag }}
+            {{ form.nombre }}
+            {{ form.nombre.errors }}
           </div>
+
           <div class="mb-3">
-            {{ form.descripcion.label_tag }} {{ form.descripcion }}
+            {{ form.descripcion.label_tag }}
+            {{ form.descripcion }}
+            {{ form.descripcion.errors }}
           </div>
+
           <div class="mb-3">
-            <label>Permisos:</label>
+            <label><strong>Permisos Asociados:</strong></label>
             {{ form.permisos }}
+            {{ form.permisos.errors }}
           </div>
+
           <button type="submit" class="btn btn-custom">
             {% if object %}Actualizar{% else %}Guardar{% endif %}
           </button>
@@ -32,7 +47,6 @@
           No tienes permiso para crear o editar roles.
         </div>
         {% endif %}
-
       </div>
     </div>
   </div>

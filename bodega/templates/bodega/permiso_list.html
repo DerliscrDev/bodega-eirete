@@ -12,6 +12,7 @@
         <a href="{% url 'permiso_create' %}" class="btn btn-custom">Nuevo Permiso</a>
       {% endif %}
     </div>
+
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
         <thead>
@@ -19,10 +20,9 @@
             <th>ID</th>
             <th>Nombre</th>
             <th>Descripción</th>
+            <th>URL</th>
             <th>Estado</th>
-            {% if request.user|tiene_permiso:"editar_permiso" or request.user|tiene_permiso:"inactivar_permiso" %}
-              <th>Acciones</th>
-            {% endif %}
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -31,52 +31,25 @@
             <td>{{ permiso.id }}</td>
             <td>{{ permiso.nombre }}</td>
             <td>{{ permiso.descripcion }}</td>
+            <td>{{ permiso.url }}</td>
             <td>{% if permiso.activo %}Activo{% else %}Inactivo{% endif %}</td>
-            {% if request.user|tiene_permiso:"editar_permiso" or request.user|tiene_permiso:"inactivar_permiso" %}
             <td>
-              {% if permiso.activo %}
-                {% if request.user|tiene_permiso:"editar_permiso" %}
-                  <a href="{% url 'permiso_update' permiso.id %}" class="btn btn-sm btn-warning">Editar</a>
-                {% endif %}
-                {% if request.user|tiene_permiso:"inactivar_permiso" %}
-                  <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ permiso.id }}">
-                    Inactivar
-                  </button>
-                {% endif %}
-              {% else %}
-                {% if request.user|tiene_permiso:"editar_permiso" %}
-                  <a href="{% url 'permiso_update' permiso.id %}" class="btn btn-sm btn-warning">Editar</a>
+              {% if request.user|tiene_permiso:"editar_permiso" %}
+              <a href="{% url 'permiso_update' permiso.id %}" class="btn btn-sm btn-warning">Editar</a>
+              {% endif %}
+
+              {% if request.user|tiene_permiso:"inactivar_permiso" %}
+                {% if permiso.activo %}
+                <a href="{% url 'permiso_inactivate' permiso.id %}" class="btn btn-sm btn-danger">Inactivar</a>
+                {% else %}
+                <a href="{% url 'permiso_inactivate' permiso.id %}?reactivar=1" class="btn btn-sm btn-success">Reactivar</a>
                 {% endif %}
               {% endif %}
             </td>
-            {% endif %}
           </tr>
-
-          {% if request.user|tiene_permiso:"inactivar_permiso" %}
-          <div class="modal fade" id="inactivateModal-{{ permiso.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ permiso.id }}" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="post" action="{% url 'permiso_inactivate' permiso.id %}">
-                  {% csrf_token %}
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="inactivateModalLabel-{{ permiso.id }}">Confirmar Inactivación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                  </div>
-                  <div class="modal-body">
-                    ¿Estás seguro de inactivar el permiso <strong>{{ permiso.nombre }}</strong>?
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Inactivar</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          {% endif %}
           {% empty %}
           <tr>
-            <td colspan="5" class="text-center">No se encontraron permisos.</td>
+            <td colspan="6" class="text-center">No se encontraron permisos.</td>
           </tr>
           {% endfor %}
         </tbody>

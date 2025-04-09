@@ -1,7 +1,8 @@
-### empleado_list.html
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
+
 {% block title %}Empleados - Bodega Eirete{% endblock %}
+
 {% block content %}
 <div class="card shadow-sm mb-4">
   <div class="card-body">
@@ -11,12 +12,13 @@
       <a href="{% url 'empleado_create' %}" class="btn btn-custom">Nuevo Empleado</a>
       {% endif %}
     </div>
+
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Nombre Completo</th>
+            <th>Nombre</th>
             <th>Email</th>
             <th>Cargo</th>
             <th>Estado</th>
@@ -35,38 +37,20 @@
               {% if request.user|tiene_permiso:"editar_empleado" %}
               <a href="{% url 'empleado_update' empleado.id %}" class="btn btn-sm btn-warning">Editar</a>
               {% endif %}
-              {% if empleado.activo and request.user|tiene_permiso:"inactivar_empleado" %}
-              <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ empleado.id }}">
-                Inactivar
-              </button>
+
+              {% if request.user|tiene_permiso:"inactivar_empleado" %}
+                {% if empleado.activo %}
+                <a href="{% url 'empleado_inactivate' empleado.id %}" class="btn btn-sm btn-danger">Inactivar</a>
+                {% else %}
+                <a href="{% url 'empleado_inactivate' empleado.id %}?reactivar=1" class="btn btn-sm btn-success">Reactivar</a>
+                {% endif %}
               {% endif %}
             </td>
           </tr>
-          <!-- Modal -->
-          {% if empleado.activo and request.user|tiene_permiso:"inactivar_empleado" %}
-          <div class="modal fade" id="inactivateModal-{{ empleado.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ empleado.id }}" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="post" action="{% url 'empleado_inactivate' empleado.id %}">
-                  {% csrf_token %}
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="inactivateModalLabel-{{ empleado.id }}">Confirmar Inactivación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                  </div>
-                  <div class="modal-body">
-                    ¿Estás seguro de inactivar al empleado <strong>{{ empleado.nombre }} {{ empleado.apellido }}</strong>?
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Inactivar</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          {% endif %}
           {% empty %}
-          <tr><td colspan="6" class="text-center">No se encontraron empleados.</td></tr>
+          <tr>
+            <td colspan="6" class="text-center">No se encontraron empleados.</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>

@@ -1,0 +1,33 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}Confirmar Inactivación - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          {% if object.activo %}Confirmar Inactivación{% else %}Confirmar Reactivación{% endif %}
+        </h2>
+        <p>
+          {% if object.activo %}
+            ¿Estás seguro de que deseas inactivar al empleado <strong>{{ object.nombre }} {{ object.apellido }}</strong>?
+          {% else %}
+            ¿Estás seguro de que deseas reactivar al empleado <strong>{{ object.nombre }} {{ object.apellido }}</strong>?
+          {% endif %}
+        </p>
+
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">
+            {% if object.activo %}Inactivar{% else %}Reactivar{% endif %}
+          </button>
+          <a href="{% url 'empleado_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

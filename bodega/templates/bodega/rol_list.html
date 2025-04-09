@@ -1,5 +1,6 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
+
 {% block title %}Roles - Bodega Eirete{% endblock %}
 
 {% block content %}
@@ -7,10 +8,11 @@
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="card-title mb-0">Roles</h2>
-      {% if user|tiene_permiso:"crear_rol" %}
+      {% if request.user|tiene_permiso:"crear_rol" %}
       <a href="{% url 'rol_create' %}" class="btn btn-custom">Nuevo Rol</a>
       {% endif %}
     </div>
+
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
         <thead>
@@ -18,9 +20,8 @@
             <th>ID</th>
             <th>Nombre</th>
             <th>Descripción</th>
-            {% if user|tiene_permiso:"editar_rol" or user|tiene_permiso:"eliminar_rol" %}
+            <th>Estado</th>
             <th>Acciones</th>
-            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -29,43 +30,25 @@
             <td>{{ rol.id }}</td>
             <td>{{ rol.nombre }}</td>
             <td>{{ rol.descripcion }}</td>
-            {% if user|tiene_permiso:"editar_rol" or user|tiene_permiso:"eliminar_rol" %}
+            <td>{% if rol.activo %}Activo{% else %}Inactivo{% endif %}</td>
             <td>
-              {% if user|tiene_permiso:"editar_rol" %}
+              {% if request.user|tiene_permiso:"editar_rol" %}
               <a href="{% url 'rol_update' rol.id %}" class="btn btn-sm btn-warning">Editar</a>
+              {% comment %} <a href="{% url 'rol_asignar_permisos' rol.id %}" class="btn btn-sm btn-info">Permisos</a> {% endcomment %}
               {% endif %}
-              {% if user|tiene_permiso:"eliminar_rol" %}
-              <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#inactivateModal-{{ rol.id }}">
-                Inactivar
-              </button>
+
+              {% if request.user|tiene_permiso:"eliminar_rol" %}
+                {% if rol.activo %}
+                <a href="{% url 'rol_inactivate' rol.id %}" class="btn btn-sm btn-danger">Inactivar</a>
+                {% else %}
+                <a href="{% url 'rol_inactivate' rol.id %}?reactivar=1" class="btn btn-sm btn-success">Reactivar</a>
+                {% endif %}
               {% endif %}
             </td>
-            {% endif %}
           </tr>
-          <!-- Modal de confirmación -->
-          <div class="modal fade" id="inactivateModal-{{ rol.id }}" tabindex="-1" aria-labelledby="inactivateModalLabel-{{ rol.id }}" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="post" action="{% url 'rol_delete' rol.id %}">
-                  {% csrf_token %}
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="inactivateModalLabel-{{ rol.id }}">Confirmar Inactivación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                  </div>
-                  <div class="modal-body">
-                    ¿Estás seguro de inactivar el rol <strong>{{ rol.nombre }}</strong>?
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Inactivar</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
           {% empty %}
           <tr>
-            <td colspan="4" class="text-center">No se encontraron roles.</td>
+            <td colspan="5" class="text-center">No se encontraron roles.</td>
           </tr>
           {% endfor %}
         </tbody>

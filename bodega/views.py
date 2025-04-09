@@ -9,13 +9,15 @@ from django.urls import reverse, reverse_lazy
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView
+from django.views import View
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
 
 from .models import Empleado, Usuario, Rol, Permiso
-from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm
-from .tokens import token_generator
+from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm
+# from .tokens import token_generator
+from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
 
 # Vista Home
@@ -49,16 +51,16 @@ class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('empleado_list')
 
 @method_decorator(permiso_requerido('inactivar_empleado'), name='dispatch')
-class EmpleadoInactivateView(LoginRequiredMixin, DeleteView):
-    model = Empleado
-    template_name = 'bodega/empleado_confirm_delete.html'
-    success_url = reverse_lazy('empleado_list')
+class EmpleadoInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        self.object = Empleado.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/empleado_confirm_inactivate.html', {'object': self.object})
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.activo = False
+    def post(self, request, *args, **kwargs):
+        self.object = Empleado.objects.get(pk=kwargs['pk'])
+        self.object.activo = not self.object.activo
         self.object.save()
-        return redirect(self.success_url)
+        return redirect('empleado_list')
 
 # --- Usuarios ---
 @method_decorator(permiso_requerido('crear_usuario'), name='dispatch')
@@ -73,10 +75,12 @@ class UsuarioCreateView(LoginRequiredMixin, CreateView):
         temp_password = get_random_string(length=8)
         usuario.password = make_password(temp_password)
         usuario.estado = 'activo'
+        usuario.is_active = False
         usuario.save()
         form.save_m2m()
 
-        token = token_generator.make_token(usuario)
+        # token = token_generator.make_token(usuario)
+        token = default_token_generator.make_token(usuario)
         uid = urlsafe_base64_encode(force_bytes(usuario.pk))
         reset_url = self.request.build_absolute_uri(
             reverse('cambiar_password', kwargs={'uidb64': uid, 'token': token})
@@ -107,19 +111,16 @@ class UsuarioUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('usuario_list')
 
 @method_decorator(permiso_requerido('inactivar_usuario'), name='dispatch')
-class UsuarioInactivateView(LoginRequiredMixin, DeleteView):
-    model = Usuario
-    template_name = 'bodega/usuario_confirm_delete.html'
-    success_url = reverse_lazy('usuario_list')
-
+class UsuarioInactivateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        return redirect('usuario_list')
+        self.object = Usuario.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/usuario_confirm_inactivate.html', {'object': self.object})
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 'inactivo'
+    def post(self, request, *args, **kwargs):
+        self.object = Usuario.objects.get(pk=kwargs['pk'])
+        self.object.estado = 'activo' if self.object.estado == 'inactivo' else 'inactivo'
         self.object.save()
-        return HttpResponseRedirect(self.get_success_url())
+        return redirect('usuario_list')
 
 # --- Roles ---
 @method_decorator(permiso_requerido('ver_rol'), name='dispatch')
@@ -127,6 +128,9 @@ class RolListView(LoginRequiredMixin, ListView):
     model = Rol
     template_name = 'bodega/rol_list.html'
     context_object_name = 'roles'
+
+    def get_queryset(self):
+        return Rol.objects.all()
 
 @method_decorator(permiso_requerido('crear_rol'), name='dispatch')
 class RolCreateView(LoginRequiredMixin, CreateView):
@@ -142,11 +146,17 @@ class RolUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'bodega/rol_form.html'
     success_url = reverse_lazy('rol_list')
 
-@method_decorator(permiso_requerido('eliminar_rol'), name='dispatch')
-class RolDeleteView(LoginRequiredMixin, DeleteView):
-    model = Rol
-    template_name = 'bodega/rol_confirm_delete.html'
-    success_url = reverse_lazy('rol_list')
+@method_decorator(permiso_requerido('inactivar_rol'), name='dispatch')
+class RolInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        self.object = Rol.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/rol_confirm_inactivate.html', {'object': self.object})
+
+    def post(self, request, *args, **kwargs):
+        self.object = Rol.objects.get(pk=kwargs['pk'])
+        self.object.activo = not self.object.activo
+        self.object.save()
+        return redirect('rol_list')
 
 @method_decorator(permiso_requerido('editar_rol'), name='dispatch')
 class RolAsignarPermisosView(LoginRequiredMixin, UpdateView):
@@ -167,6 +177,9 @@ class PermisoListView(LoginRequiredMixin, ListView):
     template_name = 'bodega/permiso_list.html'
     context_object_name = 'permisos'
 
+    def get_queryset(self):
+        return Permiso.objects.all().order_by('id')
+
 @method_decorator(permiso_requerido('crear_permiso'), name='dispatch')
 class PermisoCreateView(LoginRequiredMixin, CreateView):
     model = Permiso
@@ -182,27 +195,25 @@ class PermisoUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('permiso_list')
 
 @method_decorator(permiso_requerido('inactivar_permiso'), name='dispatch')
-class PermisoInactivateView(LoginRequiredMixin, DeleteView):
-    model = Permiso
-    template_name = 'bodega/permiso_confirm_delete.html'
-    success_url = reverse_lazy('permiso_list')
-
+class PermisoInactivateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        return redirect('permiso_list')
+        self.object = Permiso.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/permiso_confirm_inactivate.html', {'object': self.object})
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.activo = False
+    def post(self, request, *args, **kwargs):
+        self.object = Permiso.objects.get(pk=kwargs['pk'])
+        self.object.activo = not self.object.activo
         self.object.save()
-        return HttpResponseRedirect(self.get_success_url())
+        return redirect('permiso_list')
 
 class PrimerCambioPasswordView(PasswordResetConfirmView):
     template_name = 'bodega/cambiar_password.html'
     success_url = reverse_lazy('login')
+    # form_class = CambiarPasswordForm
 
-    def get_token_generator(self):
-        from .tokens import token_generator
-        return token_generator
+    # def get_token_generator(self):
+    #     from .tokens import token_generator
+    #     return token_generator
 
     def form_valid(self, form):
         response = super().form_valid(form)

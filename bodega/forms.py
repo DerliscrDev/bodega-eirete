@@ -1,12 +1,24 @@
 from django import forms
-from .models import Empleado, Usuario, Rol, Permiso
 from django.contrib.auth.forms import SetPasswordForm
+from .models import Empleado, Usuario, Rol, Permiso
 
+# EmpleadoForm con campo cargo como select de roles
 class EmpleadoForm(forms.ModelForm):
     class Meta:
         model = Empleado
-        fields = '__all__'
+        fields = ['nombre', 'apellido', 'direccion', 'telefono', 'email', 'fecha_contratacion', 'cargo', 'activo']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'apellido': forms.TextInput(attrs={'class': 'form-control'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'fecha_contratacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'cargo': forms.Select(attrs={'class': 'form-control'}),
+            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
 
+# UsuarioForm sin cambios especiales
 class UsuarioForm(forms.ModelForm):
     class Meta:
         model = Usuario
@@ -19,9 +31,11 @@ class UsuarioForm(forms.ModelForm):
             'rol': forms.Select(attrs={'class': 'form-control'}),
         }
 
-class CambiarPasswordForm(SetPasswordForm):  # Para cambiar la contraseña al primer login
+# Para el cambio de contraseña inicial
+class CambiarPasswordForm(SetPasswordForm):
     pass
 
+# RolForm con permisos activos como checkboxes
 class RolForm(forms.ModelForm):
     permisos = forms.ModelMultipleChoiceField(
         queryset=Permiso.objects.filter(activo=True),
@@ -37,62 +51,14 @@ class RolForm(forms.ModelForm):
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Descripción'}),
         }
 
+# PermisoForm con campo URL
 class PermisoForm(forms.ModelForm):
     class Meta:
         model = Permiso
-        fields = '__all__'
-
-
-
-
-
-
-# # bodega/forms.py
-# from django import forms
-# from .models import Empleado, Usuario, Rol, Permiso
-
-# class EmpleadoForm(forms.ModelForm):
-#     class Meta:
-#         model = Empleado
-#         fields = ['nombre', 'apellido', 'direccion', 'telefono', 'email', 'fecha_contratacion', 'cargo', 'salario']
-#         widgets = {
-#             'fecha_contratacion': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-#             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}),
-#             'apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}),
-#             'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección'}),
-#             'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono'}),
-#             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
-#             'cargo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Cargo'}),
-#             'salario': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Salario'}),
-#         }
-
-# class UsuarioForm(forms.ModelForm):
-#     class Meta:
-#         model = Usuario
-#         # Excluimos el campo password para que se genere automáticamente
-#         fields = ['username', 'email', 'estado', 'empleado']
-#         widgets = {
-#             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de Usuario'}),
-#             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
-#             'estado': forms.Select(attrs={'class': 'form-control'}),
-#             'empleado': forms.Select(attrs={'class': 'form-control'}),
-#         }
-
-
-# class RolForm(forms.ModelForm):
-#     class Meta:
-#         model = Rol
-#         fields = ['nombre', 'descripcion']
-#         widgets = {
-#             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del Rol'}),
-#             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Descripción'}),
-#         }
-
-# class PermisoForm(forms.ModelForm):
-#     class Meta:
-#         model = Permiso
-#         fields = ['nombre', 'descripcion']
-#         widgets = {
-#             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del Permiso'}),
-#             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Descripción'}),
-#         }
+        fields = ['nombre', 'descripcion', 'url', 'activo']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control'}),
+            'url': forms.TextInput(attrs={'class': 'form-control'}),
+            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
