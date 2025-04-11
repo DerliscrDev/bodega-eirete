@@ -79,7 +79,7 @@
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
-          <h5 class="card-title">Movimientos</h5>
+          <h5 class="card-title">Historial de Movimientos</h5>
           <p class="card-text">Registra entradas y salidas de productos.</p>
           <a href="{% url 'movimiento_list' %}" class="btn btn-custom">Ver Movimientos</a>
         </div>
@@ -165,5 +165,31 @@
     </div>
     {% endif %}
     
+    <!-- Pedidos -->
+    {% if request.user|tiene_permiso:"ver_pedido" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Pedidos</h5>
+          <p class="card-text">Gestión de pedidos realizados por los clientes, incluyendo estado y detalle de productos.</p>
+          <a href="{% url 'pedido_list' %}" class="btn btn-custom">Ver Pedidos</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Facturas -->
+    {% if request.user|tiene_permiso:"ver_factura" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Facturas</h5>
+          <p class="card-text">Consulta y gestiona las facturas emitidas.</p>
+          <a href="{% url 'factura_list' %}" class="btn btn-custom">Ver Facturas</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 {% endblock %}

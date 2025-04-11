@@ -13,18 +13,38 @@ from django.views.generic import ListView, CreateView, UpdateView
 from django.views import View
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
+from django.forms import inlineformset_factory
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
-    Almacen, CategoriaProducto, Inventario
+    Almacen, CategoriaProducto, Inventario, Pedido, DetallePedido, Factura, DetalleFactura
 )
 from .forms import (
     EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm,
-    OrdenCompraForm, DetalleOrdenCompraForm, ClienteForm, AlmacenForm, CategoriaProductoForm
+    OrdenCompraForm, DetalleOrdenCompraForm, ClienteForm, AlmacenForm, CategoriaProductoForm, PedidoForm, DetallePedidoFormSet,
+    FacturaForm, DetalleFacturaForm
 ) 
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
 from django.forms import modelformset_factory
+from django.shortcuts import get_object_or_404
+
+
+DetalleFormSet = inlineformset_factory(
+    OrdenCompra,
+    DetalleOrdenCompra,
+    form=DetalleOrdenCompraForm,
+    extra=3,
+    can_delete=False
+)
+
+DetalleFacturaFormSet = inlineformset_factory(
+    Factura,
+    DetalleFactura,
+    form=DetalleFacturaForm,
+    extra=3,
+    can_delete=False
+)
 
 # Vista Home
 @login_required
@@ -314,8 +334,14 @@ class MovimientoListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset().select_related('producto', 'realizado_por').order_by('-fecha')
         buscar = self.request.GET.get("buscar")
+        producto_id = self.request.GET.get("producto_id")
+
         if buscar:
             queryset = queryset.filter(producto__nombre__icontains=buscar)
+
+        if producto_id:
+            queryset = queryset.filter(producto__id=producto_id)
+
         return queryset
 
 @method_decorator(permiso_requerido('crear_movimiento'), name='dispatch')
@@ -393,13 +419,12 @@ class OrdenCompraListView(LoginRequiredMixin, ListView):
         if buscar:
             qs = qs.filter(proveedor__nombre__icontains=buscar)
         return qs
-
+    
 @method_decorator(permiso_requerido('crear_orden_compra'), name='dispatch')
 class OrdenCompraCreateView(LoginRequiredMixin, View):
     def get(self, request):
         orden_form = OrdenCompraForm()
-        DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
-        formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.none())
+        formset = DetalleFormSet()
         return render(request, 'bodega/orden_compra_form.html', {
             'orden_form': orden_form,
             'formset': formset
@@ -407,13 +432,12 @@ class OrdenCompraCreateView(LoginRequiredMixin, View):
 
     def post(self, request):
         orden_form = OrdenCompraForm(request.POST)
-        DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
         formset = DetalleFormSet(request.POST)
 
         if orden_form.is_valid() and formset.is_valid():
             orden = orden_form.save()
-            for form in formset:
-                detalle = form.save(commit=False)
+            detalles = formset.save(commit=False)
+            for detalle in detalles:
                 detalle.orden = orden
                 detalle.save()
             return redirect('orden_compra_list')
@@ -428,12 +452,7 @@ class OrdenCompraUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
         orden = OrdenCompra.objects.get(pk=pk)
         orden_form = OrdenCompraForm(instance=orden)
-
-        DetalleFormSet = modelformset_factory(
-            DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
-        )
-        formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.filter(orden=orden))
-
+        formset = DetalleFormSet(instance=orden)
         return render(request, 'bodega/orden_compra_form.html', {
             'orden_form': orden_form,
             'formset': formset
@@ -442,24 +461,85 @@ class OrdenCompraUpdateView(LoginRequiredMixin, View):
     def post(self, request, pk):
         orden = OrdenCompra.objects.get(pk=pk)
         orden_form = OrdenCompraForm(request.POST, instance=orden)
-
-        DetalleFormSet = modelformset_factory(
-            DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
-        )
-        formset = DetalleFormSet(request.POST, queryset=DetalleOrdenCompra.objects.filter(orden=orden))
+        formset = DetalleFormSet(request.POST, instance=orden)
 
         if orden_form.is_valid() and formset.is_valid():
             orden_form.save()
-            for form in formset:
-                detalle = form.save(commit=False)
-                detalle.orden = orden
-                detalle.save()
+            formset.save()
             return redirect('orden_compra_list')
 
         return render(request, 'bodega/orden_compra_form.html', {
             'orden_form': orden_form,
             'formset': formset
         })
+
+
+# @method_decorator(permiso_requerido('crear_orden_compra'), name='dispatch')
+# class OrdenCompraCreateView(LoginRequiredMixin, View):
+#     def get(self, request):
+#         orden_form = OrdenCompraForm()
+#         DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
+#         formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.none())
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+#     def post(self, request):
+#         orden_form = OrdenCompraForm(request.POST)
+#         DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
+#         formset = DetalleFormSet(request.POST)
+
+#         if orden_form.is_valid() and formset.is_valid():
+#             orden = orden_form.save()
+#             for form in formset:
+#                 detalle = form.save(commit=False)
+#                 detalle.orden = orden
+#                 detalle.save()
+#             return redirect('orden_compra_list')
+
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+# @method_decorator(permiso_requerido('editar_orden_compra'), name='dispatch')
+# class OrdenCompraUpdateView(LoginRequiredMixin, View):
+#     def get(self, request, pk):
+#         orden = OrdenCompra.objects.get(pk=pk)
+#         orden_form = OrdenCompraForm(instance=orden)
+
+#         DetalleFormSet = modelformset_factory(
+#             DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
+#         )
+#         formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.filter(orden=orden))
+
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+#     def post(self, request, pk):
+#         orden = OrdenCompra.objects.get(pk=pk)
+#         orden_form = OrdenCompraForm(request.POST, instance=orden)
+
+#         DetalleFormSet = modelformset_factory(
+#             DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
+#         )
+#         formset = DetalleFormSet(request.POST, queryset=DetalleOrdenCompra.objects.filter(orden=orden))
+
+#         if orden_form.is_valid() and formset.is_valid():
+#             orden_form.save()
+#             for form in formset:
+#                 detalle = form.save(commit=False)
+#                 detalle.orden = orden
+#                 detalle.save()
+#             return redirect('orden_compra_list')
+
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
 
 @method_decorator(permiso_requerido('recibir_orden_compra'), name='dispatch')
 class OrdenCompraRecibirView(LoginRequiredMixin, View):
@@ -635,3 +715,170 @@ class InventarioListView(LoginRequiredMixin, ListView):
                 almacen__nombre__icontains=buscar
             )
         return qs.order_by('producto__nombre')
+
+@method_decorator(permiso_requerido('ver_pedido'), name='dispatch')
+class PedidoListView(LoginRequiredMixin, ListView):
+    model = Pedido
+    template_name = 'bodega/pedido_list.html'
+    context_object_name = 'pedidos'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Pedido.objects.select_related('cliente').order_by('-fecha')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            queryset = queryset.filter(cliente__nombre__icontains=buscar) | queryset.filter(cliente__apellido__icontains=buscar)
+        return queryset
+
+@method_decorator(permiso_requerido('crear_pedido'), name='dispatch')
+class PedidoCreateView(LoginRequiredMixin, View):
+    def get(self, request):
+        pedido_form = PedidoForm()
+        formset = DetallePedidoFormSet(queryset=DetallePedido.objects.none())
+        return render(request, 'bodega/pedido_form.html', {
+            'form': pedido_form,
+            'formset': formset
+        })
+
+    def post(self, request):
+        pedido_form = PedidoForm(request.POST)
+        formset = DetallePedidoFormSet(request.POST)
+        if pedido_form.is_valid() and formset.is_valid():
+            pedido = pedido_form.save()
+            detalles = formset.save(commit=False)
+            for detalle in detalles:
+                detalle.pedido = pedido
+                detalle.save()
+            return redirect('pedido_list')
+        return render(request, 'bodega/pedido_form.html', {
+            'form': pedido_form,
+            'formset': formset
+        })
+
+@method_decorator(permiso_requerido('editar_pedido'), name='dispatch')
+class PedidoUpdateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        pedido = Pedido.objects.get(pk=pk)
+        pedido_form = PedidoForm(instance=pedido)
+        formset = DetallePedidoFormSet(instance=pedido)
+        return render(request, 'bodega/pedido_form.html', {
+            'form': pedido_form,
+            'formset': formset
+        })
+
+    def post(self, request, pk):
+        pedido = Pedido.objects.get(pk=pk)
+        pedido_form = PedidoForm(request.POST, instance=pedido)
+        formset = DetallePedidoFormSet(request.POST, instance=pedido)
+        if pedido_form.is_valid() and formset.is_valid():
+            pedido_form.save()
+            formset.save()
+            return redirect('pedido_list')
+        return render(request, 'bodega/pedido_form.html', {
+            'form': pedido_form,
+            'formset': formset
+        })
+
+@method_decorator(permiso_requerido('cancelar_pedido'), name='dispatch')
+class PedidoInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        pedido = Pedido.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/pedido_confirm_inactivate.html', {'pedido': pedido})
+
+    def post(self, request, *args, **kwargs):
+        pedido = Pedido.objects.get(pk=kwargs['pk'])
+        if pedido.estado != 'cancelado':
+            pedido.estado = 'cancelado'
+        else:
+            pedido.estado = 'pendiente'
+        pedido.save()
+        return redirect('pedido_list')
+
+@method_decorator(permiso_requerido('editar_detallepedido'), name='dispatch')
+class DetallePedidoUpdateView(LoginRequiredMixin, UpdateView):
+    model = DetallePedido
+    fields = ['producto', 'cantidad', 'precio_unitario']
+    template_name = 'bodega/detallepedido_form.html'
+    success_url = reverse_lazy('pedido_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pedido'] = self.object.pedido  # Mostrar el pedido relacionado
+        return context
+
+@method_decorator(permiso_requerido('eliminar_detallepedido'), name='dispatch')
+class DetallePedidoDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        detalle = DetallePedido.objects.get(pk=pk)
+        detalle.delete()
+        return redirect('pedido_list')  # O redirigir a la vista de edición del pedido
+    
+@method_decorator(permiso_requerido('ver_factura'), name='dispatch')
+class FacturaListView(LoginRequiredMixin, ListView):
+    model = Factura
+    template_name = 'bodega/factura_list.html'
+    context_object_name = 'facturas'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Factura.objects.select_related('cliente').order_by('-id')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            qs = qs.filter(cliente__nombre__icontains=buscar) | qs.filter(estado__icontains=buscar)
+        return qs
+
+@method_decorator(permiso_requerido('crear_factura'), name='dispatch')
+class FacturaCreateView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = FacturaForm()
+        formset = DetalleFacturaFormSet()
+        return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
+
+    def post(self, request):
+        form = FacturaForm(request.POST)
+        formset = DetalleFacturaFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            factura = form.save()
+            total = 0
+            detalles = formset.save(commit=False)
+            for detalle in detalles:
+                detalle.factura = factura
+                detalle.save()
+                total += detalle.cantidad * detalle.precio_unitario
+            factura.total = total
+            factura.save()
+            return redirect('factura_list')
+        return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
+
+@method_decorator(permiso_requerido('editar_factura'), name='dispatch')
+class FacturaUpdateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        form = FacturaForm(instance=factura)
+        formset = DetalleFacturaFormSet(instance=factura)
+        return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
+
+    def post(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        form = FacturaForm(request.POST, instance=factura)
+        formset = DetalleFacturaFormSet(request.POST, instance=factura)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            total = sum([f.cantidad * f.precio_unitario for f in factura.detalles.all()])
+            factura.total = total
+            factura.save()
+            return redirect('factura_list')
+        return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
+
+@method_decorator(permiso_requerido('cancelar_factura'), name='dispatch')
+class FacturaInactivateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        return render(request, 'bodega/factura_confirm_inactivate.html', {'factura': factura})
+
+    def post(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        factura.estado = 'anulada' if factura.estado != 'anulada' else 'pendiente'
+        factura.save()
+        return redirect('factura_list')

@@ -2,8 +2,11 @@ from django import forms
 from django.contrib.auth.forms import SetPasswordForm
 from .models import (
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
-    Almacen, Inventario, CategoriaProducto
+    Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura  
 )
+from django.forms import inlineformset_factory
+from django.utils.decorators import method_decorator
+
 
 # EmpleadoForm con campo cargo como select de roles
 class EmpleadoForm(forms.ModelForm):
@@ -155,4 +158,42 @@ class CategoriaProductoForm(forms.ModelForm):
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
             'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+class PedidoForm(forms.ModelForm):
+    class Meta:
+        model = Pedido
+        fields = ['cliente', 'estado', 'observacion']
+
+class DetallePedidoForm(forms.ModelForm):
+    class Meta:
+        model = DetallePedido
+        fields = ['producto', 'cantidad', 'precio_unitario']
+
+DetallePedidoFormSet = inlineformset_factory(
+    Pedido,
+    DetallePedido,
+    form=DetallePedidoForm,
+    extra=1,
+    can_delete=True
+)
+
+class FacturaForm(forms.ModelForm):
+    class Meta:
+        model = Factura
+        fields = ['cliente', 'estado', 'observacion']
+        widgets = {
+            'cliente': forms.Select(attrs={'class': 'form-control'}),
+            'estado': forms.Select(attrs={'class': 'form-control'}),
+            'observacion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+class DetalleFacturaForm(forms.ModelForm):
+    class Meta:
+        model = DetalleFactura
+        fields = ['producto', 'cantidad', 'precio_unitario']
+        widgets = {
+            'producto': forms.Select(attrs={'class': 'form-control'}),
+            'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
+            'precio_unitario': forms.NumberInput(attrs={'class': 'form-control'}),
         }

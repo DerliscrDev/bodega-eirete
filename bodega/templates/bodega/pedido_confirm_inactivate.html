@@ -1,0 +1,28 @@
+{% extends 'bodega/base.html' %}
+{% load static %}
+
+{% block title %}Confirmación - Pedido{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title">
+        {% if pedido.estado != 'cancelado' %}Cancelar{% else %}Reactivar{% endif %} Pedido
+      </h2>
+      <p class="mb-4">
+        ¿Estás seguro que querés 
+        {% if pedido.estado != 'cancelado' %}cancelar{% else %}reactivar{% endif %}
+        el pedido <strong>#{{ pedido.pk }}</strong> del cliente <strong>{{ pedido.cliente }}</strong>?
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn {% if pedido.estado != 'cancelado' %}btn-danger{% else %}btn-success{% endif %}">
+          {% if pedido.estado != 'cancelado' %}Cancelar{% else %}Reactivar{% endif %}
+        </button>
+        <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Volver</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

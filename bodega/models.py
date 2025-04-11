@@ -153,3 +153,54 @@ class CategoriaProducto(models.Model):
 
     def __str__(self):
         return self.nombre
+
+class Pedido(models.Model):
+    ESTADO_CHOICES = (
+        ('pendiente', 'Pendiente'),
+        ('enviado', 'Enviado'),
+        ('entregado', 'Entregado'),
+        ('cancelado', 'Cancelado'),
+    )
+
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
+    fecha = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+    observacion = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Pedido #{self.pk} - {self.cliente}"
+
+class DetallePedido(models.Model):
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='detalles')
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField()
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=0)
+
+    def __str__(self):
+        return f"{self.producto.nombre} x {self.cantidad}"
+
+class Factura(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    fecha = models.DateTimeField(auto_now_add=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    observacion = models.TextField(blank=True, null=True)
+    estado = models.CharField(max_length=20, choices=[
+        ('pendiente', 'Pendiente'),
+        ('pagada', 'Pagada'),
+        ('anulada', 'Anulada')
+    ], default='pendiente')
+
+    def __str__(self):
+        return f"Factura #{self.id} - {self.cliente}"
+
+class DetalleFactura(models.Model):
+    factura = models.ForeignKey(Factura, on_delete=models.CASCADE, related_name='detalles')
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField()
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=0)
+
+    def subtotal(self):
+        return self.cantidad * self.precio_unitario
+
+    def __str__(self):
+        return f"{self.producto} x {self.cantidad}"

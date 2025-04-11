@@ -7,7 +7,7 @@
 <div class="card shadow-sm mb-4">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="card-title mb-0">Movimientos</h2>
+      <h2 class="card-title mb-0">Historial de Movimientos</h2>
       {% if request.user|tiene_permiso:"crear_movimiento" %}
       <a href="{% url 'movimiento_create' %}" class="btn btn-custom">Registrar Movimiento</a>
       {% endif %}

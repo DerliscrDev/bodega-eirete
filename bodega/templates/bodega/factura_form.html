@@ -1,0 +1,63 @@
+{% extends 'bodega/base.html' %}
+{% load static %}
+
+{% block title %}Factura - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h2 class="card-title mb-3">Factura</h2>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      <!-- Datos de la Factura -->
+      <div class="mb-4">
+        {{ form.non_field_errors }}
+        <div class="mb-3">
+          <label class="form-label">Cliente</label>
+          {{ form.cliente }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Estado</label>
+          {{ form.estado }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Observación</label>
+          {{ form.observacion }}
+        </div>
+      </div>
+
+      <!-- Detalles -->
+      <h5>Detalles</h5>
+      <table class="table table-bordered table-sm align-middle">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in formset.forms %}
+          <tr>
+            <td>{{ f.producto }}</td>
+            <td>{{ f.cantidad }}</td>
+            <td>{{ f.precio_unitario }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if formset.non_form_errors %}
+        <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+      {% endif %}
+
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-custom">Guardar Factura</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -14,7 +14,10 @@ from .views import (
     ClienteListView, ClienteCreateView, ClienteUpdateView, ClienteInactivateView,
     AlmacenListView, AlmacenCreateView, AlmacenUpdateView, AlmacenInactivateView,
     CategoriaProductoListView, CategoriaProductoCreateView, CategoriaProductoUpdateView, CategoriaProductoInactivateView,
-    InventarioListView
+    InventarioListView,
+    PedidoListView, PedidoCreateView, PedidoUpdateView, PedidoInactivateView,
+    DetallePedidoUpdateView, DetallePedidoDeleteView,
+    FacturaListView, FacturaCreateView, FacturaUpdateView, FacturaInactivateView
 )
 
 urlpatterns = [
@@ -94,4 +97,21 @@ urlpatterns = [
     
     # Inventario
     path('inventario/', InventarioListView.as_view(), name='inventario_list'),
+    
+    # Pedidos
+    path('pedidos/', PedidoListView.as_view(), name='pedido_list'),
+    path('pedidos/crear/', PedidoCreateView.as_view(), name='pedido_create'),
+    path('pedidos/editar/<int:pk>/', PedidoUpdateView.as_view(), name='pedido_update'),
+    path('pedidos/cancelar/<int:pk>/', PedidoInactivateView.as_view(), name='pedido_inactivate'),
+    
+    # Detalle de Pedidos
+    path('detallepedido/editar/<int:pk>/', DetallePedidoUpdateView.as_view(), name='detallepedido_update'),
+    path('detallepedido/eliminar/<int:pk>/', DetallePedidoDeleteView.as_view(), name='detallepedido_delete'),
+    
+    # Facturas
+    path('facturas/', FacturaListView.as_view(), name='factura_list'),
+    path('facturas/nueva/', FacturaCreateView.as_view(), name='factura_create'),
+    path('facturas/editar/<int:pk>/', FacturaUpdateView.as_view(), name='factura_update'),
+    path('facturas/anular/<int:pk>/', FacturaInactivateView.as_view(), name='factura_inactivate'),
+
 ]
