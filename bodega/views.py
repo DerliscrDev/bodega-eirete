@@ -16,7 +16,7 @@ from django.utils.decorators import method_decorator
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
-    Almacen, CategoriaProducto
+    Almacen, CategoriaProducto, Inventario
 )
 from .forms import (
     EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm,
@@ -617,3 +617,21 @@ class CategoriaProductoInactivateView(LoginRequiredMixin, View):
         self.object.activo = not self.object.activo
         self.object.save()
         return redirect('categoria_list')
+
+@method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
+class InventarioListView(LoginRequiredMixin, ListView):
+    model = Inventario
+    template_name = 'bodega/inventario_list.html'
+    context_object_name = 'inventarios'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Inventario.objects.select_related('producto', 'almacen')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            qs = qs.filter(
+                producto__nombre__icontains=buscar
+            ) | qs.filter(
+                almacen__nombre__icontains=buscar
+            )
+        return qs.order_by('producto__nombre')

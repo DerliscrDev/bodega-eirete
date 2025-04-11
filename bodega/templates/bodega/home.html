@@ -152,5 +152,18 @@
     </div>
     {% endif %}
 
+    <!-- Inventario -->
+    {% if request.user|tiene_permiso:"ver_inventario" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Inventario</h5>
+          <p class="card-text">Consulta el stock de productos por almacén.</p>
+          <a href="{% url 'inventario_list' %}" class="btn btn-custom">Ver Inventario</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
   </div>
 {% endblock %}

@@ -13,7 +13,8 @@ from .views import (
     OrdenCompraListView, OrdenCompraCreateView, OrdenCompraUpdateView, OrdenCompraRecibirView, OrdenCompraCancelarView,
     ClienteListView, ClienteCreateView, ClienteUpdateView, ClienteInactivateView,
     AlmacenListView, AlmacenCreateView, AlmacenUpdateView, AlmacenInactivateView,
-    CategoriaProductoListView, CategoriaProductoCreateView, CategoriaProductoUpdateView, CategoriaProductoInactivateView
+    CategoriaProductoListView, CategoriaProductoCreateView, CategoriaProductoUpdateView, CategoriaProductoInactivateView,
+    InventarioListView
 )
 
 urlpatterns = [
@@ -79,7 +80,7 @@ urlpatterns = [
     path('clientes/editar/<int:pk>/', ClienteUpdateView.as_view(), name='cliente_update'),
     path('clientes/inactivar/<int:pk>/', ClienteInactivateView.as_view(), name='cliente_inactivate'),
     
-    # urls.py
+    # Almacenes
     path('almacenes/', AlmacenListView.as_view(), name='almacen_list'),
     path('almacenes/nuevo/', AlmacenCreateView.as_view(), name='almacen_create'),
     path('almacenes/editar/<int:pk>/', AlmacenUpdateView.as_view(), name='almacen_update'),
@@ -90,5 +91,7 @@ urlpatterns = [
     path('categorias/nuevo/', CategoriaProductoCreateView.as_view(), name='categoria_create'),
     path('categorias/editar/<int:pk>/', CategoriaProductoUpdateView.as_view(), name='categoria_update'),
     path('categorias/inactivar/<int:pk>/', CategoriaProductoInactivateView.as_view(), name='categoria_inactivate'),
-
+    
+    # Inventario
+    path('inventario/', InventarioListView.as_view(), name='inventario_list'),
 ]
