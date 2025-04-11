@@ -1,0 +1,64 @@
+{% extends 'bodega/base.html' %}
+{% block title %}
+  {% if object %}Editar Producto{% else %}Nuevo Producto{% endif %} - Bodega Eirete
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          {% if object %}Editar Producto{% else %}Nuevo Producto{% endif %}
+        </h2>
+
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            {{ form.nombre.label_tag }}
+            {{ form.nombre }}
+            {{ form.nombre.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.codigo.label_tag }}
+            {{ form.codigo }}
+            {{ form.codigo.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.descripcion.label_tag }}
+            {{ form.descripcion }}
+            {{ form.descripcion.errors }}
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.precio.label_tag }}
+              {{ form.precio }}
+              {{ form.precio.errors }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.stock.label_tag }}
+              {{ form.stock }}
+              {{ form.stock.errors }}
+            </div>
+          </div>
+
+          <div class="form-check mb-3">
+            {{ form.activo }}
+            {{ form.activo.label_tag }}
+          </div>
+
+          <button type="submit" class="btn btn-custom">
+            {% if object %}Actualizar{% else %}Guardar{% endif %}
+          </button>
+          <a href="{% url 'producto_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

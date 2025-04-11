@@ -16,7 +16,6 @@ from django.utils.decorators import method_decorator
 
 from .models import Empleado, Usuario, Rol, Permiso
 from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm
-# from .tokens import token_generator
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
 
@@ -244,12 +243,41 @@ class PrimerCambioPasswordView(PasswordResetConfirmView):
     form_class = CambiarPasswordForm
     token_generator = default_token_generator
 
-    # def get_token_generator(self):
-    #     from .tokens import token_generator
-    #     return token_generator
-
     def form_valid(self, form):
         response = super().form_valid(form)
         self.user.is_active = True
         self.user.save()
         return response
+
+@method_decorator(permiso_requerido('ver_producto'), name='dispatch')
+class ProductoListView(LoginRequiredMixin, ListView):
+    model = Producto
+    template_name = 'bodega/producto_list.html'
+    context_object_name = 'productos'
+    paginate_by = 10
+
+@method_decorator(permiso_requerido('crear_producto'), name='dispatch')
+class ProductoCreateView(LoginRequiredMixin, CreateView):
+    model = Producto
+    form_class = ProductoForm
+    template_name = 'bodega/producto_form.html'
+    success_url = reverse_lazy('producto_list')
+
+@method_decorator(permiso_requerido('editar_producto'), name='dispatch')
+class ProductoUpdateView(LoginRequiredMixin, UpdateView):
+    model = Producto
+    form_class = ProductoForm
+    template_name = 'bodega/producto_form.html'
+    success_url = reverse_lazy('producto_list')
+
+@method_decorator(permiso_requerido('inactivar_producto'), name='dispatch')
+class ProductoInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        self.object = Producto.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/producto_confirm_inactivate.html', {'object': self.object})
+
+    def post(self, request, *args, **kwargs):
+        self.object = Producto.objects.get(pk=kwargs['pk'])
+        self.object.activo = not self.object.activo
+        self.object.save()
+        return redirect('producto_list')

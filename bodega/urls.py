@@ -42,4 +42,10 @@ urlpatterns = [
     path('permisos/nuevo/', PermisoCreateView.as_view(), name='permiso_create'),
     path('permisos/editar/<int:pk>/', PermisoUpdateView.as_view(), name='permiso_update'),
     path('permisos/inactivar/<int:pk>/', PermisoInactivateView.as_view(), name='permiso_inactivate'),
+
+    # Productos
+    path('productos/', ProductoListView.as_view(), name='producto_list'),
+    path('productos/nuevo/', ProductoCreateView.as_view(), name='producto_create'),
+    path('productos/editar/<int:pk>/', ProductoUpdateView.as_view(), name='producto_update'),
+    path('productos/inactivar/<int:pk>/', ProductoInactivateView.as_view(), name='producto_inactivate'),
 ]
