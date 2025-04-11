@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import SetPasswordForm
-from .models import Empleado, Usuario, Rol, Permiso
+from .models import Empleado, Usuario, Rol, Permiso, Producto, Movimiento
 
 # EmpleadoForm con campo cargo como select de roles
 class EmpleadoForm(forms.ModelForm):
@@ -74,4 +74,15 @@ class ProductoForm(forms.ModelForm):
             'precio': forms.NumberInput(attrs={'class': 'form-control'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control'}),
             'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+class MovimientoForm(forms.ModelForm):
+    class Meta:
+        model = Movimiento
+        fields = ['producto', 'tipo', 'cantidad', 'observacion']
+        widgets = {
+            'producto': forms.Select(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
+            'observacion': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }

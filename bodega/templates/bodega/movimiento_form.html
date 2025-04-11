@@ -1,0 +1,36 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}Registrar Movimiento - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">Registrar Movimiento</h2>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            {{ form.producto.label_tag }} {{ form.producto }}
+          </div>
+          <div class="mb-3">
+            {{ form.tipo.label_tag }} {{ form.tipo }}
+          </div>
+          <div class="mb-3">
+            {{ form.cantidad.label_tag }} {{ form.cantidad }}
+          </div>
+          <div class="mb-3">
+            {{ form.observacion.label_tag }} {{ form.observacion }}
+          </div>
+
+          <button type="submit" class="btn btn-custom">Guardar</button>
+          <a href="{% url 'movimiento_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -7,6 +7,8 @@ from .views import (
     PrimerCambioPasswordView,
     RolListView, RolCreateView, RolUpdateView, RolInactivateView, RolAsignarPermisosView,
     PermisoListView, PermisoCreateView, PermisoUpdateView, PermisoInactivateView,
+    ProductoListView, ProductoCreateView, ProductoUpdateView, ProductoInactivateView,
+    MovimientoListView, MovimientoCreateView
 )
 
 urlpatterns = [
@@ -48,4 +50,9 @@ urlpatterns = [
     path('productos/nuevo/', ProductoCreateView.as_view(), name='producto_create'),
     path('productos/editar/<int:pk>/', ProductoUpdateView.as_view(), name='producto_update'),
     path('productos/inactivar/<int:pk>/', ProductoInactivateView.as_view(), name='producto_inactivate'),
+    
+    # Movimientos
+    path('movimientos/', MovimientoListView.as_view(), name='movimiento_list'),
+    path('movimientos/nuevo/', MovimientoCreateView.as_view(), name='movimiento_create'),
+
 ]

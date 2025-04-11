@@ -14,8 +14,8 @@ from django.views import View
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
 
-from .models import Empleado, Usuario, Rol, Permiso
-from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm
+from .models import Empleado, Usuario, Rol, Permiso, Producto, Movimiento
+from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
 
@@ -256,6 +256,19 @@ class ProductoListView(LoginRequiredMixin, ListView):
     context_object_name = 'productos'
     paginate_by = 10
 
+    def get_queryset(self):
+        queryset = Producto.objects.all().order_by('nombre')
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(nombre__icontains=search)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search'] = self.request.GET.get('search', '')
+        return context
+
+
 @method_decorator(permiso_requerido('crear_producto'), name='dispatch')
 class ProductoCreateView(LoginRequiredMixin, CreateView):
     model = Producto
@@ -281,3 +294,39 @@ class ProductoInactivateView(LoginRequiredMixin, View):
         self.object.activo = not self.object.activo
         self.object.save()
         return redirect('producto_list')
+
+@method_decorator(permiso_requerido('ver_movimiento'), name='dispatch')
+class MovimientoListView(LoginRequiredMixin, ListView):
+    model = Movimiento
+    template_name = 'bodega/movimiento_list.html'
+    context_object_name = 'movimientos'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related('producto', 'realizado_por').order_by('-fecha')
+        buscar = self.request.GET.get("buscar")
+        if buscar:
+            queryset = queryset.filter(producto__nombre__icontains=buscar)
+        return queryset
+
+@method_decorator(permiso_requerido('crear_movimiento'), name='dispatch')
+class MovimientoCreateView(LoginRequiredMixin, CreateView):
+    model = Movimiento
+    form_class = MovimientoForm
+    template_name = 'bodega/movimiento_form.html'
+    success_url = reverse_lazy('movimiento_list')
+
+    def form_valid(self, form):
+        movimiento = form.save(commit=False)
+        movimiento.realizado_por = self.request.user
+        producto = movimiento.producto
+
+        # Actualiza stock
+        if movimiento.tipo == 'entrada':
+            producto.stock += movimiento.cantidad
+        elif movimiento.tipo == 'salida':
+            producto.stock -= movimiento.cantidad
+
+        producto.save()
+        movimiento.save()
+        return redirect(self.success_url)

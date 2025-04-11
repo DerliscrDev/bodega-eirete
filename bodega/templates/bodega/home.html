@@ -42,5 +42,23 @@
         </div>
       </div>
     </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Productos</h5>
+          <p class="card-text">Gestiona el inventario de productos.</p>
+          <a href="{% url 'producto_list' %}" class="btn btn-custom">Ver Productos</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Movimientos</h5>
+          <p class="card-text">Registra entradas y salidas de productos.</p>
+          <a href="{% url 'movimiento_list' %}" class="btn btn-custom">Ver Movimientos</a>
+        </div>
+      </div>
+    </div>
   </div>
 {% endblock %}

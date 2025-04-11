@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.contrib.auth import get_user_model
 
 # Modelo base para Persona
 class Persona(models.Model):
@@ -64,3 +65,21 @@ class Producto(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.codigo})"
+
+Usuario = get_user_model()
+    
+class Movimiento(models.Model):
+    TIPO_CHOICES = (
+        ('entrada', 'Entrada'),
+        ('salida', 'Salida'),
+    )
+
+    producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    cantidad = models.PositiveIntegerField()
+    fecha = models.DateTimeField(auto_now_add=True)
+    observacion = models.TextField(blank=True, null=True)
+    realizado_por = models.ForeignKey('Usuario', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.tipo.title()} - {self.producto.nombre} ({self.cantidad})"
