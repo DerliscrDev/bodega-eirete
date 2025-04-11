@@ -15,7 +15,9 @@ class Command(BaseCommand):
             'ver_reporte_inventario', 'ver_reporte_compras', 'ver_reporte_ventas',
             'ver_producto', 'crear_producto', 'editar_producto', 'inactivar_producto',
             'ver_orden_compra', 'crear_orden_compra', 'ver_orden_venta', 'crear_orden_venta',
-            'ver_dashboard'
+            'ver_movimiento', 'crear_movimiento'
+            'ver_proveedor', 'crear_proveedor', 'editar_proveedor', 'inactivar_proveedor',
+            'ver_dashboard',
         ]
 
         permisos_creados = []

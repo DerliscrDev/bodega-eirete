@@ -14,10 +14,12 @@ from django.views import View
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
 
-from .models import Empleado, Usuario, Rol, Permiso, Producto, Movimiento
-from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm
+from .models import Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra
+from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm 
+from .forms import OrdenCompraForm, DetalleOrdenCompraForm
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
+from django.forms import modelformset_factory
 
 # Vista Home
 @login_required
@@ -260,7 +262,9 @@ class ProductoListView(LoginRequiredMixin, ListView):
         queryset = Producto.objects.all().order_by('nombre')
         search = self.request.GET.get('search')
         if search:
-            queryset = queryset.filter(nombre__icontains=search)
+            queryset = queryset.filter(
+                models.Q(nombre__icontains=search) | models.Q(codigo__icontains=search)
+            )
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -330,3 +334,159 @@ class MovimientoCreateView(LoginRequiredMixin, CreateView):
         producto.save()
         movimiento.save()
         return redirect(self.success_url)
+
+@method_decorator(permiso_requerido('ver_proveedor'), name='dispatch')
+class ProveedorListView(LoginRequiredMixin, ListView):
+    model = Proveedor
+    template_name = 'bodega/proveedor_list.html'
+    context_object_name = 'proveedores'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Proveedor.objects.all().order_by('nombre')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+        return queryset
+
+@method_decorator(permiso_requerido('crear_proveedor'), name='dispatch')
+class ProveedorCreateView(LoginRequiredMixin, CreateView):
+    model = Proveedor
+    form_class = ProveedorForm
+    template_name = 'bodega/proveedor_form.html'
+    success_url = reverse_lazy('proveedor_list')
+
+@method_decorator(permiso_requerido('editar_proveedor'), name='dispatch')
+class ProveedorUpdateView(LoginRequiredMixin, UpdateView):
+    model = Proveedor
+    form_class = ProveedorForm
+    template_name = 'bodega/proveedor_form.html'
+    success_url = reverse_lazy('proveedor_list')
+
+@method_decorator(permiso_requerido('inactivar_proveedor'), name='dispatch')
+class ProveedorInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        self.object = Proveedor.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/proveedor_confirm_inactivate.html', {'object': self.object})
+
+    def post(self, request, *args, **kwargs):
+        self.object = Proveedor.objects.get(pk=kwargs['pk'])
+        self.object.activo = not self.object.activo
+        self.object.save()
+        return redirect('proveedor_list')
+
+@method_decorator(permiso_requerido('ver_orden_compra'), name='dispatch')
+class OrdenCompraListView(LoginRequiredMixin, ListView):
+    model = OrdenCompra
+    template_name = 'bodega/orden_compra_list.html'
+    context_object_name = 'ordenes'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = OrdenCompra.objects.select_related('proveedor').order_by('-id')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            qs = qs.filter(proveedor__nombre__icontains=buscar)
+        return qs
+
+@method_decorator(permiso_requerido('crear_orden_compra'), name='dispatch')
+class OrdenCompraCreateView(LoginRequiredMixin, View):
+    def get(self, request):
+        orden_form = OrdenCompraForm()
+        DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
+        formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.none())
+        return render(request, 'bodega/orden_compra_form.html', {
+            'orden_form': orden_form,
+            'formset': formset
+        })
+
+    def post(self, request):
+        orden_form = OrdenCompraForm(request.POST)
+        DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
+        formset = DetalleFormSet(request.POST)
+
+        if orden_form.is_valid() and formset.is_valid():
+            orden = orden_form.save()
+            for form in formset:
+                detalle = form.save(commit=False)
+                detalle.orden = orden
+                detalle.save()
+            return redirect('orden_compra_list')
+
+        return render(request, 'bodega/orden_compra_form.html', {
+            'orden_form': orden_form,
+            'formset': formset
+        })
+
+@method_decorator(permiso_requerido('editar_orden_compra'), name='dispatch')
+class OrdenCompraUpdateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        orden = OrdenCompra.objects.get(pk=pk)
+        orden_form = OrdenCompraForm(instance=orden)
+
+        DetalleFormSet = modelformset_factory(
+            DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
+        )
+        formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.filter(orden=orden))
+
+        return render(request, 'bodega/orden_compra_form.html', {
+            'orden_form': orden_form,
+            'formset': formset
+        })
+
+    def post(self, request, pk):
+        orden = OrdenCompra.objects.get(pk=pk)
+        orden_form = OrdenCompraForm(request.POST, instance=orden)
+
+        DetalleFormSet = modelformset_factory(
+            DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
+        )
+        formset = DetalleFormSet(request.POST, queryset=DetalleOrdenCompra.objects.filter(orden=orden))
+
+        if orden_form.is_valid() and formset.is_valid():
+            orden_form.save()
+            for form in formset:
+                detalle = form.save(commit=False)
+                detalle.orden = orden
+                detalle.save()
+            return redirect('orden_compra_list')
+
+        return render(request, 'bodega/orden_compra_form.html', {
+            'orden_form': orden_form,
+            'formset': formset
+        })
+
+@method_decorator(permiso_requerido('recibir_orden_compra'), name='dispatch')
+class OrdenCompraRecibirView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        orden = OrdenCompra.objects.get(pk=pk)
+        if orden.estado != 'pendiente':
+            return redirect('orden_compra_list')  # Evita recibir dos veces
+
+        return render(request, 'bodega/orden_compra_confirm_recibir.html', {
+            'orden': orden
+        })
+
+    def post(self, request, pk):
+        orden = OrdenCompra.objects.get(pk=pk)
+        if orden.estado == 'pendiente':
+            for detalle in orden.detalles.all():
+                producto = detalle.producto
+                producto.stock += detalle.cantidad
+                producto.save()
+            orden.estado = 'recibido'
+            orden.save()
+        return redirect('orden_compra_list')
+
+@method_decorator(permiso_requerido('cancelar_orden_compra'), name='dispatch')
+class OrdenCompraCancelarView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        orden = OrdenCompra.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/orden_compra_confirm_cancelar.html', {'orden': orden})
+
+    def post(self, request, *args, **kwargs):
+        orden = OrdenCompra.objects.get(pk=kwargs['pk'])
+        if orden.estado == 'pendiente':
+            orden.estado = 'cancelado'
+            orden.save()
+        return redirect('orden_compra_list')

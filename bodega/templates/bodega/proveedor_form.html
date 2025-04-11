@@ -1,0 +1,61 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}
+  {% if object %}Editar Proveedor{% else %}Nuevo Proveedor{% endif %} - Bodega Eirete
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          {% if object %}Editar Proveedor{% else %}Nuevo Proveedor{% endif %}
+        </h2>
+
+        {% if request.user|tiene_permiso:"crear_proveedor" or request.user|tiene_permiso:"editar_proveedor" %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            {{ form.nombre.label_tag }}
+            {{ form.nombre }}
+          </div>
+          <div class="mb-3">
+            {{ form.ruc.label_tag }}
+            {{ form.ruc }}
+          </div>
+          <div class="mb-3">
+            {{ form.direccion.label_tag }}
+            {{ form.direccion }}
+          </div>
+          <div class="mb-3">
+            {{ form.telefono.label_tag }}
+            {{ form.telefono }}
+          </div>
+          <div class="mb-3">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+          </div>
+          <div class="form-check mb-3">
+            {{ form.activo }}
+            {{ form.activo.label_tag }}
+          </div>
+
+          <button type="submit" class="btn btn-custom">
+            {% if object %}Actualizar{% else %}Guardar{% endif %}
+          </button>
+          <a href="{% url 'proveedor_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">
+          No tienes permiso para crear o editar proveedores.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

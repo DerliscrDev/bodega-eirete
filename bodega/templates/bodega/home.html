@@ -60,5 +60,23 @@
         </div>
       </div>
     </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Proveedores</h5>
+          <p class="card-text">Gestiona los proveedores del sistema.</p>
+          <a href="{% url 'proveedor_list' %}" class="btn btn-custom">Ver Proveedores</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Órdenes de Compra</h5>
+          <p class="card-text">Gestiona las órdenes emitidas a proveedores.</p>
+          <a href="{% url 'orden_compra_list' %}" class="btn btn-custom">Ver Órdenes</a>
+        </div>
+      </div>
+    </div>
   </div>
 {% endblock %}

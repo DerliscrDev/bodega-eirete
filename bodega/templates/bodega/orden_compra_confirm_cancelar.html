@@ -1,0 +1,17 @@
+{% extends 'bodega/base.html' %}
+
+{% block title %}Cancelar Orden de Compra{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="alert alert-warning">
+    <h4>¿Estás seguro de que deseas cancelar esta orden de compra?</h4>
+    <p><strong>#{{ orden.pk }}</strong> - {{ orden.proveedor.nombre }} - Estado: {{ orden.get_estado_display }}</p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Sí, Cancelar</button>
+      <a href="{% url 'orden_compra_list' %}" class="btn btn-secondary">Volver</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

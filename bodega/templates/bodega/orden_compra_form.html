@@ -1,0 +1,64 @@
+{% extends 'bodega/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Orden de Compra - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h2 class="card-title mb-3">Orden de Compra</h2>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Datos de la Orden -->
+      <div class="mb-4">
+        {{ orden_form.non_field_errors }}
+        <div class="mb-3">
+          <label for="id_proveedor" class="form-label">Proveedor</label>
+          {{ orden_form.proveedor }}
+          {% for error in orden_form.proveedor.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="mb-3">
+          <label for="id_observacion" class="form-label">Observación</label>
+          {{ orden_form.observacion }}
+          {% for error in orden_form.observacion.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Detalles de Productos -->
+      <h5>Detalles de la Orden</h5>
+      <table class="table table-bordered table-sm align-middle">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for form in formset.forms %}
+          <tr>
+            <td>{{ form.producto }}</td>
+            <td>{{ form.cantidad }}</td>
+            <td>{{ form.precio_unitario }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if formset.non_form_errors %}
+        <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+      {% endif %}
+
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-custom">Guardar Orden</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

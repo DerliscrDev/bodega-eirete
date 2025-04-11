@@ -1,0 +1,17 @@
+{% extends 'bodega/base.html' %}
+{% block title %}Confirmar Recepción - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="alert alert-warning">
+    <h4 class="alert-heading">¿Confirmar recepción?</h4>
+    <p>¿Estás seguro que deseas marcar como <strong>recibida</strong> la orden #{{ orden.pk }} del proveedor <strong>{{ orden.proveedor.nombre }}</strong>?</p>
+    <hr>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success">Sí, recibir productos</button>
+      <a href="{% url 'orden_compra_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

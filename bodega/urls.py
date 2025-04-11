@@ -8,7 +8,9 @@ from .views import (
     RolListView, RolCreateView, RolUpdateView, RolInactivateView, RolAsignarPermisosView,
     PermisoListView, PermisoCreateView, PermisoUpdateView, PermisoInactivateView,
     ProductoListView, ProductoCreateView, ProductoUpdateView, ProductoInactivateView,
-    MovimientoListView, MovimientoCreateView
+    MovimientoListView, MovimientoCreateView,
+    ProveedorListView, ProveedorCreateView, ProveedorUpdateView, ProveedorInactivateView,
+    OrdenCompraListView, OrdenCompraCreateView, OrdenCompraUpdateView, OrdenCompraRecibirView, OrdenCompraCancelarView
 )
 
 urlpatterns = [
@@ -54,5 +56,17 @@ urlpatterns = [
     # Movimientos
     path('movimientos/', MovimientoListView.as_view(), name='movimiento_list'),
     path('movimientos/nuevo/', MovimientoCreateView.as_view(), name='movimiento_create'),
-
+    
+    # Proveedores
+    path('proveedores/', ProveedorListView.as_view(), name='proveedor_list'),
+    path('proveedores/nuevo/', ProveedorCreateView.as_view(), name='proveedor_create'),
+    path('proveedores/editar/<int:pk>/', ProveedorUpdateView.as_view(), name='proveedor_update'),
+    path('proveedores/inactivar/<int:pk>/', ProveedorInactivateView.as_view(), name='proveedor_inactivate'),
+    
+    # Órdenes de compra
+    path('ordenes-compra/', OrdenCompraListView.as_view(), name='orden_compra_list'),
+    path('ordenes-compra/nueva/', OrdenCompraCreateView.as_view(), name='orden_compra_create'),
+    path('ordenes-compra/editar/<int:pk>/', OrdenCompraUpdateView.as_view(), name='orden_compra_update'),
+    path('ordenes-compra/recibir/<int:pk>/', OrdenCompraRecibirView.as_view(), name='orden_compra_recibir'),
+    path('ordenes-compra/cancelar/<int:pk>/', OrdenCompraCancelarView.as_view(), name='orden_compra_cancelar'),
 ]

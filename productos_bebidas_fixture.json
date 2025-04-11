@@ -1,0 +1,182 @@
+[
+  {
+    "model": "bodega.producto",
+    "pk": 101,
+    "fields": {
+      "nombre": "Coca Cola 3L",
+      "descripcion": "Botella de gaseosa Coca Cola 3 litros",
+      "codigo": "COCA3L",
+      "precio": "18000",
+      "stock": 60,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 102,
+    "fields": {
+      "nombre": "Pepsi 2.25L",
+      "descripcion": "Botella de gaseosa Pepsi 2.25 litros",
+      "codigo": "PEPSI2L",
+      "precio": "12000",
+      "stock": 70,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 103,
+    "fields": {
+      "nombre": "Pulp Naranja 1L",
+      "descripcion": "Jugo de naranja Pulp 1 litro",
+      "codigo": "PULPNAR1L",
+      "precio": "10000",
+      "stock": 50,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 104,
+    "fields": {
+      "nombre": "Pulp Pomelo 1L",
+      "descripcion": "Jugo de mango Pulp 1 litro",
+      "codigo": "PULPMAN1L",
+      "precio": "10000",
+      "stock": 40,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 105,
+    "fields": {
+      "nombre": "Pulp Pi\u00f1a 1L",
+      "descripcion": "Jugo de pi\u00f1a Pulp 1 litro",
+      "codigo": "PULPPIN1L",
+      "precio": "10000",
+      "stock": 35,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 106,
+    "fields": {
+      "nombre": "Cerveza Heineken 330ml Lata",
+      "descripcion": "Lata de cerveza Heineken 330ml",
+      "codigo": "HEIN330L",
+      "precio": "9000",
+      "stock": 100,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 107,
+    "fields": {
+      "nombre": "Cerveza Heineken 1L",
+      "descripcion": "Botella de cerveza Heineken 1 litro",
+      "codigo": "HEIN1L",
+      "precio": "15000",
+      "stock": 40,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 108,
+    "fields": {
+      "nombre": "Cerveza Stella Artois 330ml Lata",
+      "descripcion": "Lata de cerveza Stella Artois 330ml",
+      "codigo": "STELLA330L",
+      "precio": "9000",
+      "stock": 90,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 109,
+    "fields": {
+      "nombre": "Cerveza Stella Artois 1L",
+      "descripcion": "Botella de cerveza Stella Artois 1 litro",
+      "codigo": "STELLA1L",
+      "precio": "15000",
+      "stock": 30,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 110,
+    "fields": {
+      "nombre": "Cerveza Miller 330ml Lata",
+      "descripcion": "Lata de cerveza Miller 330ml",
+      "codigo": "MILLER330L",
+      "precio": "9000",
+      "stock": 80,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 111,
+    "fields": {
+      "nombre": "Cerveza Miller 1L",
+      "descripcion": "Botella de cerveza Miller 1 litro",
+      "codigo": "MILLER1L",
+      "precio": "14000",
+      "stock": 25,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 112,
+    "fields": {
+      "nombre": "Cerveza Brahma 330ml Lata",
+      "descripcion": "Lata de cerveza Brahma 330ml",
+      "codigo": "BRAHMA330L",
+      "precio": "7000",
+      "stock": 120,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 113,
+    "fields": {
+      "nombre": "Cerveza Brahma 1L",
+      "descripcion": "Botella de cerveza Brahma 1 litro",
+      "codigo": "BRAHMA1L",
+      "precio": "12000",
+      "stock": 50,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 114,
+    "fields": {
+      "nombre": "Cerveza Corona 330ml Lata",
+      "descripcion": "Lata de cerveza Corona 330ml",
+      "codigo": "CORONA330L",
+      "precio": "9500",
+      "stock": 70,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 115,
+    "fields": {
+      "nombre": "Cerveza Corona 1L",
+      "descripcion": "Botella de cerveza Corona 1 litro",
+      "codigo": "CORONA1L",
+      "precio": "16000",
+      "stock": 30,
+      "activo": true
+    }
+  }
+]
