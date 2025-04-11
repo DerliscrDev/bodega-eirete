@@ -42,6 +42,7 @@ class EmpleadoListView(LoginRequiredMixin, ListView):
     model = Empleado
     template_name = 'bodega/empleado_list.html'
     context_object_name = 'empleados'
+    paginate_by = 10
 
 @method_decorator(permiso_requerido('editar_empleado'), name='dispatch')
 class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
@@ -102,6 +103,7 @@ class UsuarioListView(LoginRequiredMixin, ListView):
     model = Usuario
     template_name = 'bodega/usuario_list.html'
     context_object_name = 'usuarios'
+    paginate_by = 10
 
 @method_decorator(permiso_requerido('editar_usuario'), name='dispatch')
 class UsuarioUpdateView(LoginRequiredMixin, UpdateView):
@@ -128,6 +130,7 @@ class RolListView(LoginRequiredMixin, ListView):
     model = Rol
     template_name = 'bodega/rol_list.html'
     context_object_name = 'roles'
+    paginate_by = 10
 
     def get_queryset(self):
         return Rol.objects.all()
@@ -176,6 +179,7 @@ class PermisoListView(LoginRequiredMixin, ListView):
     model = Permiso
     template_name = 'bodega/permiso_list.html'
     context_object_name = 'permisos'
+    paginate_by = 10
 
     def get_queryset(self):
         return Permiso.objects.all().order_by('id')
@@ -209,7 +213,8 @@ class PermisoInactivateView(LoginRequiredMixin, View):
 class PrimerCambioPasswordView(PasswordResetConfirmView):
     template_name = 'bodega/cambiar_password.html'
     success_url = reverse_lazy('login')
-    # form_class = CambiarPasswordForm
+    form_class = CambiarPasswordForm
+    token_generator = default_token_generator
 
     # def get_token_generator(self):
     #     from .tokens import token_generator

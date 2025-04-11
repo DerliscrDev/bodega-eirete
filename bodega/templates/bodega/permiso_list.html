@@ -9,7 +9,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="card-title mb-0">Permisos</h2>
       {% if request.user|tiene_permiso:"crear_permiso" %}
-        <a href="{% url 'permiso_create' %}" class="btn btn-custom">Nuevo Permiso</a>
+      <a href="{% url 'permiso_create' %}" class="btn btn-custom">Nuevo Permiso</a>
       {% endif %}
     </div>
 
@@ -37,7 +37,6 @@
               {% if request.user|tiene_permiso:"editar_permiso" %}
               <a href="{% url 'permiso_update' permiso.id %}" class="btn btn-sm btn-warning">Editar</a>
               {% endif %}
-
               {% if request.user|tiene_permiso:"inactivar_permiso" %}
                 {% if permiso.activo %}
                 <a href="{% url 'permiso_inactivate' permiso.id %}" class="btn btn-sm btn-danger">Inactivar</a>
@@ -55,6 +54,25 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Paginación -->
+    {% if is_paginated %}
+    <nav class="mt-3">
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+        {% endif %}
+        {% for num in paginator.page_range %}
+          <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+          </li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
