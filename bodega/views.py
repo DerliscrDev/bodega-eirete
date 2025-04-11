@@ -44,6 +44,13 @@ class EmpleadoListView(LoginRequiredMixin, ListView):
     context_object_name = 'empleados'
     paginate_by = 10
 
+    def get_queryset(self):
+        queryset = Empleado.objects.all()
+        busqueda = self.request.GET.get('buscar')
+        if busqueda:
+            queryset = queryset.filter(nombre__icontains=busqueda) | queryset.filter(apellido__icontains=busqueda)
+        return queryset
+
 @method_decorator(permiso_requerido('editar_empleado'), name='dispatch')
 class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
     model = Empleado
@@ -105,6 +112,15 @@ class UsuarioListView(LoginRequiredMixin, ListView):
     context_object_name = 'usuarios'
     paginate_by = 10
 
+    def get_queryset(self):
+        queryset = Usuario.objects.select_related('empleado', 'rol')
+        busqueda = self.request.GET.get('buscar')
+        if busqueda:
+            queryset = queryset.filter(
+                username__icontains=busqueda
+            ) | queryset.filter(email__icontains=busqueda)
+        return queryset
+
 @method_decorator(permiso_requerido('editar_usuario'), name='dispatch')
 class UsuarioUpdateView(LoginRequiredMixin, UpdateView):
     model = Usuario
@@ -133,7 +149,13 @@ class RolListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Rol.objects.all()
+        queryset = Rol.objects.all()
+        busqueda = self.request.GET.get('buscar')
+        if busqueda:
+            queryset = queryset.filter(
+                nombre__icontains=busqueda
+            ) | queryset.filter(descripcion__icontains=busqueda)
+        return queryset
 
 @method_decorator(permiso_requerido('crear_rol'), name='dispatch')
 class RolCreateView(LoginRequiredMixin, CreateView):
@@ -182,7 +204,13 @@ class PermisoListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Permiso.objects.all().order_by('id')
+        queryset = Permiso.objects.all().order_by('id')
+        busqueda = self.request.GET.get('buscar')
+        if busqueda:
+            queryset = queryset.filter(
+                nombre__icontains=busqueda
+            ) | queryset.filter(descripcion__icontains=busqueda)
+        return queryset
 
 @method_decorator(permiso_requerido('crear_permiso'), name='dispatch')
 class PermisoCreateView(LoginRequiredMixin, CreateView):
