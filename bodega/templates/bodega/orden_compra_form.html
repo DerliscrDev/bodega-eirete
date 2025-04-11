@@ -1,5 +1,6 @@
 {% extends 'bodega/base.html' %}
 {% load static %}
+
 {% block title %}Orden de Compra - Bodega Eirete{% endblock %}
 
 {% block content %}
@@ -9,10 +10,11 @@
 
     <form method="post">
       {% csrf_token %}
-      {{ formset.management_form }} 
+      {{ formset.management_form }}
+      {{ orden_form.non_field_errors }}
+
       <!-- Datos de la Orden -->
       <div class="mb-4">
-        {{ orden_form.non_field_errors }}
         <div class="mb-3">
           <label for="id_proveedor" class="form-label">Proveedor</label>
           {{ orden_form.proveedor }}
@@ -29,7 +31,7 @@
         </div>
       </div>
 
-      <!-- Detalles de Productos -->
+      <!-- Detalles -->
       <h5>Detalles de la Orden</h5>
       <table class="table table-bordered table-sm align-middle">
         <thead>
@@ -40,11 +42,14 @@
           </tr>
         </thead>
         <tbody>
-          {% for form in formset.forms %}
+          {% for f in formset.forms %}
           <tr>
-            <td>{{ form.producto }}</td>
-            <td>{{ form.cantidad }}</td>
-            <td>{{ form.precio_unitario }}</td>
+            {% for hidden in f.hidden_fields %}
+              {{ hidden }}
+            {% endfor %}
+            <td>{{ f.producto }}</td>
+            <td>{{ f.cantidad }}</td>
+            <td>{{ f.precio_unitario }}</td>
           </tr>
           {% endfor %}
         </tbody>
