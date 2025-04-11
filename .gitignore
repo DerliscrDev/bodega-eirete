@@ -1,0 +1,23 @@
+# Django
+db.sqlite3
+*.log
+__pycache__/*
+venv/
+Lib/
+bin/
+dist/
+tests/*
+coverage.html
+
+# Archivos de configuración
+settings.py
+secrets.json
+local_settings.py
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/*
+
+.DS_Store
