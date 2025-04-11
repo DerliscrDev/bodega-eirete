@@ -10,7 +10,10 @@ from .views import (
     ProductoListView, ProductoCreateView, ProductoUpdateView, ProductoInactivateView,
     MovimientoListView, MovimientoCreateView,
     ProveedorListView, ProveedorCreateView, ProveedorUpdateView, ProveedorInactivateView,
-    OrdenCompraListView, OrdenCompraCreateView, OrdenCompraUpdateView, OrdenCompraRecibirView, OrdenCompraCancelarView
+    OrdenCompraListView, OrdenCompraCreateView, OrdenCompraUpdateView, OrdenCompraRecibirView, OrdenCompraCancelarView,
+    ClienteListView, ClienteCreateView, ClienteUpdateView, ClienteInactivateView,
+    AlmacenListView, AlmacenCreateView, AlmacenUpdateView, AlmacenInactivateView,
+    CategoriaProductoListView, CategoriaProductoCreateView, CategoriaProductoUpdateView, CategoriaProductoInactivateView
 )
 
 urlpatterns = [
@@ -69,4 +72,23 @@ urlpatterns = [
     path('ordenes-compra/editar/<int:pk>/', OrdenCompraUpdateView.as_view(), name='orden_compra_update'),
     path('ordenes-compra/recibir/<int:pk>/', OrdenCompraRecibirView.as_view(), name='orden_compra_recibir'),
     path('ordenes-compra/cancelar/<int:pk>/', OrdenCompraCancelarView.as_view(), name='orden_compra_cancelar'),
+    
+    # Clientes
+    path('clientes/', ClienteListView.as_view(), name='cliente_list'),
+    path('clientes/nuevo/', ClienteCreateView.as_view(), name='cliente_create'),
+    path('clientes/editar/<int:pk>/', ClienteUpdateView.as_view(), name='cliente_update'),
+    path('clientes/inactivar/<int:pk>/', ClienteInactivateView.as_view(), name='cliente_inactivate'),
+    
+    # urls.py
+    path('almacenes/', AlmacenListView.as_view(), name='almacen_list'),
+    path('almacenes/nuevo/', AlmacenCreateView.as_view(), name='almacen_create'),
+    path('almacenes/editar/<int:pk>/', AlmacenUpdateView.as_view(), name='almacen_update'),
+    path('almacenes/inactivar/<int:pk>/', AlmacenInactivateView.as_view(), name='almacen_inactivate'),
+    
+    # Categorías de Producto
+    path('categorias/', CategoriaProductoListView.as_view(), name='categoria_list'),
+    path('categorias/nuevo/', CategoriaProductoCreateView.as_view(), name='categoria_create'),
+    path('categorias/editar/<int:pk>/', CategoriaProductoUpdateView.as_view(), name='categoria_update'),
+    path('categorias/inactivar/<int:pk>/', CategoriaProductoInactivateView.as_view(), name='categoria_inactivate'),
+
 ]

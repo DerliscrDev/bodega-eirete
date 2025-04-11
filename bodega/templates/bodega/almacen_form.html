@@ -1,0 +1,54 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}
+  {% if object %}Editar Almacén{% else %}Nuevo Almacén{% endif %} - Bodega Eirete
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          {% if object %}Editar Almacén{% else %}Nuevo Almacén{% endif %}
+        </h2>
+
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            {{ form.nombre.label_tag }}
+            {{ form.nombre }}
+            {{ form.nombre.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.direccion.label_tag }}
+            {{ form.direccion }}
+            {{ form.direccion.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.descripcion.label_tag }}
+            {{ form.descripcion }}
+            {{ form.descripcion.errors }}
+          </div>
+
+          <div class="form-check mb-3">
+            {{ form.activo }}
+            {{ form.activo.label_tag }}
+            {{ form.activo.errors }}
+          </div>
+
+          <button type="submit" class="btn btn-custom">
+            {% if object %}Actualizar{% else %}Guardar{% endif %}
+          </button>
+          <a href="{% url 'almacen_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

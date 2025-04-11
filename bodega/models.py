@@ -119,3 +119,37 @@ class DetalleOrdenCompra(models.Model):
 
     def __str__(self):
         return f"{self.producto.nombre} x {self.cantidad}"
+
+class Cliente(Persona):
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return super().__str__()
+
+class Almacen(models.Model):
+    nombre = models.CharField(max_length=100)
+    direccion = models.CharField(max_length=255)
+    descripcion = models.TextField(blank=True, null=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nombre
+
+class Inventario(models.Model):
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE)
+    stock = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('producto', 'almacen')
+
+    def __str__(self):
+        return f"{self.producto.nombre} - {self.almacen.nombre}"
+
+class CategoriaProducto(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nombre

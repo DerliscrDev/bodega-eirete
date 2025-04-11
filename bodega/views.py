@@ -14,9 +14,14 @@ from django.views import View
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
 
-from .models import Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra
-from .forms import EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm 
-from .forms import OrdenCompraForm, DetalleOrdenCompraForm
+from .models import ( 
+    Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
+    Almacen, CategoriaProducto
+)
+from .forms import (
+    EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm,
+    OrdenCompraForm, DetalleOrdenCompraForm, ClienteForm, AlmacenForm, CategoriaProductoForm
+) 
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
 from django.forms import modelformset_factory
@@ -490,3 +495,125 @@ class OrdenCompraCancelarView(LoginRequiredMixin, View):
             orden.estado = 'cancelado'
             orden.save()
         return redirect('orden_compra_list')
+
+@method_decorator(permiso_requerido('ver_cliente'), name='dispatch')
+class ClienteListView(LoginRequiredMixin, ListView):
+    model = Cliente
+    template_name = 'bodega/cliente_list.html'
+    context_object_name = 'clientes'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Cliente.objects.all()
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar) | queryset.filter(apellido__icontains=buscar)
+        return queryset
+
+@method_decorator(permiso_requerido('crear_cliente'), name='dispatch')
+class ClienteCreateView(LoginRequiredMixin, CreateView):
+    model = Cliente
+    form_class = ClienteForm
+    template_name = 'bodega/cliente_form.html'
+    success_url = reverse_lazy('cliente_list')
+
+@method_decorator(permiso_requerido('editar_cliente'), name='dispatch')
+class ClienteUpdateView(LoginRequiredMixin, UpdateView):
+    model = Cliente
+    form_class = ClienteForm
+    template_name = 'bodega/cliente_form.html'
+    success_url = reverse_lazy('cliente_list')
+
+@method_decorator(permiso_requerido('inactivar_cliente'), name='dispatch')
+class ClienteInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        self.object = Cliente.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/cliente_confirm_inactivate.html', {'object': self.object})
+
+    def post(self, request, *args, **kwargs):
+        self.object = Cliente.objects.get(pk=kwargs['pk'])
+        self.object.activo = not self.object.activo
+        self.object.save()
+        return redirect('cliente_list')
+
+# views.py
+@method_decorator(permiso_requerido('ver_almacen'), name='dispatch')
+class AlmacenListView(LoginRequiredMixin, ListView):
+    model = Almacen
+    template_name = 'bodega/almacen_list.html'
+    context_object_name = 'almacenes'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Almacen.objects.all().order_by('nombre')
+        busqueda = self.request.GET.get("buscar")
+        if busqueda:
+            queryset = queryset.filter(nombre__icontains=busqueda)
+        return queryset
+
+
+@method_decorator(permiso_requerido('crear_almacen'), name='dispatch')
+class AlmacenCreateView(LoginRequiredMixin, CreateView):
+    model = Almacen
+    form_class = AlmacenForm
+    template_name = 'bodega/almacen_form.html'
+    success_url = reverse_lazy('almacen_list')
+
+@method_decorator(permiso_requerido('editar_almacen'), name='dispatch')
+class AlmacenUpdateView(LoginRequiredMixin, UpdateView):
+    model = Almacen
+    form_class = AlmacenForm
+    template_name = 'bodega/almacen_form.html'
+    success_url = reverse_lazy('almacen_list')
+
+@method_decorator(permiso_requerido('inactivar_almacen'), name='dispatch')
+class AlmacenInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        self.object = Almacen.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/almacen_confirm_inactivate.html', {'object': self.object})
+
+    def post(self, request, *args, **kwargs):
+        self.object = Almacen.objects.get(pk=kwargs['pk'])
+        self.object.activo = not self.object.activo
+        self.object.save()
+        return redirect('almacen_list')
+
+@method_decorator(permiso_requerido('ver_categoria'), name='dispatch')
+class CategoriaProductoListView(LoginRequiredMixin, ListView):
+    model = CategoriaProducto
+    template_name = 'bodega/categoria_list.html'
+    context_object_name = 'categorias'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = CategoriaProducto.objects.all().order_by('nombre')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+        return queryset
+
+@method_decorator(permiso_requerido('crear_categoria'), name='dispatch')
+class CategoriaProductoCreateView(LoginRequiredMixin, CreateView):
+    model = CategoriaProducto
+    form_class = CategoriaProductoForm
+    template_name = 'bodega/categoria_form.html'
+    success_url = reverse_lazy('categoria_list')
+
+@method_decorator(permiso_requerido('editar_categoria'), name='dispatch')
+class CategoriaProductoUpdateView(LoginRequiredMixin, UpdateView):
+    model = CategoriaProducto
+    form_class = CategoriaProductoForm
+    template_name = 'bodega/categoria_form.html'
+    success_url = reverse_lazy('categoria_list')
+
+@method_decorator(permiso_requerido('inactivar_categoria'), name='dispatch')
+class CategoriaProductoInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        self.object = CategoriaProducto.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/categoria_confirm_inactivate.html', {'object': self.object})
+
+    def post(self, request, *args, **kwargs):
+        self.object = CategoriaProducto.objects.get(pk=kwargs['pk'])
+        self.object.activo = not self.object.activo
+        self.object.save()
+        return redirect('categoria_list')

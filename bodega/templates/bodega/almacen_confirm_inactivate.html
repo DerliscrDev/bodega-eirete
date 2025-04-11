@@ -1,0 +1,23 @@
+{% extends 'bodega/base.html' %}
+
+{% block title %}Confirmar Inactivación - Almacén{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-6 offset-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title">¿Estás seguro de {% if object.activo %}inactivar{% else %}reactivar{% endif %} este almacén?</h4>
+        <p><strong>{{ object.nombre }}</strong></p>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">
+            {% if object.activo %}Inactivar{% else %}Reactivar{% endif %}
+          </button>
+          <a href="{% url 'almacen_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

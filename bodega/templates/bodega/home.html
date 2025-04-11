@@ -1,11 +1,16 @@
 {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
 {% block title %}Inicio - Bodega Eirete{% endblock %}
+
 {% block content %}
   <div class="alert alert-info text-center mt-3" role="alert">
     <strong>Bienvenido</strong> al Sistema de Gestión de Bodega Eirete.
   </div>
+
   <div class="row mt-4">
-    <!-- Tarjetas para navegar a cada módulo -->
+    <!-- Empleados -->
+    {% if request.user|tiene_permiso:"ver_empleado" %}
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
@@ -15,6 +20,10 @@
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <!-- Usuarios -->
+    {% if request.user|tiene_permiso:"ver_usuario" %}
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
@@ -24,6 +33,10 @@
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <!-- Roles -->
+    {% if request.user|tiene_permiso:"ver_rol" %}
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
@@ -33,6 +46,10 @@
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <!-- Permisos -->
+    {% if request.user|tiene_permiso:"ver_permiso" %}
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
@@ -42,6 +59,10 @@
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <!-- Productos -->
+    {% if request.user|tiene_permiso:"ver_producto" %}
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
@@ -51,6 +72,10 @@
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <!-- Movimientos -->
+    {% if request.user|tiene_permiso:"ver_movimiento" %}
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
@@ -60,6 +85,10 @@
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <!-- Proveedores -->
+    {% if request.user|tiene_permiso:"ver_proveedor" %}
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
@@ -69,6 +98,10 @@
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <!-- Órdenes de Compra -->
+    {% if request.user|tiene_permiso:"ver_orden_compra" %}
     <div class="col-md-3">
       <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
@@ -78,5 +111,46 @@
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <!-- Clientes -->
+    {% if request.user|tiene_permiso:"ver_cliente" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Clientes</h5>
+          <p class="card-text">Gestiona los datos de tus clientes.</p>
+          <a href="{% url 'cliente_list' %}" class="btn btn-custom">Ver Clientes</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Almacen -->
+    {% if request.user|tiene_permiso:"ver_almacen" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Almacenes</h5>
+          <p class="card-text">Gestiona las ubicaciones de tus bodegas.</p>
+          <a href="{% url 'almacen_list' %}" class="btn btn-custom">Ver Almacenes</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Categorías -->
+    {% if request.user|tiene_permiso:"ver_categoria" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Categorías</h5>
+          <p class="card-text">Clasifica tus productos por categoría.</p>
+          <a href="{% url 'categoria_list' %}" class="btn btn-custom">Ver Categorías</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 {% endblock %}

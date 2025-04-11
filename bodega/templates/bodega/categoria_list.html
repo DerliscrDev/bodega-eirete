@@ -1,0 +1,78 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}Categorías de Producto - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="card-title mb-0">Categorías de Producto</h2>
+      {% if request.user|tiene_permiso:"crear_categoria" %}
+      <a href="{% url 'categoria_create' %}" class="btn btn-custom">Nueva Categoría</a>
+      {% endif %}
+    </div>
+
+    <!-- Buscador -->
+    <form method="get" class="mb-3 d-flex" role="search">
+      <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar categoría" value="{{ request.GET.buscar }}">
+      <button type="submit" class="btn btn-outline-primary">Buscar</button>
+    </form>
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for categoria in categorias %}
+          <tr>
+            <td>{{ categoria.nombre }}</td>
+            <td>{{ categoria.descripcion }}</td>
+            <td>{% if categoria.activo %}Activo{% else %}Inactivo{% endif %}</td>
+            <td>
+              {% if request.user|tiene_permiso:"editar_categoria" %}
+              <a href="{% url 'categoria_update' categoria.pk %}" class="btn btn-sm btn-warning">Editar</a>
+              {% endif %}
+              {% if request.user|tiene_permiso:"inactivar_categoria" %}
+              {% if categoria.activo %}
+              <a href="{% url 'categoria_inactivate' categoria.pk %}" class="btn btn-sm btn-danger">Inactivar</a>
+              {% else %}
+              <a href="{% url 'categoria_inactivate' categoria.pk %}?reactivar=1" class="btn btn-sm btn-success">Reactivar</a>
+              {% endif %}
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center">No hay categorías registradas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+    <nav class="mt-3">
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
