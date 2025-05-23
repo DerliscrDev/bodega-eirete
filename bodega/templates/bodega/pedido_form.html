@@ -1,4 +1,73 @@
 {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+{% block title %}{% if object %}Editar Pedido{% else %}Nuevo Pedido{% endif %} - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-10 offset-md-1">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">{% if object %}Editar Pedido{% else %}Nuevo Pedido{% endif %}</h2>
+
+        {% if request.user|tiene_permiso:"crear_pedido" or request.user|tiene_permiso:"editar_pedido" %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.cliente.label_tag }}
+              {{ form.cliente }}
+              {{ form.cliente.errors }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.estado.label_tag }}
+              {{ form.estado }}
+              {{ form.estado.errors }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            {{ form.observacion.label_tag }}
+            {{ form.observacion }}
+            {{ form.observacion.errors }}
+          </div>
+
+          <hr>
+          <h5>Detalle del Pedido</h5>
+          {{ formset.management_form }}
+          {% for form in formset %}
+            <div class="border rounded p-3 mb-3">
+              {% for field in form.visible_fields %}
+                <div class="mb-2">
+                  {{ field.label_tag }}
+                  {{ field }}
+                  {{ field.errors }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+
+          <button type="submit" class="btn btn-custom">{% if object %}Actualizar{% else %}Guardar{% endif %}</button>
+          <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">
+          No tienes permiso para crear o editar pedidos.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+{% comment %} {% extends 'bodega/base.html' %}
 {% load static %}
 
 {% block title %}{% if form.instance.pk %}Editar Pedido{% else %}Nuevo Pedido{% endif %} - Bodega Eirete{% endblock %}
@@ -58,4 +127,4 @@
     </form>
   </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

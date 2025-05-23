@@ -1,4 +1,89 @@
 {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+{% block title %}{% if object %}Editar Factura{% else %}Nueva Factura{% endif %} - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-10 offset-md-1">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">{% if object %}Editar Factura{% else %}Nueva Factura{% endif %}</h2>
+
+        {% if request.user|tiene_permiso:"crear_factura" or request.user|tiene_permiso:"editar_factura" %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.cliente.label_tag }}
+              {{ form.cliente }}
+              {{ form.cliente.errors }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.nro_factura.label_tag }}
+              {{ form.nro_factura }}
+              {{ form.nro_factura.errors }}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.timbrado.label_tag }}
+              {{ form.timbrado }}
+              {{ form.timbrado.errors }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.condicion_venta.label_tag }}
+              {{ form.condicion_venta }}
+              {{ form.condicion_venta.errors }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            {{ form.estado.label_tag }}
+            {{ form.estado }}
+            {{ form.estado.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.observacion.label_tag }}
+            {{ form.observacion }}
+            {{ form.observacion.errors }}
+          </div>
+
+          <hr>
+          <h5>Detalle de Productos</h5>
+          {{ formset.management_form }}
+          {% for form in formset %}
+            <div class="border rounded p-3 mb-3">
+              {% for field in form.visible_fields %}
+                <div class="mb-2">
+                  {{ field.label_tag }}
+                  {{ field }}
+                  {{ field.errors }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+
+          <button type="submit" class="btn btn-custom">{% if object %}Actualizar{% else %}Guardar{% endif %}</button>
+          <a href="{% url 'factura_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">
+          No tienes permiso para crear o editar facturas.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+{% comment %} {% extends 'bodega/base.html' %}
 {% load static %}
 
 {% block title %}Factura - Bodega Eirete{% endblock %}
@@ -63,4 +148,4 @@
     </form>
   </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

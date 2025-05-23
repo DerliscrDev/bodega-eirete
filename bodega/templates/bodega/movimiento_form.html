@@ -1,5 +1,65 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
+{% block title %}Nuevo Movimiento - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-6 offset-md-3">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+
+        <h2 class="card-title mb-4">Registrar Movimiento</h2>
+
+        {% if request.user|tiene_permiso:"crear_movimiento" %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            {{ form.producto.label_tag }}
+            {{ form.producto }}
+            {{ form.producto.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.tipo.label_tag }}
+            {{ form.tipo }}
+            {{ form.tipo.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.cantidad.label_tag }}
+            {{ form.cantidad }}
+            {{ form.cantidad.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.observacion.label_tag }}
+            {{ form.observacion }}
+            {{ form.observacion.errors }}
+          </div>
+
+          <button type="submit" class="btn btn-custom">Guardar</button>
+          <a href="{% url 'movimiento_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">
+          No tienes permiso para registrar movimientos.
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+{% comment %} {% extends 'bodega/base.html' %}
+{% load permisos_tags %}
 
 {% block title %}Registrar Movimiento - Bodega Eirete{% endblock %}
 
@@ -33,4 +93,4 @@
     </div>
   </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

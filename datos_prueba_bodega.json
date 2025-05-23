@@ -1,0 +1,684 @@
+[
+  {
+    "model": "bodega.persona",
+    "pk": 1,
+    "fields": {
+      "nombre": "Juan",
+      "apellido": "González",
+      "email": "juan@example.com",
+      "telefono": "0981123456",
+      "direccion": "Barrio San Miguel"
+    }
+  },
+  {
+    "model": "bodega.persona",
+    "pk": 2,
+    "fields": {
+      "nombre": "María",
+      "apellido": "Ramírez",
+      "email": "maria@example.com",
+      "telefono": "0981765432",
+      "direccion": "Centro"
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 1,
+    "fields": {
+      "nombre": "Producto 1",
+      "codigo": "P0001",
+      "precio": 10000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 2,
+    "fields": {
+      "nombre": "Producto 2",
+      "codigo": "P0002",
+      "precio": 11000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 3,
+    "fields": {
+      "nombre": "Producto 3",
+      "codigo": "P0003",
+      "precio": 12000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 4,
+    "fields": {
+      "nombre": "Producto 4",
+      "codigo": "P0004",
+      "precio": 13000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 5,
+    "fields": {
+      "nombre": "Producto 5",
+      "codigo": "P0005",
+      "precio": 14000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 6,
+    "fields": {
+      "nombre": "Producto 6",
+      "codigo": "P0006",
+      "precio": 15000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 7,
+    "fields": {
+      "nombre": "Producto 7",
+      "codigo": "P0007",
+      "precio": 16000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 8,
+    "fields": {
+      "nombre": "Producto 8",
+      "codigo": "P0008",
+      "precio": 17000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 9,
+    "fields": {
+      "nombre": "Producto 9",
+      "codigo": "P0009",
+      "precio": 18000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 10,
+    "fields": {
+      "nombre": "Producto 10",
+      "codigo": "P0010",
+      "precio": 19000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 11,
+    "fields": {
+      "nombre": "Producto 11",
+      "codigo": "P0011",
+      "precio": 20000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 12,
+    "fields": {
+      "nombre": "Producto 12",
+      "codigo": "P0012",
+      "precio": 21000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 13,
+    "fields": {
+      "nombre": "Producto 13",
+      "codigo": "P0013",
+      "precio": 22000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 14,
+    "fields": {
+      "nombre": "Producto 14",
+      "codigo": "P0014",
+      "precio": 23000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 15,
+    "fields": {
+      "nombre": "Producto 15",
+      "codigo": "P0015",
+      "precio": 24000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 16,
+    "fields": {
+      "nombre": "Producto 16",
+      "codigo": "P0016",
+      "precio": 25000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 17,
+    "fields": {
+      "nombre": "Producto 17",
+      "codigo": "P0017",
+      "precio": 26000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 18,
+    "fields": {
+      "nombre": "Producto 18",
+      "codigo": "P0018",
+      "precio": 27000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 19,
+    "fields": {
+      "nombre": "Producto 19",
+      "codigo": "P0019",
+      "precio": 28000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 20,
+    "fields": {
+      "nombre": "Producto 20",
+      "codigo": "P0020",
+      "precio": 29000,
+      "stock": 0,
+      "unidad_medida": "Unidad",
+      "iva": "10%",
+      "marca": "Marca Demo",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.almacen",
+    "pk": 1,
+    "fields": {
+      "nombre": "Almacén Central",
+      "direccion": "Asunción",
+      "descripcion": "Centro de distribución principal",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.almacen",
+    "pk": 2,
+    "fields": {
+      "nombre": "Sucursal Este",
+      "direccion": "Ciudad del Este",
+      "descripcion": "Sucursal de zona Este",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.almacen",
+    "pk": 3,
+    "fields": {
+      "nombre": "Sucursal Sur",
+      "direccion": "Encarnación",
+      "descripcion": "Sucursal del sur",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.cliente",
+    "pk": 1,
+    "fields": {
+      "nombre": "Juan",
+      "apellido": "González",
+      "email": "juan@example.com",
+      "telefono": "0981123456",
+      "direccion": "Barrio San Miguel",
+      "documento": "1234567",
+      "activo": true,
+      "persona_ptr": 1
+    }
+  },
+  {
+    "model": "bodega.cliente",
+    "pk": 2,
+    "fields": {
+      "nombre": "María",
+      "apellido": "Ramírez",
+      "email": "maria@example.com",
+      "telefono": "0981765432",
+      "direccion": "Centro",
+      "documento": "7654321",
+      "activo": true,
+      "persona_ptr": 2
+    }
+  },
+  {
+    "model": "bodega.proveedor",
+    "pk": 1,
+    "fields": {
+      "nombre": "Distribuidora A",
+      "ruc": "80012345-6",
+      "telefono": "021123456",
+      "email": "proveedorA@example.com",
+      "direccion": "Avda. Principal",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.proveedor",
+    "pk": 2,
+    "fields": {
+      "nombre": "Importadora B",
+      "ruc": "80098765-0",
+      "telefono": "021654321",
+      "email": "proveedorB@example.com",
+      "direccion": "Zona Industrial",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.ordencompra",
+    "pk": 1,
+    "fields": {
+      "proveedor": 1,
+      "estado": "recibido",
+      "nro_factura": "OC-2025-001",
+      "fecha": "2025-05-23",
+      "fecha_entrega": "2025-05-23",
+      "observacion": "Orden demo 1"
+    }
+  },
+  {
+    "model": "bodega.ordencompra",
+    "pk": 2,
+    "fields": {
+      "proveedor": 2,
+      "estado": "recibido",
+      "nro_factura": "OC-2025-002",
+      "fecha": "2025-05-23",
+      "fecha_entrega": "2025-05-24",
+      "observacion": "Orden demo 2"
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 1,
+    "fields": {
+      "orden": 1,
+      "producto": 1,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 2,
+    "fields": {
+      "orden": 1,
+      "producto": 2,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 3,
+    "fields": {
+      "orden": 1,
+      "producto": 3,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 4,
+    "fields": {
+      "orden": 1,
+      "producto": 4,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 5,
+    "fields": {
+      "orden": 1,
+      "producto": 5,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 6,
+    "fields": {
+      "orden": 2,
+      "producto": 6,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 7,
+    "fields": {
+      "orden": 2,
+      "producto": 7,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 8,
+    "fields": {
+      "orden": 2,
+      "producto": 8,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 9,
+    "fields": {
+      "orden": 2,
+      "producto": 9,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.detalleordencompra",
+    "pk": 10,
+    "fields": {
+      "orden": 2,
+      "producto": 10,
+      "cantidad": 10,
+      "precio_unitario": 12000
+    }
+  },
+  {
+    "model": "bodega.pedido",
+    "pk": 1,
+    "fields": {
+      "cliente": 1,
+      "fecha": "2025-05-24",
+      "estado": "pendiente",
+      "observacion": "Pedido prueba 1"
+    }
+  },
+  {
+    "model": "bodega.pedido",
+    "pk": 2,
+    "fields": {
+      "cliente": 2,
+      "fecha": "2025-05-24",
+      "estado": "pendiente",
+      "observacion": "Pedido prueba 2"
+    }
+  },
+  {
+    "model": "bodega.detallepedido",
+    "pk": 1,
+    "fields": {
+      "pedido": 1,
+      "producto": 1,
+      "cantidad": 2,
+      "precio_unitario": 15000
+    }
+  },
+  {
+    "model": "bodega.detallepedido",
+    "pk": 2,
+    "fields": {
+      "pedido": 1,
+      "producto": 2,
+      "cantidad": 2,
+      "precio_unitario": 15000
+    }
+  },
+  {
+    "model": "bodega.detallepedido",
+    "pk": 3,
+    "fields": {
+      "pedido": 1,
+      "producto": 3,
+      "cantidad": 2,
+      "precio_unitario": 15000
+    }
+  },
+  {
+    "model": "bodega.detallepedido",
+    "pk": 4,
+    "fields": {
+      "pedido": 2,
+      "producto": 4,
+      "cantidad": 2,
+      "precio_unitario": 15000
+    }
+  },
+  {
+    "model": "bodega.detallepedido",
+    "pk": 5,
+    "fields": {
+      "pedido": 2,
+      "producto": 5,
+      "cantidad": 2,
+      "precio_unitario": 15000
+    }
+  },
+  {
+    "model": "bodega.detallepedido",
+    "pk": 6,
+    "fields": {
+      "pedido": 2,
+      "producto": 6,
+      "cantidad": 2,
+      "precio_unitario": 15000
+    }
+  },
+  {
+    "model": "bodega.factura",
+    "pk": 1,
+    "fields": {
+      "cliente": 1,
+      "fecha": "2025-05-24",
+      "estado": "pendiente",
+      "nro_factura": "F-2025-001",
+      "timbrado": "123450",
+      "condicion_venta": "contado",
+      "observacion": "Factura demo 1",
+      "total": 0
+    }
+  },
+  {
+    "model": "bodega.factura",
+    "pk": 2,
+    "fields": {
+      "cliente": 2,
+      "fecha": "2025-05-24",
+      "estado": "pendiente",
+      "nro_factura": "F-2025-002",
+      "timbrado": "123451",
+      "condicion_venta": "contado",
+      "observacion": "Factura demo 2",
+      "total": 0
+    }
+  },
+  {
+    "model": "bodega.detallefactura",
+    "pk": 1,
+    "fields": {
+      "factura": 1,
+      "producto": 1,
+      "cantidad": 1,
+      "precio_unitario": 18000,
+      "iva_aplicado": "10%"
+    }
+  },
+  {
+    "model": "bodega.detallefactura",
+    "pk": 2,
+    "fields": {
+      "factura": 1,
+      "producto": 2,
+      "cantidad": 1,
+      "precio_unitario": 18000,
+      "iva_aplicado": "10%"
+    }
+  },
+  {
+    "model": "bodega.detallefactura",
+    "pk": 3,
+    "fields": {
+      "factura": 1,
+      "producto": 3,
+      "cantidad": 1,
+      "precio_unitario": 18000,
+      "iva_aplicado": "10%"
+    }
+  },
+  {
+    "model": "bodega.detallefactura",
+    "pk": 4,
+    "fields": {
+      "factura": 2,
+      "producto": 4,
+      "cantidad": 1,
+      "precio_unitario": 18000,
+      "iva_aplicado": "10%"
+    }
+  },
+  {
+    "model": "bodega.detallefactura",
+    "pk": 5,
+    "fields": {
+      "factura": 2,
+      "producto": 5,
+      "cantidad": 1,
+      "precio_unitario": 18000,
+      "iva_aplicado": "10%"
+    }
+  },
+  {
+    "model": "bodega.detallefactura",
+    "pk": 6,
+    "fields": {
+      "factura": 2,
+      "producto": 6,
+      "cantidad": 1,
+      "precio_unitario": 18000,
+      "iva_aplicado": "10%"
+    }
+  }
+]
