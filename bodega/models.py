@@ -119,6 +119,7 @@ class Movimiento(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     observacion = models.TextField(blank=True, null=True)
     realizado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.tipo.title()} - {self.producto.nombre} ({self.cantidad})"

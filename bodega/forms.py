@@ -45,7 +45,7 @@ class ProductoForm(forms.ModelForm):
 class MovimientoForm(forms.ModelForm):
     class Meta:
         model = Movimiento
-        fields = ['producto', 'tipo', 'cantidad', 'observacion']
+        fields = ['producto', 'almacen', 'tipo', 'cantidad', 'observacion']
 
 class ProveedorForm(forms.ModelForm):
     class Meta:

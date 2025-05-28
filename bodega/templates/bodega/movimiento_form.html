@@ -22,6 +22,12 @@
           </div>
 
           <div class="mb-3">
+            {{ form.almacen.label_tag }}
+            {{ form.almacen }}
+            {{ form.almacen.errors }}
+          </div>          
+
+          <div class="mb-3">
             {{ form.tipo.label_tag }}
             {{ form.tipo }}
             {{ form.tipo.errors }}

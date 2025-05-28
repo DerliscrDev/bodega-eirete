@@ -355,14 +355,25 @@ class MovimientoCreateView(LoginRequiredMixin, CreateView):
         movimiento = form.save(commit=False)
         movimiento.realizado_por = self.request.user
         producto = movimiento.producto
+        almacen = movimiento.almacen
 
-        # Actualiza stock
         if movimiento.tipo == 'entrada':
             producto.stock += movimiento.cantidad
         elif movimiento.tipo == 'salida':
             producto.stock -= movimiento.cantidad
-
         producto.save()
+
+        inventario, creado = Inventario.objects.get_or_create(
+            producto=producto,
+            almacen=almacen
+        )
+
+        if movimiento.tipo == 'entrada':
+            inventario.stock += movimiento.cantidad
+        elif movimiento.tipo == 'salida':
+            inventario.stock -= movimiento.cantidad
+        inventario.save()
+
         movimiento.save()
         return redirect(self.success_url)
 
@@ -988,3 +999,21 @@ class FacturaInactivateView(LoginRequiredMixin, View):
         factura.estado = 'anulada' if factura.estado != 'anulada' else 'pendiente'
         factura.save()
         return redirect('factura_list')
+
+@method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
+class ReporteInventarioView(LoginRequiredMixin, ListView):
+    model = Inventario
+    template_name = 'bodega/reportes/reporte_inventario.html'
+    context_object_name = 'inventarios'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = Inventario.objects.select_related('producto', 'almacen')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            queryset = queryset.filter(
+                producto__nombre__icontains=buscar
+            ) | queryset.filter(
+                almacen__nombre__icontains=buscar
+            )
+        return queryset.order_by('almacen__nombre', 'producto__nombre')

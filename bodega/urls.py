@@ -17,7 +17,8 @@ from .views import (
     InventarioListView,
     PedidoListView, PedidoCreateView, PedidoUpdateView, PedidoInactivateView,
     DetallePedidoUpdateView, DetallePedidoDeleteView,
-    FacturaListView, FacturaCreateView, FacturaUpdateView, FacturaInactivateView
+    FacturaListView, FacturaCreateView, FacturaUpdateView, FacturaInactivateView,
+    ReporteInventarioView
 )
 
 urlpatterns = [
@@ -113,5 +114,7 @@ urlpatterns = [
     path('facturas/nueva/', FacturaCreateView.as_view(), name='factura_create'),
     path('facturas/editar/<int:pk>/', FacturaUpdateView.as_view(), name='factura_update'),
     path('facturas/anular/<int:pk>/', FacturaInactivateView.as_view(), name='factura_inactivate'),
-
+    
+    # Reportes
+    path('reportes/inventario/', ReporteInventarioView.as_view(), name='reporte_inventario'),
 ]
