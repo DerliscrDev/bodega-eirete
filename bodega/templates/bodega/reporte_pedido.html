@@ -1,0 +1,57 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}Reporte de Pedidos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Reporte de Pedidos</h2>
+
+  <div class="text-end mb-3">
+    <a href="{% url 'reporte_pedidos_exportar' %}" class="btn btn-success">
+      Exportar a Excel
+    </a>
+  </div>
+
+  {% if pedidos %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Cliente</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Observación</th>
+          <th>Total estimado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pedido in pedidos %}
+        <tr>
+          <td>{{ pedido.cliente.nombre }} {{ pedido.cliente.apellido }}</td>
+          <td>{{ pedido.fecha|date:"Y-m-d H:i" }}</td>
+          <td>{{ pedido.estado|title }}</td>
+          <td>{{ pedido.observacion }}</td>
+          <td>
+            {% with total=0 %}
+              {% for d in pedido.detalles.all %}
+                {% with subtotal=d.cantidad|mul:d.precio_unitario %}
+                  {% with total=total|add:subtotal %}
+                  {% endwith %}
+                {% endwith %}
+              {% endfor %}
+              {{ total }}
+            {% endwith %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-warning text-center">
+    No hay pedidos registrados.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

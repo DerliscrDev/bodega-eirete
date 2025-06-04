@@ -118,8 +118,8 @@ urlpatterns = [
     # Reportes
     path('reportes/inventario/', ReporteInventarioView.as_view(), name='reporte_inventario'),
     path('reportes/inventario/exportar/', ReporteInventarioExportView.as_view(), name='exportar_inventario'),
-    # path('reportes/inventario/exportar/', InventarioExportExcelView.as_view(), name='exportar_inventario'),
     path('reportes/movimientos/', MovimientoReporteView.as_view(), name='reporte_movimientos'),
     path('reportes/movimientos/exportar/', MovimientoReporteExportView.as_view(), name='exportar_movimientos'),
-
+    path('reportes/pedidos/', ReportePedidoView.as_view(), name='reporte_pedidos'),
+    path('reportes/pedidos/exportar/', ReportePedidoExportView.as_view(), name='reporte_pedidos_exportar'),
 ]
