@@ -1,0 +1,94 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}Reporte de Movimientos - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Reporte de Movimientos</h2>
+
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+      <label for="producto" class="form-label">Producto</label>
+      <select name="producto" id="producto" class="form-select">
+        <option value="">Todos</option>
+        {% for prod in productos %}
+        <option value="{{ prod.id }}" {% if request.GET.producto == prod.id|stringformat:"s" %}selected{% endif %}>{{ prod.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="tipo" class="form-label">Tipo de Movimiento</label>
+      <select name="tipo" id="tipo" class="form-select">
+        <option value="">Todos</option>
+        <option value="entrada" {% if request.GET.tipo == "entrada" %}selected{% endif %}>Entrada</option>
+        <option value="salida" {% if request.GET.tipo == "salida" %}selected{% endif %}>Salida</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="almacen" class="form-label">Almacén</label>
+      <select name="almacen" id="almacen" class="form-select">
+        <option value="">Todos</option>
+        {% for a in almacenes %}
+        <option value="{{ a.id }}" {% if request.GET.almacen == a.id|stringformat:"s" %}selected{% endif %}>{{ a.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="fecha_inicio" class="form-label">Fecha desde</label>
+      <input type="date" name="fecha_inicio" class="form-control" value="{{ request.GET.fecha_inicio }}">
+    </div>
+
+    <div class="col-md-3">
+      <label for="fecha_fin" class="form-label">Fecha hasta</label>
+      <input type="date" name="fecha_fin" class="form-control" value="{{ request.GET.fecha_fin }}">
+    </div>
+
+    <div class="col-12 text-end mt-3">
+        <button type="submit" class="btn btn-custom">Filtrar</button>
+        <a href="{% url 'reporte_movimientos' %}" class="btn btn-secondary">Limpiar</a>
+        <a href="{% url 'reporte_movimientos_export' %}?producto={{ request.GET.producto }}&tipo={{ request.GET.tipo }}&almacen={{ request.GET.almacen }}&fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}" class="btn btn-success ms-2">
+          Exportar a Excel
+        </a>
+    </div>
+  </form>
+
+  {% if movimientos %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <th>Fecha</th>
+          <th>Producto</th>
+          <th>Tipo</th>
+          <th>Cantidad</th>
+          <th>Observación</th>
+          <th>Almacén</th>
+          <th>Realizado por</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movimientos %}
+        <tr>
+          <td>{{ m.fecha|date:"Y-m-d H:i" }}</td>
+          <td>{{ m.producto.nombre }}</td>
+          <td class="text-capitalize">{{ m.tipo }}</td>
+          <td>{{ m.cantidad }}</td>
+          <td>{{ m.observacion }}</td>
+          <td>{{ m.almacen.nombre }}</td>
+          <td>{{ m.realizado_por.username }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-warning text-center mt-4">
+    No se encontraron movimientos con los filtros aplicados.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

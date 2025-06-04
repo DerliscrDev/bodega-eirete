@@ -14,6 +14,15 @@ from django.views import View
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
 from django.forms import inlineformset_factory
+from django.http import HttpResponse
+from datetime import datetime
+import openpyxl
+from django.utils.timezone import localtime
+from .models import Movimiento
+from .decorators import permiso_requerido
+from openpyxl import Workbook
+from django.db.models import Q
+from django.utils.encoding import smart_str
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
@@ -357,24 +366,31 @@ class MovimientoCreateView(LoginRequiredMixin, CreateView):
         producto = movimiento.producto
         almacen = movimiento.almacen
 
-        if movimiento.tipo == 'entrada':
-            producto.stock += movimiento.cantidad
-        elif movimiento.tipo == 'salida':
-            producto.stock -= movimiento.cantidad
-        producto.save()
-
-        inventario, creado = Inventario.objects.get_or_create(
+        # Obtener inventario en el almacén
+        inventario, _ = Inventario.objects.get_or_create(
             producto=producto,
             almacen=almacen
         )
 
+        stock_actual = inventario.stock
+
+        # Validar stock disponible en caso de salida
+        if movimiento.tipo == 'salida' and movimiento.cantidad > stock_actual:
+            form.add_error('cantidad', f'La cantidad supera el stock disponible en el almacén seleccionado ({stock_actual}).')
+            return self.form_invalid(form)
+
+        # Actualizar stock del producto total
         if movimiento.tipo == 'entrada':
+            producto.stock += movimiento.cantidad
             inventario.stock += movimiento.cantidad
         elif movimiento.tipo == 'salida':
+            producto.stock -= movimiento.cantidad
             inventario.stock -= movimiento.cantidad
-        inventario.save()
 
+        producto.save()
+        inventario.save()
         movimiento.save()
+
         return redirect(self.success_url)
 
 @method_decorator(permiso_requerido('ver_proveedor'), name='dispatch')
@@ -915,30 +931,6 @@ class FacturaCreateView(LoginRequiredMixin, View):
 
         return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
 
-
-# @method_decorator(permiso_requerido('crear_factura'), name='dispatch')
-# class FacturaCreateView(LoginRequiredMixin, View):
-#     def get(self, request):
-#         form = FacturaForm()
-#         formset = DetalleFacturaFormSet()
-#         return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
-
-#     def post(self, request):
-#         form = FacturaForm(request.POST)
-#         formset = DetalleFacturaFormSet(request.POST)
-#         if form.is_valid() and formset.is_valid():
-#             factura = form.save()
-#             total = 0
-#             detalles = formset.save(commit=False)
-#             for detalle in detalles:
-#                 detalle.factura = factura
-#                 detalle.save()
-#                 total += detalle.cantidad * detalle.precio_unitario
-#             factura.total = total
-#             factura.save()
-#             return redirect('factura_list')
-#         return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
-
 @method_decorator(permiso_requerido('editar_factura'), name='dispatch')
 class FacturaUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
@@ -965,28 +957,6 @@ class FacturaUpdateView(LoginRequiredMixin, View):
             return redirect('factura_list')
 
         return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
-
-
-# @method_decorator(permiso_requerido('editar_factura'), name='dispatch')
-# class FacturaUpdateView(LoginRequiredMixin, View):
-#     def get(self, request, pk):
-#         factura = get_object_or_404(Factura, pk=pk)
-#         form = FacturaForm(instance=factura)
-#         formset = DetalleFacturaFormSet(instance=factura)
-#         return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
-
-#     def post(self, request, pk):
-#         factura = get_object_or_404(Factura, pk=pk)
-#         form = FacturaForm(request.POST, instance=factura)
-#         formset = DetalleFacturaFormSet(request.POST, instance=factura)
-#         if form.is_valid() and formset.is_valid():
-#             form.save()
-#             formset.save()
-#             total = sum([f.cantidad * f.precio_unitario for f in factura.detalles.all()])
-#             factura.total = total
-#             factura.save()
-#             return redirect('factura_list')
-#         return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
 
 @method_decorator(permiso_requerido('cancelar_factura'), name='dispatch')
 class FacturaInactivateView(LoginRequiredMixin, View):
@@ -1017,3 +987,135 @@ class ReporteInventarioView(LoginRequiredMixin, ListView):
                 almacen__nombre__icontains=buscar
             )
         return queryset.order_by('almacen__nombre', 'producto__nombre')
+    
+@method_decorator(permiso_requerido('ver_movimiento'), name='dispatch')
+class MovimientoReporteView(LoginRequiredMixin, ListView):
+    model = Movimiento
+    template_name = 'bodega/reportes/reporte_movimiento.html'
+    context_object_name = 'movimientos'
+    paginate_by = 100
+
+    def get_queryset(self):
+        queryset = Movimiento.objects.select_related('producto', 'almacen', 'realizado_por').order_by('-fecha')
+
+        producto = self.request.GET.get('producto')
+        tipo = self.request.GET.get('tipo')
+        almacen = self.request.GET.get('almacen')
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+
+        if producto:
+            queryset = queryset.filter(producto__id=producto)
+        if tipo:
+            queryset = queryset.filter(tipo=tipo)
+        if almacen:
+            queryset = queryset.filter(almacen__id=almacen)
+        if fecha_inicio:
+            queryset = queryset.filter(fecha__date__gte=fecha_inicio)
+        if fecha_fin:
+            queryset = queryset.filter(fecha__date__lte=fecha_fin)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .models import Producto, Almacen
+        context['productos'] = Producto.objects.all()
+        context['almacenes'] = Almacen.objects.all()
+        return context
+
+
+@method_decorator(permiso_requerido('ver_movimiento'), name='dispatch')
+class MovimientoReporteExportView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Movimientos"
+
+        # Encabezados
+        ws.append(["Fecha", "Producto", "Tipo", "Cantidad", "Almacén", "Observación", "Realizado por"])
+
+        # Datos
+        movimientos = Movimiento.objects.select_related('producto', 'almacen', 'realizado_por').all()
+        for m in movimientos:
+            ws.append([
+                localtime(m.fecha).strftime("%Y-%m-%d %H:%M"),
+                m.producto.nombre,
+                m.tipo.capitalize(),
+                m.cantidad,
+                m.almacen.nombre,
+                m.observacion or '',
+                m.realizado_por.username if m.realizado_por else ''
+            ])
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=movimientos.xlsx'
+        wb.save(response)
+        return response
+
+# @method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
+# class InventarioExportExcelView(LoginRequiredMixin, View):
+#     def get(self, request):
+#         buscar = request.GET.get('buscar', '')
+#         queryset = Inventario.objects.select_related('producto__categoria', 'almacen')
+
+#         if buscar:
+#             queryset = queryset.filter(
+#                 Q(producto__nombre__icontains=buscar) |
+#                 Q(almacen__nombre__icontains=buscar)
+#             )
+
+#         # Crear libro Excel
+#         wb = Workbook()
+#         ws = wb.active
+#         ws.title = "Inventario"
+
+#         # Encabezados
+#         ws.append(['Producto', 'Categoría', 'Almacén', 'Stock'])
+
+#         for item in queryset:
+#             ws.append([
+#                 item.producto.nombre,
+#                 item.producto.categoria.nombre if item.producto.categoria else '',
+#                 item.almacen.nombre,
+#                 item.stock
+#             ])
+
+#         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+#         response['Content-Disposition'] = 'attachment; filename="reporte_inventario.xlsx"'
+#         wb.save(response)
+#         return response
+
+    
+@method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
+class ReporteInventarioExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        buscar = request.GET.get("buscar")
+        inventarios = Inventario.objects.select_related('producto', 'almacen', 'producto__categoria')
+
+        if buscar:
+            inventarios = inventarios.filter(
+                models.Q(producto__nombre__icontains=buscar) |
+                models.Q(almacen__nombre__icontains=buscar)
+            )
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Inventario"
+
+        ws.append(["Producto", "Categoría", "Almacén", "Stock"])
+
+        for inv in inventarios.order_by('producto__nombre'):
+            ws.append([
+                inv.producto.nombre,
+                inv.producto.categoria.nombre if inv.producto.categoria else "",
+                inv.almacen.nombre,
+                inv.stock
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = f'attachment; filename={smart_str("reporte_inventario.xlsx")}'
+        wb.save(response)
+        return response

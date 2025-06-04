@@ -17,8 +17,8 @@ from .views import (
     InventarioListView,
     PedidoListView, PedidoCreateView, PedidoUpdateView, PedidoInactivateView,
     DetallePedidoUpdateView, DetallePedidoDeleteView,
-    FacturaListView, FacturaCreateView, FacturaUpdateView, FacturaInactivateView,
-    ReporteInventarioView
+    FacturaListView, FacturaCreateView, FacturaUpdateView, FacturaInactivateView, MovimientoReporteView
+    ReporteInventarioView, MovimientoReporteExportView, ReporteInventarioExportView
 )
 
 urlpatterns = [
@@ -117,4 +117,9 @@ urlpatterns = [
     
     # Reportes
     path('reportes/inventario/', ReporteInventarioView.as_view(), name='reporte_inventario'),
+    path('reportes/inventario/exportar/', ReporteInventarioExportView.as_view(), name='exportar_inventario'),
+    # path('reportes/inventario/exportar/', InventarioExportExcelView.as_view(), name='exportar_inventario'),
+    path('reportes/movimientos/', MovimientoReporteView.as_view(), name='reporte_movimientos'),
+    path('reportes/movimientos/exportar/', MovimientoReporteExportView.as_view(), name='exportar_movimientos'),
+
 ]
