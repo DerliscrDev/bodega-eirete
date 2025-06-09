@@ -1,49 +1,55 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
-{% block title %}{% if object %}Editar Orden de Compra{% else %}Nueva Orden de Compra{% endif %} - Bodega Eirete{% endblock %}
+{% block title %}{% if object %}Editar Factura{% else %}Nueva Factura{% endif %} - Bodega Eirete{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col-md-10 offset-md-1">
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h2 class="card-title mb-4">{% if object %}Editar Orden de Compra{% else %}Nueva Orden de Compra{% endif %}</h2>
+        <h2 class="card-title mb-4">{% if object %}Editar Factura{% else %}Nueva Factura{% endif %}</h2>
 
-        {% if request.user|tiene_permiso:"crear_orden_compra" or request.user|tiene_permiso:"editar_orden_compra" %}
+        {% if request.user|tiene_permiso:"crear_factura" or request.user|tiene_permiso:"editar_factura" %}
         <form method="post">
           {% csrf_token %}
-          {{ orden_form.non_field_errors }}
+          {{ form.non_field_errors }}
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              {{ orden_form.proveedor.label_tag }}
-              {{ orden_form.proveedor }}
-              {{ orden_form.proveedor.errors }}
+              {{ form.cliente.label_tag }}
+              {{ form.cliente }}
+              {{ form.cliente.errors }}
             </div>
             <div class="col-md-6 mb-3">
-              {{ orden_form.estado.label_tag }}
-              {{ orden_form.estado }}
-              {{ orden_form.estado.errors }}
+              {{ form.nro_factura.label_tag }}
+              {{ form.nro_factura }}
+              {{ form.nro_factura.errors }}
             </div>
           </div>
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              {{ orden_form.nro_factura.label_tag }}
-              {{ orden_form.nro_factura }}
-              {{ orden_form.nro_factura.errors }}
+              {{ form.timbrado.label_tag }}
+              {{ form.timbrado }}
+              {{ form.timbrado.errors }}
             </div>
             <div class="col-md-6 mb-3">
-              {{ orden_form.fecha_entrega.label_tag }}
-              {{ orden_form.fecha_entrega }}
-              {{ orden_form.fecha_entrega.errors }}
+              {{ form.condicion_venta.label_tag }}
+              {{ form.condicion_venta }}
+              {{ form.condicion_venta.errors }}
             </div>
           </div>
 
           <div class="mb-3">
-            {{ orden_form.observacion.label_tag }}
-            {{ orden_form.observacion }}
-            {{ orden_form.observacion.errors }}
+            {{ form.estado.label_tag }}
+            {{ form.estado }}
+            {{ form.estado.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.observacion.label_tag }}
+            {{ form.observacion }}
+            {{ form.observacion.errors }}
           </div>
 
           <hr>
@@ -62,11 +68,11 @@
           {% endfor %}
 
           <button type="submit" class="btn btn-custom">{% if object %}Actualizar{% else %}Guardar{% endif %}</button>
-          <a href="{% url 'orden_compra_list' %}" class="btn btn-secondary">Cancelar</a>
+          <a href="{% url 'factura_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
         {% else %}
         <div class="alert alert-warning">
-          No tienes permiso para crear o editar órdenes de compra.
+          No tienes permiso para crear o editar facturas.
         </div>
         {% endif %}
       </div>
@@ -77,43 +83,39 @@
 
 
 
-
-
 {% comment %} {% extends 'bodega/base.html' %}
 {% load static %}
 
-{% block title %}Orden de Compra - Bodega Eirete{% endblock %}
+{% block title %}Factura - Bodega Eirete{% endblock %}
 
 {% block content %}
 <div class="card shadow-sm mb-4">
   <div class="card-body">
-    <h2 class="card-title mb-3">Orden de Compra</h2>
+    <h2 class="card-title mb-3">Factura</h2>
 
     <form method="post">
       {% csrf_token %}
       {{ formset.management_form }}
-      {{ orden_form.non_field_errors }}
 
-      <!-- Datos de la Orden -->
+      <!-- Datos de la Factura -->
       <div class="mb-4">
+        {{ form.non_field_errors }}
         <div class="mb-3">
-          <label for="id_proveedor" class="form-label">Proveedor</label>
-          {{ orden_form.proveedor }}
-          {% for error in orden_form.proveedor.errors %}
-            <div class="text-danger">{{ error }}</div>
-          {% endfor %}
+          <label class="form-label">Cliente</label>
+          {{ form.cliente }}
         </div>
         <div class="mb-3">
-          <label for="id_observacion" class="form-label">Observación</label>
-          {{ orden_form.observacion }}
-          {% for error in orden_form.observacion.errors %}
-            <div class="text-danger">{{ error }}</div>
-          {% endfor %}
+          <label class="form-label">Estado</label>
+          {{ form.estado }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Observación</label>
+          {{ form.observacion }}
         </div>
       </div>
 
       <!-- Detalles -->
-      <h5>Detalles de la Orden</h5>
+      <h5>Detalles</h5>
       <table class="table table-bordered table-sm align-middle">
         <thead>
           <tr>
@@ -141,7 +143,7 @@
       {% endif %}
 
       <div class="d-flex justify-content-end">
-        <button type="submit" class="btn btn-custom">Guardar Orden</button>
+        <button type="submit" class="btn btn-custom">Guardar Factura</button>
       </div>
     </form>
   </div>

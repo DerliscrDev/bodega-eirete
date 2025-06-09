@@ -11,12 +11,12 @@
           {% if object.activo %}Confirmar Inactivación{% else %}Confirmar Reactivación{% endif %}
         </h2>
 
-        {% if request.user|tiene_permiso:"inactivar_proveedor" %}
+        {% if request.user|tiene_permiso:"cancelar_pedido" %}
         <p>
           {% if object.activo %}
-            ¿Estás seguro de que deseas inactivar al proveedor <strong>{{ object }}</strong>?
+            ¿Estás seguro de que deseas cancelar el pedido <strong>{{ object }}</strong>?
           {% else %}
-            ¿Estás seguro de que deseas reactivar al proveedor <strong>{{ object }}</strong>?
+            ¿Estás seguro de que deseas reactivar el pedido <strong>{{ object }}</strong>?
           {% endif %}
         </p>
 
@@ -25,7 +25,7 @@
           <button type="submit" class="btn btn-danger">
             {% if object.activo %}Inactivar{% else %}Reactivar{% endif %}
           </button>
-          <a href="{% url 'proveedor_list' %}" class="btn btn-secondary">Cancelar</a>
+          <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
         {% else %}
         <div class="alert alert-warning">
@@ -60,6 +60,39 @@
           <a href="{% url 'proveedor_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
       </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% endcomment %}
+
+
+
+
+
+{% comment %} {% extends 'bodega/base.html' %}
+{% load static %}
+
+{% block title %}Confirmación - Pedido{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title">
+        {% if pedido.estado != 'cancelado' %}Cancelar{% else %}Reactivar{% endif %} Pedido
+      </h2>
+      <p class="mb-4">
+        ¿Estás seguro que querés 
+        {% if pedido.estado != 'cancelado' %}cancelar{% else %}reactivar{% endif %}
+        el pedido <strong>#{{ pedido.pk }}</strong> del cliente <strong>{{ pedido.cliente }}</strong>?
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn {% if pedido.estado != 'cancelado' %}btn-danger{% else %}btn-success{% endif %}">
+          {% if pedido.estado != 'cancelado' %}Cancelar{% else %}Reactivar{% endif %}
+        </button>
+        <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Volver</a>
+      </form>
     </div>
   </div>
 </div>

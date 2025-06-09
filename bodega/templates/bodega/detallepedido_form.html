@@ -1,0 +1,84 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+{% block title %}Editar Detalle del Pedido - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-6 offset-md-3">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+
+        <h2 class="card-title mb-4">Editar Detalle</h2>
+
+        {% if request.user|tiene_permiso:"editar_detallepedido" %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            {{ form.producto.label_tag }}
+            {{ form.producto }}
+            {{ form.producto.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.cantidad.label_tag }}
+            {{ form.cantidad }}
+            {{ form.cantidad.errors }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.precio_unitario.label_tag }}
+            {{ form.precio_unitario }}
+            {{ form.precio_unitario.errors }}
+          </div>
+
+          <button type="submit" class="btn btn-custom">Actualizar</button>
+          <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">
+          No tienes permiso para editar detalles del pedido.
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+{% comment %} {% extends 'bodega/base.html' %}
+
+{% block title %}Editar Detalle del Pedido{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h2 class="card-title mb-4">Editar Detalle del Pedido</h2>
+    
+    <form method="post">
+      {% csrf_token %}
+      
+      <div class="mb-3">
+        <label class="form-label">Producto</label>
+        {{ form.producto }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Cantidad</label>
+        {{ form.cantidad }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Precio Unitario</label>
+        {{ form.precio_unitario }}
+      </div>
+      
+      <button type="submit" class="btn btn-success">Guardar</button>
+      <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %} {% endcomment %}

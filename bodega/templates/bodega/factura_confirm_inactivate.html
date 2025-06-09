@@ -11,12 +11,12 @@
           {% if object.activo %}Confirmar Inactivación{% else %}Confirmar Reactivación{% endif %}
         </h2>
 
-        {% if request.user|tiene_permiso:"inactivar_proveedor" %}
+        {% if request.user|tiene_permiso:"cancelar_factura" %}
         <p>
           {% if object.activo %}
-            ¿Estás seguro de que deseas inactivar al proveedor <strong>{{ object }}</strong>?
+            ¿Estás seguro de que deseas cancelar la factura? <strong>{{ object }}</strong>?
           {% else %}
-            ¿Estás seguro de que deseas reactivar al proveedor <strong>{{ object }}</strong>?
+            ¿Estás seguro de que deseas reactivar la factura? <strong>{{ object }}</strong>?
           {% endif %}
         </p>
 
@@ -25,7 +25,7 @@
           <button type="submit" class="btn btn-danger">
             {% if object.activo %}Inactivar{% else %}Reactivar{% endif %}
           </button>
-          <a href="{% url 'proveedor_list' %}" class="btn btn-secondary">Cancelar</a>
+          <a href="{% url 'factura_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
         {% else %}
         <div class="alert alert-warning">
@@ -60,6 +60,38 @@
           <a href="{% url 'proveedor_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
       </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% endcomment %}
+
+
+
+
+{% comment %} {% extends 'bodega/base.html' %}
+{% load static %}
+
+{% block title %}Anular/Activar Factura{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title">
+        {% if factura.estado != 'anulada' %}Anular{% else %}Reactivar{% endif %} Factura
+      </h2>
+      <p>
+        ¿Estás seguro que querés 
+        {% if factura.estado != 'anulada' %}anular{% else %}reactivar{% endif %}
+        la factura <strong>#{{ factura.pk }}</strong> del cliente <strong>{{ factura.cliente }}</strong>?
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn {% if factura.estado != 'anulada' %}btn-danger{% else %}btn-success{% endif %}">
+          {% if factura.estado != 'anulada' %}Anular{% else %}Reactivar{% endif %}
+        </button>
+        <a href="{% url 'factura_list' %}" class="btn btn-secondary">Volver</a>
+      </form>
     </div>
   </div>
 </div>

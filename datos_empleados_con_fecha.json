@@ -1,0 +1,46 @@
+[
+  {
+    "model": "bodega.persona",
+    "pk": 3,
+    "fields": {
+      "nombre": "Empleado1",
+      "apellido": "Apellido1",
+      "email": "empleado1@bodega.com",
+      "telefono": "099110000",
+      "direccion": "Zona Empleado 1"
+    }
+  },
+  {
+    "model": "bodega.persona",
+    "pk": 4,
+    "fields": {
+      "nombre": "Empleado2",
+      "apellido": "Apellido2",
+      "email": "empleado2@bodega.com",
+      "telefono": "099120000",
+      "direccion": "Zona Empleado 2"
+    }
+  },
+  {
+    "model": "bodega.empleado",
+    "pk": 1,
+    "fields": {
+      "persona_ptr": 3,
+      "cedula": "5000100",
+      "sucursal": 1,
+      "activo": true,
+      "fecha_contratacion": "2025-05-23"
+    }
+  },
+  {
+    "model": "bodega.empleado",
+    "pk": 2,
+    "fields": {
+      "persona_ptr": 4,
+      "cedula": "5000200",
+      "sucursal": 1,
+      "activo": true,
+      "fecha_contratacion": "2025-05-23"
+    }
+  }
+]

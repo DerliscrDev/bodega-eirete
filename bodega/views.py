@@ -13,18 +13,47 @@ from django.views.generic import ListView, CreateView, UpdateView
 from django.views import View
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
+from django.forms import inlineformset_factory
+from django.http import HttpResponse
+from datetime import datetime
+import openpyxl
+from django.utils.timezone import localtime
+from .models import Movimiento
+from .decorators import permiso_requerido
+from openpyxl import Workbook
+from django.db.models import Q
+from django.utils.encoding import smart_str
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
-    Almacen, CategoriaProducto
+    Almacen, CategoriaProducto, Inventario, Pedido, DetallePedido, Factura, DetalleFactura
 )
 from .forms import (
     EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm,
-    OrdenCompraForm, DetalleOrdenCompraForm, ClienteForm, AlmacenForm, CategoriaProductoForm
+    OrdenCompraForm, DetalleOrdenCompraForm, ClienteForm, AlmacenForm, CategoriaProductoForm, PedidoForm, DetallePedidoFormSet,
+    FacturaForm, DetalleFacturaForm
 ) 
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
 from django.forms import modelformset_factory
+from django.shortcuts import get_object_or_404
+
+
+DetalleFormSet = inlineformset_factory(
+    OrdenCompra,
+    DetalleOrdenCompra,
+    form=DetalleOrdenCompraForm,
+    extra=3,
+    can_delete=False
+)
+
+DetalleFacturaFormSet = inlineformset_factory(
+    Factura,
+    DetalleFactura,
+    form=DetalleFacturaForm,
+    extra=3,
+    can_delete=False
+)
 
 # Vista Home
 @login_required
@@ -314,8 +343,14 @@ class MovimientoListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset().select_related('producto', 'realizado_por').order_by('-fecha')
         buscar = self.request.GET.get("buscar")
+        producto_id = self.request.GET.get("producto_id")
+
         if buscar:
             queryset = queryset.filter(producto__nombre__icontains=buscar)
+
+        if producto_id:
+            queryset = queryset.filter(producto__id=producto_id)
+
         return queryset
 
 @method_decorator(permiso_requerido('crear_movimiento'), name='dispatch')
@@ -329,15 +364,33 @@ class MovimientoCreateView(LoginRequiredMixin, CreateView):
         movimiento = form.save(commit=False)
         movimiento.realizado_por = self.request.user
         producto = movimiento.producto
+        almacen = movimiento.almacen
 
-        # Actualiza stock
+        # Obtener inventario en el almacén
+        inventario, _ = Inventario.objects.get_or_create(
+            producto=producto,
+            almacen=almacen
+        )
+
+        stock_actual = inventario.stock
+
+        # Validar stock disponible en caso de salida
+        if movimiento.tipo == 'salida' and movimiento.cantidad > stock_actual:
+            form.add_error('cantidad', f'La cantidad supera el stock disponible en el almacén seleccionado ({stock_actual}).')
+            return self.form_invalid(form)
+
+        # Actualizar stock del producto total
         if movimiento.tipo == 'entrada':
             producto.stock += movimiento.cantidad
+            inventario.stock += movimiento.cantidad
         elif movimiento.tipo == 'salida':
             producto.stock -= movimiento.cantidad
+            inventario.stock -= movimiento.cantidad
 
         producto.save()
+        inventario.save()
         movimiento.save()
+
         return redirect(self.success_url)
 
 @method_decorator(permiso_requerido('ver_proveedor'), name='dispatch')
@@ -398,8 +451,7 @@ class OrdenCompraListView(LoginRequiredMixin, ListView):
 class OrdenCompraCreateView(LoginRequiredMixin, View):
     def get(self, request):
         orden_form = OrdenCompraForm()
-        DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
-        formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.none())
+        formset = DetalleFormSet()
         return render(request, 'bodega/orden_compra_form.html', {
             'orden_form': orden_form,
             'formset': formset
@@ -407,15 +459,12 @@ class OrdenCompraCreateView(LoginRequiredMixin, View):
 
     def post(self, request):
         orden_form = OrdenCompraForm(request.POST)
-        DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
         formset = DetalleFormSet(request.POST)
 
         if orden_form.is_valid() and formset.is_valid():
             orden = orden_form.save()
-            for form in formset:
-                detalle = form.save(commit=False)
-                detalle.orden = orden
-                detalle.save()
+            formset.instance = orden  # CORRECCIÓN
+            formset.save()
             return redirect('orden_compra_list')
 
         return render(request, 'bodega/orden_compra_form.html', {
@@ -428,12 +477,7 @@ class OrdenCompraUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
         orden = OrdenCompra.objects.get(pk=pk)
         orden_form = OrdenCompraForm(instance=orden)
-
-        DetalleFormSet = modelformset_factory(
-            DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
-        )
-        formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.filter(orden=orden))
-
+        formset = DetalleFormSet(instance=orden)
         return render(request, 'bodega/orden_compra_form.html', {
             'orden_form': orden_form,
             'formset': formset
@@ -442,24 +486,139 @@ class OrdenCompraUpdateView(LoginRequiredMixin, View):
     def post(self, request, pk):
         orden = OrdenCompra.objects.get(pk=pk)
         orden_form = OrdenCompraForm(request.POST, instance=orden)
-
-        DetalleFormSet = modelformset_factory(
-            DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
-        )
-        formset = DetalleFormSet(request.POST, queryset=DetalleOrdenCompra.objects.filter(orden=orden))
+        formset = DetalleFormSet(request.POST, instance=orden)
 
         if orden_form.is_valid() and formset.is_valid():
-            orden_form.save()
-            for form in formset:
-                detalle = form.save(commit=False)
-                detalle.orden = orden
-                detalle.save()
+            orden = orden_form.save()
+            formset.instance = orden  # CORRECCIÓN
+            formset.save()
             return redirect('orden_compra_list')
 
         return render(request, 'bodega/orden_compra_form.html', {
             'orden_form': orden_form,
             'formset': formset
         })
+
+# @method_decorator(permiso_requerido('crear_orden_compra'), name='dispatch')
+# class OrdenCompraCreateView(LoginRequiredMixin, View):
+#     def get(self, request):
+#         orden_form = OrdenCompraForm()
+#         formset = DetalleFormSet()
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+#     def post(self, request):
+#         orden_form = OrdenCompraForm(request.POST)
+#         formset = DetalleFormSet(request.POST)
+
+#         if orden_form.is_valid() and formset.is_valid():
+#             orden = orden_form.save()
+#             detalles = formset.save(commit=False)
+#             for detalle in detalles:
+#                 detalle.orden = orden
+#                 detalle.save()
+#             return redirect('orden_compra_list')
+
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+# @method_decorator(permiso_requerido('editar_orden_compra'), name='dispatch')
+# class OrdenCompraUpdateView(LoginRequiredMixin, View):
+#     def get(self, request, pk):
+#         orden = OrdenCompra.objects.get(pk=pk)
+#         orden_form = OrdenCompraForm(instance=orden)
+#         formset = DetalleFormSet(instance=orden)
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+#     def post(self, request, pk):
+#         orden = OrdenCompra.objects.get(pk=pk)
+#         orden_form = OrdenCompraForm(request.POST, instance=orden)
+#         formset = DetalleFormSet(request.POST, instance=orden)
+
+#         if orden_form.is_valid() and formset.is_valid():
+#             orden_form.save()
+#             formset.save()
+#             return redirect('orden_compra_list')
+
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+
+# @method_decorator(permiso_requerido('crear_orden_compra'), name='dispatch')
+# class OrdenCompraCreateView(LoginRequiredMixin, View):
+#     def get(self, request):
+#         orden_form = OrdenCompraForm()
+#         DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
+#         formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.none())
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+#     def post(self, request):
+#         orden_form = OrdenCompraForm(request.POST)
+#         DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
+#         formset = DetalleFormSet(request.POST)
+
+#         if orden_form.is_valid() and formset.is_valid():
+#             orden = orden_form.save()
+#             for form in formset:
+#                 detalle = form.save(commit=False)
+#                 detalle.orden = orden
+#                 detalle.save()
+#             return redirect('orden_compra_list')
+
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+# @method_decorator(permiso_requerido('editar_orden_compra'), name='dispatch')
+# class OrdenCompraUpdateView(LoginRequiredMixin, View):
+#     def get(self, request, pk):
+#         orden = OrdenCompra.objects.get(pk=pk)
+#         orden_form = OrdenCompraForm(instance=orden)
+
+#         DetalleFormSet = modelformset_factory(
+#             DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
+#         )
+#         formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.filter(orden=orden))
+
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
+
+#     def post(self, request, pk):
+#         orden = OrdenCompra.objects.get(pk=pk)
+#         orden_form = OrdenCompraForm(request.POST, instance=orden)
+
+#         DetalleFormSet = modelformset_factory(
+#             DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
+#         )
+#         formset = DetalleFormSet(request.POST, queryset=DetalleOrdenCompra.objects.filter(orden=orden))
+
+#         if orden_form.is_valid() and formset.is_valid():
+#             orden_form.save()
+#             for form in formset:
+#                 detalle = form.save(commit=False)
+#                 detalle.orden = orden
+#                 detalle.save()
+#             return redirect('orden_compra_list')
+
+#         return render(request, 'bodega/orden_compra_form.html', {
+#             'orden_form': orden_form,
+#             'formset': formset
+#         })
 
 @method_decorator(permiso_requerido('recibir_orden_compra'), name='dispatch')
 class OrdenCompraRecibirView(LoginRequiredMixin, View):
@@ -617,3 +776,472 @@ class CategoriaProductoInactivateView(LoginRequiredMixin, View):
         self.object.activo = not self.object.activo
         self.object.save()
         return redirect('categoria_list')
+
+@method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
+class InventarioListView(LoginRequiredMixin, ListView):
+    model = Inventario
+    template_name = 'bodega/inventario_list.html'
+    context_object_name = 'inventarios'
+    paginate_by = 10
+
+    def get_queryset(self):
+        # qs = Inventario.objects.select_related('producto', 'almacen')
+        qs = Inventario.objects.select_related('producto', 'producto__categoria', 'almacen')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            qs = qs.filter(
+                producto__nombre__icontains=buscar
+            ) | qs.filter(
+                almacen__nombre__icontains=buscar
+            )
+        return qs.order_by('producto__nombre')
+
+@method_decorator(permiso_requerido('ver_pedido'), name='dispatch')
+class PedidoListView(LoginRequiredMixin, ListView):
+    model = Pedido
+    template_name = 'bodega/pedido_list.html'
+    context_object_name = 'pedidos'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Pedido.objects.select_related('cliente').order_by('-fecha')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            queryset = queryset.filter(cliente__nombre__icontains=buscar) | queryset.filter(cliente__apellido__icontains=buscar)
+        return queryset
+
+@method_decorator(permiso_requerido('crear_pedido'), name='dispatch')
+class PedidoCreateView(LoginRequiredMixin, View):
+    def get(self, request):
+        pedido_form = PedidoForm()
+        formset = DetallePedidoFormSet(queryset=DetallePedido.objects.none())
+        return render(request, 'bodega/pedido_form.html', {
+            'form': pedido_form,
+            'formset': formset
+        })
+
+    def post(self, request):
+        pedido_form = PedidoForm(request.POST)
+        formset = DetallePedidoFormSet(request.POST)
+        if pedido_form.is_valid() and formset.is_valid():
+            pedido = pedido_form.save()
+            detalles = formset.save(commit=False)
+            for detalle in detalles:
+                detalle.pedido = pedido
+                detalle.save()
+            return redirect('pedido_list')
+        return render(request, 'bodega/pedido_form.html', {
+            'form': pedido_form,
+            'formset': formset
+        })
+
+@method_decorator(permiso_requerido('editar_pedido'), name='dispatch')
+class PedidoUpdateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        pedido = Pedido.objects.get(pk=pk)
+        pedido_form = PedidoForm(instance=pedido)
+        formset = DetallePedidoFormSet(instance=pedido)
+        return render(request, 'bodega/pedido_form.html', {
+            'form': pedido_form,
+            'formset': formset
+        })
+
+    def post(self, request, pk):
+        pedido = Pedido.objects.get(pk=pk)
+        pedido_form = PedidoForm(request.POST, instance=pedido)
+        formset = DetallePedidoFormSet(request.POST, instance=pedido)
+        if pedido_form.is_valid() and formset.is_valid():
+            pedido_form.save()
+            formset.save()
+            return redirect('pedido_list')
+        return render(request, 'bodega/pedido_form.html', {
+            'form': pedido_form,
+            'formset': formset
+        })
+
+@method_decorator(permiso_requerido('cancelar_pedido'), name='dispatch')
+class PedidoInactivateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        pedido = Pedido.objects.get(pk=kwargs['pk'])
+        return render(request, 'bodega/pedido_confirm_inactivate.html', {'pedido': pedido})
+
+    def post(self, request, *args, **kwargs):
+        pedido = Pedido.objects.get(pk=kwargs['pk'])
+        if pedido.estado != 'cancelado':
+            pedido.estado = 'cancelado'
+        else:
+            pedido.estado = 'pendiente'
+        pedido.save()
+        return redirect('pedido_list')
+
+@method_decorator(permiso_requerido('editar_detallepedido'), name='dispatch')
+class DetallePedidoUpdateView(LoginRequiredMixin, UpdateView):
+    model = DetallePedido
+    fields = ['producto', 'cantidad', 'precio_unitario']
+    template_name = 'bodega/detallepedido_form.html'
+    success_url = reverse_lazy('pedido_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pedido'] = self.object.pedido  # Mostrar el pedido relacionado
+        return context
+
+@method_decorator(permiso_requerido('eliminar_detallepedido'), name='dispatch')
+class DetallePedidoDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        detalle = DetallePedido.objects.get(pk=pk)
+        detalle.delete()
+        return redirect('pedido_list')  # O redirigir a la vista de edición del pedido
+    
+@method_decorator(permiso_requerido('ver_factura'), name='dispatch')
+class FacturaListView(LoginRequiredMixin, ListView):
+    model = Factura
+    template_name = 'bodega/factura_list.html'
+    context_object_name = 'facturas'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Factura.objects.select_related('cliente').order_by('-id')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            qs = qs.filter(cliente__nombre__icontains=buscar) | qs.filter(estado__icontains=buscar)
+        return qs
+
+@method_decorator(permiso_requerido('crear_factura'), name='dispatch')
+class FacturaCreateView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = FacturaForm()
+        formset = DetalleFacturaFormSet()
+        return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
+
+    def post(self, request):
+        form = FacturaForm(request.POST)
+        formset = DetalleFacturaFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            factura = form.save()
+            formset.instance = factura  # CORRECCIÓN
+            formset.save()
+
+            # Calcular total
+            total = sum([d.cantidad * d.precio_unitario for d in factura.detalles.all()])
+            factura.total = total
+            factura.save()
+
+            return redirect('factura_list')
+
+        return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
+
+@method_decorator(permiso_requerido('editar_factura'), name='dispatch')
+class FacturaUpdateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        form = FacturaForm(instance=factura)
+        formset = DetalleFacturaFormSet(instance=factura)
+        return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
+
+    def post(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        form = FacturaForm(request.POST, instance=factura)
+        formset = DetalleFacturaFormSet(request.POST, instance=factura)
+
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.instance = factura  # CORRECCIÓN
+            formset.save()
+
+            # Recalcular total
+            total = sum([d.cantidad * d.precio_unitario for d in factura.detalles.all()])
+            factura.total = total
+            factura.save()
+
+            return redirect('factura_list')
+
+        return render(request, 'bodega/factura_form.html', {'form': form, 'formset': formset})
+
+@method_decorator(permiso_requerido('cancelar_factura'), name='dispatch')
+class FacturaInactivateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        return render(request, 'bodega/factura_confirm_inactivate.html', {'factura': factura})
+
+    def post(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        factura.estado = 'anulada' if factura.estado != 'anulada' else 'pendiente'
+        factura.save()
+        return redirect('factura_list')
+
+@method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
+class ReporteInventarioView(LoginRequiredMixin, ListView):
+    model = Inventario
+    template_name = 'bodega/reportes/reporte_inventario.html'
+    context_object_name = 'inventarios'
+    paginate_by = 20
+
+    def get_queryset(self):
+        # queryset = Inventario.objects.select_related('producto', 'almacen')
+        queryset = Inventario.objects.select_related('producto', 'almacen')
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            queryset = queryset.filter(
+                producto__nombre__icontains=buscar
+            ) | queryset.filter(
+                almacen__nombre__icontains=buscar
+            )
+        return queryset.order_by('almacen__nombre', 'producto__nombre')
+    
+@method_decorator(permiso_requerido('ver_movimiento'), name='dispatch')
+class MovimientoReporteView(LoginRequiredMixin, ListView):
+    model = Movimiento
+    template_name = 'bodega/reportes/reporte_movimientos.html'
+    context_object_name = 'movimientos'
+    paginate_by = 100
+
+    def get_queryset(self):
+        queryset = Movimiento.objects.select_related('producto', 'almacen', 'realizado_por').order_by('-fecha')
+
+        producto = self.request.GET.get('producto')
+        tipo = self.request.GET.get('tipo')
+        almacen = self.request.GET.get('almacen')
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+
+        if producto:
+            queryset = queryset.filter(producto__id=producto)
+        if tipo:
+            queryset = queryset.filter(tipo=tipo)
+        if almacen:
+            queryset = queryset.filter(almacen__id=almacen)
+        if fecha_inicio:
+            queryset = queryset.filter(fecha__date__gte=fecha_inicio)
+        if fecha_fin:
+            queryset = queryset.filter(fecha__date__lte=fecha_fin)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .models import Producto, Almacen
+        context['productos'] = Producto.objects.all()
+        context['almacenes'] = Almacen.objects.all()
+        return context
+
+
+@method_decorator(permiso_requerido('ver_movimiento'), name='dispatch')
+class MovimientoReporteExportView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Movimientos"
+
+        # Encabezados
+        ws.append(["Fecha", "Producto", "Tipo", "Cantidad", "Almacén", "Observación", "Realizado por"])
+
+        # Datos
+        movimientos = Movimiento.objects.select_related('producto', 'almacen', 'realizado_por').all()
+        for m in movimientos:
+            ws.append([
+                localtime(m.fecha).strftime("%Y-%m-%d %H:%M"),
+                m.producto.nombre,
+                m.tipo.capitalize(),
+                m.cantidad,
+                m.almacen.nombre,
+                m.observacion or '',
+                m.realizado_por.username if m.realizado_por else ''
+            ])
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=movimientos.xlsx'
+        wb.save(response)
+        return response
+    
+@method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
+class ReporteInventarioExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        buscar = request.GET.get("buscar")
+        inventarios = Inventario.objects.select_related('producto', 'producto__categoria', 'almacen')
+
+        if buscar:
+            inventarios = inventarios.filter(
+                models.Q(producto__nombre__icontains=buscar) |
+                models.Q(almacen__nombre__icontains=buscar)
+            )
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Inventario"
+
+        ws.append(["Producto", "Categoría", "Almacén", "Stock"])
+
+        for inv in inventarios.order_by('producto__nombre'):
+            ws.append([
+                inv.producto.nombre,
+                inv.producto.categoria.nombre if inv.producto.categoria else "",
+                inv.almacen.nombre,
+                inv.stock
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = f'attachment; filename={smart_str("reporte_inventario.xlsx")}'
+        wb.save(response)
+        return response
+
+@method_decorator(permiso_requerido('ver_pedido'), name='dispatch')
+class ReportePedidoView(LoginRequiredMixin, ListView):
+    model = Pedido
+    template_name = 'bodega/reportes/reporte_pedidos.html'
+    context_object_name = 'pedidos'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return Pedido.objects.select_related('cliente').order_by('-fecha')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pedidos = context['pedidos']
+
+        for pedido in pedidos:
+            pedido.total_estimado = sum(
+                d.cantidad * d.precio_unitario for d in pedido.detalles.all()
+            )
+
+        return context
+
+@method_decorator(permiso_requerido('ver_pedido'), name='dispatch')
+class ReportePedidoExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        pedidos = Pedido.objects.select_related('cliente').order_by('-fecha')
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Pedidos"
+
+        ws.append(["Cliente", "Fecha", "Estado", "Observación", "Total estimado"])
+
+        for pedido in pedidos:
+            total_estimado = sum([d.cantidad * d.precio_unitario for d in pedido.detalles.all()])
+            ws.append([
+                f"{pedido.cliente.nombre} {pedido.cliente.apellido}",
+                localtime(pedido.fecha).strftime("%Y-%m-%d %H:%M"),
+                pedido.estado.title(),
+                pedido.observacion or '',
+                total_estimado
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = f'attachment; filename=reporte_pedidos.xlsx'
+        wb.save(response)
+        return response
+
+@method_decorator(permiso_requerido('ver_factura'), name='dispatch')
+class ReporteFacturaView(LoginRequiredMixin, ListView):
+    model = Factura
+    template_name = 'bodega/reportes/reporte_facturas.html'
+    context_object_name = 'facturas'
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Factura.objects.select_related('cliente').order_by('-fecha')
+
+@method_decorator(permiso_requerido('ver_factura'), name='dispatch')
+class ReporteFacturaExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        facturas = Factura.objects.select_related('cliente').order_by('-fecha')
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Facturas"
+
+        ws.append(["Cliente", "Fecha", "Estado", "Total"])
+
+        for f in facturas:
+            ws.append([
+                f"{f.cliente.nombre} {f.cliente.apellido}",
+                localtime(f.fecha).strftime("%Y-%m-%d %H:%M"),
+                f.estado.title(),
+                f.total
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=facturas.xlsx'
+        wb.save(response)
+        return response
+
+@method_decorator(permiso_requerido('ver_orden_compra'), name='dispatch')
+class ReporteOrdenCompraView(LoginRequiredMixin, ListView):
+    model = OrdenCompra
+    template_name = 'bodega/reportes/reporte_orden_compra.html'
+    context_object_name = 'ordenes'
+    paginate_by = 50
+
+    def get_queryset(self):
+        return OrdenCompra.objects.select_related('proveedor').order_by('-fecha')
+
+@method_decorator(permiso_requerido('ver_orden_compra'), name='dispatch')
+class ReporteOrdenCompraExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        ordenes = OrdenCompra.objects.select_related('proveedor').all()
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Órdenes de Compra"
+
+        ws.append(["Proveedor", "Fecha", "Estado", "Observación"])
+
+        for o in ordenes:
+            ws.append([
+                o.proveedor.nombre,
+                localtime(o.fecha).strftime("%Y-%m-%d %H:%M"),
+                o.estado.title(),
+                o.observacion or ''
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=ordenes_compra.xlsx'
+        wb.save(response)
+        return response
+
+@method_decorator(permiso_requerido('ver_cliente'), name='dispatch')
+class ReporteClienteView(LoginRequiredMixin, ListView):
+    model = Cliente
+    template_name = 'bodega/reportes/reporte_clientes.html'
+    context_object_name = 'clientes'
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Cliente.objects.all().order_by('nombre', 'apellido')
+
+@method_decorator(permiso_requerido('ver_cliente'), name='dispatch')
+class ReporteClienteExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        clientes = Cliente.objects.all().order_by('nombre', 'apellido')
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Clientes"
+
+        ws.append(["Nombre", "Apellido", "Correo", "Teléfono", "Estado"])
+
+        for c in clientes:
+            ws.append([
+                c.nombre,
+                c.apellido,
+                c.email,
+                c.telefono,
+                "Activo" if c.activo else "Inactivo"
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=clientes.xlsx'
+        wb.save(response)
+        return response
