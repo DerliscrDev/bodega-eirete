@@ -117,6 +117,8 @@ urlpatterns = [
     path('facturas/nueva/', FacturaCreateView.as_view(), name='factura_create'),
     path('facturas/editar/<int:pk>/', FacturaUpdateView.as_view(), name='factura_update'),
     path('facturas/anular/<int:pk>/', FacturaInactivateView.as_view(), name='factura_inactivate'),
+    path('facturas/generar/<int:pedido_id>/', GenerarFacturaDesdePedidoView.as_view(), name='factura_generar_desde_pedido'),
+    path('facturas/imprimir/<int:pk>/', ImprimirFacturaView.as_view(), name='factura_print'),
     
     # Reportes
     path('reportes/inventario/', ReporteInventarioView.as_view(), name='reporte_inventario'),

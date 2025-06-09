@@ -1,0 +1,45 @@
+{% extends 'bodega/base.html' %}
+{% block title %}Imprimir Factura{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="background: white; padding: 20px; border: 1px solid #ccc;">
+  <h4 class="text-center">FACTURA</h4>
+  <p><strong>Razon Social:</strong> Bodega Eirete</p>
+  <p><strong>RUC:</strong> 80000001-7</p>
+  <p><strong>Timbrado:</strong> {{ factura.timbrado }}</p>
+  <p><strong>Factura N°:</strong> {{ factura.nro_factura }}</p>
+  <p><strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y H:i" }}</p>
+  <hr>
+  <p><strong>Cliente:</strong> {{ factura.cliente.nombre }} {{ factura.cliente.apellido }}</p>
+  <p><strong>RUC/CI:</strong> {{ factura.cliente.documento }}</p>
+
+  <table class="table table-bordered mt-3">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio Unitario</th>
+        <th>IVA</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in factura.detalles.all %}
+      <tr>
+        <td>{{ item.producto.nombre }}</td>
+        <td>{{ item.cantidad }}</td>
+        <td>{{ item.precio_unitario }}</td>
+        <td>{{ item.iva_aplicado }}</td>
+        <td>{{ item.subtotal }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="text-end"><strong>Total:</strong> {{ factura.total }}</p>
+
+  <div class="text-center mt-4">
+    <button onclick="window.print()" class="btn btn-primary">Imprimir</button>
+  </div>
+</div>
+{% endblock %}

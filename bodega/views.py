@@ -1245,3 +1245,38 @@ class ReporteClienteExportView(LoginRequiredMixin, View):
         response['Content-Disposition'] = 'attachment; filename=clientes.xlsx'
         wb.save(response)
         return response
+
+@method_decorator(permiso_requerido('crear_factura'), name='dispatch')
+class GenerarFacturaDesdePedidoView(LoginRequiredMixin, View):
+    def get(self, request, pedido_id):
+        pedido = get_object_or_404(Pedido, pk=pedido_id)
+        cliente = pedido.cliente
+        detalles = pedido.detalles.all()
+
+        factura = Factura.objects.create(
+            cliente=cliente,
+            nro_factura='001-001-0000001',  # luego automatizamos esto
+            timbrado='12345678',
+            condicion_venta='contado',
+            estado='pendiente',
+        )
+
+        for item in detalles:
+            DetalleFactura.objects.create(
+                factura=factura,
+                producto=item.producto,
+                cantidad=item.cantidad,
+                precio_unitario=item.precio_unitario,
+                iva_aplicado=item.producto.iva,
+            )
+
+        # Calcular total
+        factura.total = sum([d.cantidad * d.precio_unitario for d in factura.detalles.all()])
+        factura.save()
+
+        return redirect('factura_list')
+
+class ImprimirFacturaView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        return render(request, 'bodega/facturas/factura_print.html', {'factura': factura})
