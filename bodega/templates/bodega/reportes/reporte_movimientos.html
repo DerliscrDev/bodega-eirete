@@ -50,7 +50,7 @@
     <div class="col-12 text-end mt-3">
         <button type="submit" class="btn btn-custom">Filtrar</button>
         <a href="{% url 'reporte_movimientos' %}" class="btn btn-secondary">Limpiar</a>
-        <a href="{% url 'reporte_movimientos_export' %}?producto={{ request.GET.producto }}&tipo={{ request.GET.tipo }}&almacen={{ request.GET.almacen }}&fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}" class="btn btn-success ms-2">
+        <a href="{% url 'exportar_movimientos' %}?producto={{ request.GET.producto }}&tipo={{ request.GET.tipo }}&almacen={{ request.GET.almacen }}&fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}" class="btn btn-success ms-2">
           Exportar a Excel
         </a>
     </div>

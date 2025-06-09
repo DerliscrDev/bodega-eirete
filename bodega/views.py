@@ -785,7 +785,8 @@ class InventarioListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        qs = Inventario.objects.select_related('producto', 'almacen')
+        # qs = Inventario.objects.select_related('producto', 'almacen')
+        qs = Inventario.objects.select_related('producto', 'producto__categoria', 'almacen')
         buscar = self.request.GET.get('buscar')
         if buscar:
             qs = qs.filter(
@@ -978,6 +979,7 @@ class ReporteInventarioView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
+        # queryset = Inventario.objects.select_related('producto', 'almacen')
         queryset = Inventario.objects.select_related('producto', 'almacen')
         buscar = self.request.GET.get('buscar')
         if buscar:
@@ -991,7 +993,7 @@ class ReporteInventarioView(LoginRequiredMixin, ListView):
 @method_decorator(permiso_requerido('ver_movimiento'), name='dispatch')
 class MovimientoReporteView(LoginRequiredMixin, ListView):
     model = Movimiento
-    template_name = 'bodega/reportes/reporte_movimiento.html'
+    template_name = 'bodega/reportes/reporte_movimientos.html'
     context_object_name = 'movimientos'
     paginate_by = 100
 
@@ -1052,46 +1054,12 @@ class MovimientoReporteExportView(LoginRequiredMixin, View):
         response['Content-Disposition'] = 'attachment; filename=movimientos.xlsx'
         wb.save(response)
         return response
-
-# @method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
-# class InventarioExportExcelView(LoginRequiredMixin, View):
-#     def get(self, request):
-#         buscar = request.GET.get('buscar', '')
-#         queryset = Inventario.objects.select_related('producto__categoria', 'almacen')
-
-#         if buscar:
-#             queryset = queryset.filter(
-#                 Q(producto__nombre__icontains=buscar) |
-#                 Q(almacen__nombre__icontains=buscar)
-#             )
-
-#         # Crear libro Excel
-#         wb = Workbook()
-#         ws = wb.active
-#         ws.title = "Inventario"
-
-#         # Encabezados
-#         ws.append(['Producto', 'Categoría', 'Almacén', 'Stock'])
-
-#         for item in queryset:
-#             ws.append([
-#                 item.producto.nombre,
-#                 item.producto.categoria.nombre if item.producto.categoria else '',
-#                 item.almacen.nombre,
-#                 item.stock
-#             ])
-
-#         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#         response['Content-Disposition'] = 'attachment; filename="reporte_inventario.xlsx"'
-#         wb.save(response)
-#         return response
-
     
 @method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
 class ReporteInventarioExportView(LoginRequiredMixin, View):
     def get(self, request):
         buscar = request.GET.get("buscar")
-        inventarios = Inventario.objects.select_related('producto', 'almacen', 'producto__categoria')
+        inventarios = Inventario.objects.select_related('producto', 'producto__categoria', 'almacen')
 
         if buscar:
             inventarios = inventarios.filter(
@@ -1123,12 +1091,23 @@ class ReporteInventarioExportView(LoginRequiredMixin, View):
 @method_decorator(permiso_requerido('ver_pedido'), name='dispatch')
 class ReportePedidoView(LoginRequiredMixin, ListView):
     model = Pedido
-    template_name = 'bodega/reportes/reporte_pedido.html'
+    template_name = 'bodega/reportes/reporte_pedidos.html'
     context_object_name = 'pedidos'
     paginate_by = 20
 
     def get_queryset(self):
         return Pedido.objects.select_related('cliente').order_by('-fecha')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pedidos = context['pedidos']
+
+        for pedido in pedidos:
+            pedido.total_estimado = sum(
+                d.cantidad * d.precio_unitario for d in pedido.detalles.all()
+            )
+
+        return context
 
 @method_decorator(permiso_requerido('ver_pedido'), name='dispatch')
 class ReportePedidoExportView(LoginRequiredMixin, View):
@@ -1155,5 +1134,114 @@ class ReportePedidoExportView(LoginRequiredMixin, View):
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         )
         response['Content-Disposition'] = f'attachment; filename=reporte_pedidos.xlsx'
+        wb.save(response)
+        return response
+
+@method_decorator(permiso_requerido('ver_factura'), name='dispatch')
+class ReporteFacturaView(LoginRequiredMixin, ListView):
+    model = Factura
+    template_name = 'bodega/reportes/reporte_facturas.html'
+    context_object_name = 'facturas'
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Factura.objects.select_related('cliente').order_by('-fecha')
+
+@method_decorator(permiso_requerido('ver_factura'), name='dispatch')
+class ReporteFacturaExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        facturas = Factura.objects.select_related('cliente').order_by('-fecha')
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Facturas"
+
+        ws.append(["Cliente", "Fecha", "Estado", "Total"])
+
+        for f in facturas:
+            ws.append([
+                f"{f.cliente.nombre} {f.cliente.apellido}",
+                localtime(f.fecha).strftime("%Y-%m-%d %H:%M"),
+                f.estado.title(),
+                f.total
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=facturas.xlsx'
+        wb.save(response)
+        return response
+
+@method_decorator(permiso_requerido('ver_orden_compra'), name='dispatch')
+class ReporteOrdenCompraView(LoginRequiredMixin, ListView):
+    model = OrdenCompra
+    template_name = 'bodega/reportes/reporte_orden_compra.html'
+    context_object_name = 'ordenes'
+    paginate_by = 50
+
+    def get_queryset(self):
+        return OrdenCompra.objects.select_related('proveedor').order_by('-fecha')
+
+@method_decorator(permiso_requerido('ver_orden_compra'), name='dispatch')
+class ReporteOrdenCompraExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        ordenes = OrdenCompra.objects.select_related('proveedor').all()
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Órdenes de Compra"
+
+        ws.append(["Proveedor", "Fecha", "Estado", "Observación"])
+
+        for o in ordenes:
+            ws.append([
+                o.proveedor.nombre,
+                localtime(o.fecha).strftime("%Y-%m-%d %H:%M"),
+                o.estado.title(),
+                o.observacion or ''
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=ordenes_compra.xlsx'
+        wb.save(response)
+        return response
+
+@method_decorator(permiso_requerido('ver_cliente'), name='dispatch')
+class ReporteClienteView(LoginRequiredMixin, ListView):
+    model = Cliente
+    template_name = 'bodega/reportes/reporte_clientes.html'
+    context_object_name = 'clientes'
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Cliente.objects.all().order_by('nombre', 'apellido')
+
+@method_decorator(permiso_requerido('ver_cliente'), name='dispatch')
+class ReporteClienteExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        clientes = Cliente.objects.all().order_by('nombre', 'apellido')
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Clientes"
+
+        ws.append(["Nombre", "Apellido", "Correo", "Teléfono", "Estado"])
+
+        for c in clientes:
+            ws.append([
+                c.nombre,
+                c.apellido,
+                c.email,
+                c.telefono,
+                "Activo" if c.activo else "Inactivo"
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=clientes.xlsx'
         wb.save(response)
         return response

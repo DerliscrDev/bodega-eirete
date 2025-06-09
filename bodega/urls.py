@@ -17,8 +17,11 @@ from .views import (
     InventarioListView,
     PedidoListView, PedidoCreateView, PedidoUpdateView, PedidoInactivateView,
     DetallePedidoUpdateView, DetallePedidoDeleteView,
-    FacturaListView, FacturaCreateView, FacturaUpdateView, FacturaInactivateView, MovimientoReporteView
-    ReporteInventarioView, MovimientoReporteExportView, ReporteInventarioExportView
+    FacturaListView, FacturaCreateView, FacturaUpdateView, FacturaInactivateView, 
+    MovimientoReporteView, ReporteInventarioView, ReportePedidoView, ReporteFacturaView, 
+    ReporteOrdenCompraView, ReporteClienteView,
+    MovimientoReporteExportView, ReporteInventarioExportView, ReportePedidoExportView, ReporteFacturaExportView, 
+    ReporteOrdenCompraExportView, ReporteClienteExportView,
 )
 
 urlpatterns = [
@@ -122,4 +125,10 @@ urlpatterns = [
     path('reportes/movimientos/exportar/', MovimientoReporteExportView.as_view(), name='exportar_movimientos'),
     path('reportes/pedidos/', ReportePedidoView.as_view(), name='reporte_pedidos'),
     path('reportes/pedidos/exportar/', ReportePedidoExportView.as_view(), name='reporte_pedidos_exportar'),
+    path('reportes/facturas/', ReporteFacturaView.as_view(), name='reporte_facturas'),
+    path('reportes/facturas/exportar/', ReporteFacturaExportView.as_view(), name='reporte_facturas_exportar'),
+    path('reportes/ordenes-compra/', ReporteOrdenCompraView.as_view(), name='reporte_ordenes_compra'),
+    path('reportes/ordenes-compra/exportar/', ReporteOrdenCompraExportView.as_view(), name='reporte_ordenes_compra_exportar'),
+    path('reportes/clientes/', ReporteClienteView.as_view(), name='reporte_clientes'),
+    path('reportes/clientes/exportar/', ReporteClienteExportView.as_view(), name='reporte_clientes_exportar'),
 ]

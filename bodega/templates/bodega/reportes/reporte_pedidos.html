@@ -33,7 +33,7 @@
           <td>{{ pedido.estado|title }}</td>
           <td>{{ pedido.observacion }}</td>
           <td>
-            {% with total=0 %}
+            {% comment %} {% with total=0 %}
               {% for d in pedido.detalles.all %}
                 {% with subtotal=d.cantidad|mul:d.precio_unitario %}
                   {% with total=total|add:subtotal %}
@@ -41,7 +41,8 @@
                 {% endwith %}
               {% endfor %}
               {{ total }}
-            {% endwith %}
+            {% endwith %} {% endcomment %}
+            {{ pedido.total_estimado }}
           </td>
         </tr>
         {% endfor %}
