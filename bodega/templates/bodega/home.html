@@ -191,5 +191,56 @@
     </div>
     {% endif %}
 
+    <!-- Reporte de Inventario -->
+    {% if request.user|tiene_permiso:"ver_inventario" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Reporte de Inventario</h5>
+          <p class="card-text">Visualiza stock por almacén y categoría.</p>
+          <a href="{% url 'reporte_inventario' %}" class="btn btn-custom">Ver Reporte</a>
+        </div>
+      </div>  
+    </div>
+    {% endif %}
+
+    <!-- Reporte de Movimientos -->
+    {% if request.user|tiene_permiso:"ver_movimiento" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Reporte de Movimientos</h5>
+          <p class="card-text">Entradas y salidas de productos filtrables por almacén.</p>
+          <a href="{% url 'reporte_movimientos' %}" class="btn btn-custom">Ver Reporte</a>
+        </div>
+      </div>  
+    </div>
+    {% endif %}
+
+    <!-- Reporte de Pedidos -->
+    {% if request.user|tiene_permiso:"ver_pedido" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Reporte de Pedidos</h5>
+          <p class="card-text">Consulta pedidos con totales estimados.</p>
+          <a href="{% url 'reporte_pedidos' %}" class="btn btn-custom">Ver Reporte</a>
+        </div>
+      </div>  
+    </div>
+    {% endif %}
+
+    <!-- Reporte de Facturas -->
+    {% if request.user|tiene_permiso:"ver_factura" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Reporte de Facturas</h5>
+          <p class="card-text">Lista de facturas emitidas con exportación.</p>
+          <a href="{% url 'reporte_facturas' %}" class="btn btn-custom">Ver Reporte</a>
+        </div>
+      </div>  
+    </div>
+    {% endif %}
   </div>
 {% endblock %}

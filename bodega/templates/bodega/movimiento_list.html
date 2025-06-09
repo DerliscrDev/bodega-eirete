@@ -25,6 +25,7 @@
           <tr>
             <th>Fecha</th>
             <th>Producto</th>
+            <th>Almacén</th>
             <th>Tipo</th>
             <th>Cantidad</th>
             <th>Realizado por</th>
@@ -36,6 +37,7 @@
           <tr>
             <td>{{ movimiento.fecha|date:"d/m/Y H:i" }}</td>
             <td>{{ movimiento.producto.nombre }}</td>
+            <td>{{ movimiento.almacen.nombre }}</td>
             <td>{{ movimiento.tipo|title }}</td>
             <td>{{ movimiento.cantidad }}</td>
             <td>{{ movimiento.realizado_por }}</td>

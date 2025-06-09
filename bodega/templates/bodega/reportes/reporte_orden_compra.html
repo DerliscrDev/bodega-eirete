@@ -1,0 +1,45 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}Reporte de Órdenes de Compra{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Reporte de Órdenes de Compra</h2>
+
+  <div class="text-end mb-3">
+    <a href="{% url 'reporte_ordenes_compra_exportar' %}" class="btn btn-success">
+      Exportar a Excel
+    </a>
+  </div>
+
+  {% if ordenes %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Proveedor</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Observación</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for orden in ordenes %}
+        <tr>
+          <td>{{ orden.proveedor.nombre }}</td>
+          <td>{{ orden.fecha|date:"Y-m-d H:i" }}</td>
+          <td>{{ orden.estado|title }}</td>
+          <td>{{ orden.observacion }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-warning text-center">
+    No hay órdenes de compra registradas.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
