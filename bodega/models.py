@@ -176,6 +176,7 @@ class Pedido(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
     observacion = models.TextField(blank=True, null=True)
+    facturado = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Pedido #{self.pk} - {self.cliente}"

@@ -22,6 +22,7 @@ from .views import (
     ReporteOrdenCompraView, ReporteClienteView,
     MovimientoReporteExportView, ReporteInventarioExportView, ReportePedidoExportView, ReporteFacturaExportView, 
     ReporteOrdenCompraExportView, ReporteClienteExportView,
+    GenerarFacturaDesdePedidoView, FacturaPrintView, FacturaPDFView
 )
 
 urlpatterns = [
@@ -118,7 +119,9 @@ urlpatterns = [
     path('facturas/editar/<int:pk>/', FacturaUpdateView.as_view(), name='factura_update'),
     path('facturas/anular/<int:pk>/', FacturaInactivateView.as_view(), name='factura_inactivate'),
     path('facturas/generar/<int:pedido_id>/', GenerarFacturaDesdePedidoView.as_view(), name='factura_generar_desde_pedido'),
-    path('facturas/imprimir/<int:pk>/', ImprimirFacturaView.as_view(), name='factura_print'),
+    path('facturas/imprimir/<int:pk>/', FacturaPrintView.as_view(), name='factura_imprimir'),
+    path('facturas/pdf/<int:pk>/', FacturaPDFView.as_view(), name='factura_pdf'),
+
     
     # Reportes
     path('reportes/inventario/', ReporteInventarioView.as_view(), name='reporte_inventario'),

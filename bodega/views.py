@@ -23,6 +23,9 @@ from .decorators import permiso_requerido
 from openpyxl import Workbook
 from django.db.models import Q
 from django.utils.encoding import smart_str
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
@@ -1246,37 +1249,99 @@ class ReporteClienteExportView(LoginRequiredMixin, View):
         wb.save(response)
         return response
 
+# @method_decorator(permiso_requerido('crear_factura'), name='dispatch')
+# class GenerarFacturaDesdePedidoView(LoginRequiredMixin, View):
+#     def get(self, request, pedido_id):
+#         pedido = get_object_or_404(Pedido, pk=pedido_id)
+#         cliente = pedido.cliente
+#         detalles = pedido.detalles.all()
+
+#         factura = Factura.objects.create(
+#             cliente=cliente,
+#             nro_factura='001-001-0000001',  # luego automatizamos esto
+#             timbrado='12345678',
+#             condicion_venta='contado',
+#             estado='pendiente',
+#         )
+
+#         for item in detalles:
+#             DetalleFactura.objects.create(
+#                 factura=factura,
+#                 producto=item.producto,
+#                 cantidad=item.cantidad,
+#                 precio_unitario=item.precio_unitario,
+#                 iva_aplicado=item.producto.iva,
+#             )
+
+#         # Calcular total
+#         factura.total = sum([d.cantidad * d.precio_unitario for d in factura.detalles.all()])
+#         factura.save()
+
+#         return redirect('factura_list')
+
+# class ImprimirFacturaView(LoginRequiredMixin, View):
+#     def get(self, request, pk):
+#         factura = get_object_or_404(Factura, pk=pk)
+#         return render(request, 'bodega/factura_print.html', {'factura': factura})
+
+from django.contrib import messages
+
 @method_decorator(permiso_requerido('crear_factura'), name='dispatch')
 class GenerarFacturaDesdePedidoView(LoginRequiredMixin, View):
     def get(self, request, pedido_id):
         pedido = get_object_or_404(Pedido, pk=pedido_id)
-        cliente = pedido.cliente
-        detalles = pedido.detalles.all()
 
+        # Solo si está entregado
+        if pedido.estado != 'entregado':
+            messages.warning(request, "Solo se pueden facturar pedidos entregados.")
+            return redirect('pedido_list')
+
+        # Crear la factura
         factura = Factura.objects.create(
-            cliente=cliente,
-            nro_factura='001-001-0000001',  # luego automatizamos esto
-            timbrado='12345678',
+            cliente=pedido.cliente,
+            observacion=pedido.observacion,
+            nro_factura='001-001-' + str(Factura.objects.count() + 1).zfill(7),  # Ejemplo básico
+            timbrado='12345678',  # Reemplazar por valor real o configurable
             condicion_venta='contado',
-            estado='pendiente',
+            estado='pendiente'
         )
 
-        for item in detalles:
+        total = 0
+        for detalle in pedido.detalles.all():
             DetalleFactura.objects.create(
                 factura=factura,
-                producto=item.producto,
-                cantidad=item.cantidad,
-                precio_unitario=item.precio_unitario,
-                iva_aplicado=item.producto.iva,
+                producto=detalle.producto,
+                cantidad=detalle.cantidad,
+                precio_unitario=detalle.precio_unitario,
+                iva_aplicado=detalle.producto.iva
             )
+            total += detalle.cantidad * detalle.precio_unitario
 
-        # Calcular total
-        factura.total = sum([d.cantidad * d.precio_unitario for d in factura.detalles.all()])
+        factura.total = total
         factura.save()
 
+        messages.success(request, "Factura generada correctamente.")
         return redirect('factura_list')
 
-class ImprimirFacturaView(LoginRequiredMixin, View):
+@method_decorator(permiso_requerido('ver_factura'), name='dispatch')
+class FacturaPrintView(LoginRequiredMixin, View):
     def get(self, request, pk):
         factura = get_object_or_404(Factura, pk=pk)
-        return render(request, 'bodega/facturas/factura_print.html', {'factura': factura})
+        return render(request, 'bodega/factura_print.html', {'factura': factura})
+
+@method_decorator(permiso_requerido('ver_factura'), name='dispatch')
+class FacturaPDFView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        template = get_template('bodega/factura_pdf.html')
+        html = template.render({'factura': factura})
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename=factura_{factura.pk}.pdf'
+
+        pisa_status = pisa.CreatePDF(html, dest=response)
+
+        if pisa_status.err:
+            return HttpResponse('Ocurrió un error al generar el PDF', status=500)
+
+        return response

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid black; padding: 4px; text-align: left; }
+    .header, .footer { text-align: center; margin-top: 10px; }
+    .right { text-align: right; }
+    .bold { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>FACTURA</h2>
+    <p>Timbrado: {{ factura.timbrado }} - Factura N°: {{ factura.nro_factura }}</p>
+  </div>
+
+  <p><strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y H:i" }}</p>
+  <p><strong>Condición de Venta:</strong> {{ factura.condicion_venta|title }}</p>
+  <p><strong>Cliente:</strong> {{ factura.cliente.nombre }} {{ factura.cliente.apellido }}</p>
+  <p><strong>Documento:</strong> {{ factura.cliente.documento }}</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Cant.</th>
+        <th>Descripción</th>
+        <th>Precio Unit.</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in factura.detalles.all %}
+      <tr>
+        <td>{{ d.cantidad }}</td>
+        <td>{{ d.producto.nombre }}</td>
+        <td>{{ d.precio_unitario }}</td>
+        <td>{{ d.subtotal }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" class="right bold">TOTAL:</td>
+        <td class="bold">{{ factura.total }}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <p><strong>Observaciones:</strong> {{ factura.observacion }}</p>
+
+  <div class="footer">
+    <p>Firma: ___________________________</p>
+  </div>
+</body>
+</html>
