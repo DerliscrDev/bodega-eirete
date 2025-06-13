@@ -1,80 +1,66 @@
 {% extends 'bodega/base.html' %}
-{% load static %}
-{% load factura_tags %}
-
-{% block title %}Factura Nº {{ factura.nro_factura }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4" id="factura-print">
-  <div class="text-center mb-3">
-    <h2>FACTURA</h2>
-    <p><strong>Timbrado:</strong> {{ factura.timbrado }} | <strong>Factura N°:</strong> {{ factura.nro_factura }}</p>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-6">
-      <p><strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y H:i" }}</p>
-      <p><strong>Condición de Venta:</strong> {{ factura.condicion_venta|title }}</p>
+<div class="container mt-4">
+  <div class="border p-4" style="width: 21cm; margin: auto; background-color: white;">
+    <div class="text-center">
+      <h4 class="mb-0">BODEGA EIRETE</h4>
+      <p class="mb-0">RUC: 1234567-8</p>
+      <p class="mb-0">Av. Ejemplo 123 - Asunción - Paraguay</p>
+      <p>Tel: (021) 123-4567</p>
     </div>
-    <div class="col-md-6">
-      <p><strong>Cliente:</strong> {{ factura.cliente.nombre }} {{ factura.cliente.apellido }}</p>
-      <p><strong>Documento:</strong> {{ factura.cliente.documento }}</p>
+
+    <hr>
+
+    <div class="d-flex justify-content-between mb-3">
+      <div>
+        <p><strong>Timbrado:</strong> {{ factura.timbrado }}</p>
+        <p><strong>Factura Nro:</strong> {{ factura.nro_factura }}</p>
+        <p><strong>Condición de venta:</strong> {{ factura.get_condicion_venta_display }}</p>
+      </div>
+      <div>
+        <p><strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y H:i" }}</p>
+        <p><strong>Cliente:</strong> {{ factura.cliente }}</p>
+        <p><strong>RUC/CI:</strong> {{ factura.cliente.documento }}</p>
+      </div>
     </div>
-  </div>
 
-  <table class="table table-bordered">
-    <thead class="thead-light">
-      <tr>
-        <th>Cant.</th>
-        <th>Descripción</th>
-        <th>Precio Unit.</th>
-        <th>Subtotal</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for d in factura.detalles.all %}
-      <tr>
-        <td>{{ d.cantidad }}</td>
-        <td>{{ d.producto.nombre }}</td>
-        <td>{{ d.precio_unitario }}</td>
-        <td>{{ d.subtotal }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="3" class="text-right"><strong>Total</strong></td>
-        <td><strong>{{ factura.total }}</strong></td>
-      </tr>
-    </tfoot>
-  </table>
+    <table class="table table-bordered table-sm">
+      <thead class="table-light">
+        <tr class="text-center">
+          <th>Código</th>
+          <th>Descripción</th>
+          <th>Cant.</th>
+          <th>Precio Unitario</th>
+          <th>Exenta</th>
+          <th>IVA 5%</th>
+          <th>IVA 10%</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in factura.detalles.all %}
+        <tr class="text-end">
+          <td>{{ d.producto.codigo }}</td>
+          <td class="text-start">{{ d.producto.nombre }}</td>
+          <td>{{ d.cantidad }}</td>
+          <td>Gs. {{ d.precio_unitario }}</td>
+          <td>{% if d.iva_aplicado == "exento" %}Gs. {{ d.cantidad|mul:d.precio_unitario }}{% endif %}</td>
+          <td>{% if d.iva_aplicado == "5" %}Gs. {{ d.cantidad|mul:d.precio_unitario }}{% endif %}</td>
+          <td>{% if d.iva_aplicado == "10" %}Gs. {{ d.cantidad|mul:d.precio_unitario }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-  <div class="row mt-4">
-    <div class="col-md-6">
-      <p><strong>Observaciones:</strong></p>
-      <p>{{ factura.observacion }}</p>
+    <div class="text-end mt-3">
+      <p><strong>Total:</strong> Gs. {{ factura.total }}</p>
+      <p><strong>Total en letras:</strong> {{ factura.total|numero_a_letras }}</p>
     </div>
-    <div class="col-md-6 text-right">
-      <p><strong>IVA Distribución</strong></p>
-      <ul class="list-unstyled">
-        <li>Exento: 
-          {{ factura.detalles.all|filter_by_iva:"exento"|subtotal_iva }}</li>
-        <li>5%: 
-          {{ factura.detalles.all|filter_by_iva:"5"|subtotal_iva }}</li>
-        <li>10%: 
-          {{ factura.detalles.all|filter_by_iva:"10"|subtotal_iva }}</li>
-      </ul>
+
+    <div class="mt-5">
+      <p>____________________________</p>
+      <p>Firma y aclaración</p>
     </div>
-  </div>
-
-  <div class="text-center mt-5">
-    <p>___________________________</p>
-    <p><strong>Firma y Aclaración</strong></p>
-  </div>
-
-  <div class="text-center mt-4 no-print">
-    <a href="#" class="btn btn-primary" onclick="window.print()">Imprimir</a>
-    <a href="{% url 'factura_list' %}" class="btn btn-secondary">Volver</a>
   </div>
 </div>
 {% endblock %}

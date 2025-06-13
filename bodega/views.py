@@ -1279,10 +1279,10 @@ class ReporteClienteExportView(LoginRequiredMixin, View):
 
 #         return redirect('factura_list')
 
-# class ImprimirFacturaView(LoginRequiredMixin, View):
-#     def get(self, request, pk):
-#         factura = get_object_or_404(Factura, pk=pk)
-#         return render(request, 'bodega/factura_print.html', {'factura': factura})
+class ImprimirFacturaView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        factura = get_object_or_404(Factura, pk=pk)
+        return render(request, 'bodega/factura_print.html', {'factura': factura})
 
 from django.contrib import messages
 
