@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from . import views
 from .views import (
     home,
     crear_empleado, EmpleadoListView, EmpleadoUpdateView, EmpleadoInactivateView,
@@ -122,7 +123,6 @@ urlpatterns = [
     path('facturas/imprimir/<int:pk>/', FacturaPrintView.as_view(), name='factura_print'),
     path('facturas/pdf/<int:pk>/', FacturaPDFView.as_view(), name='factura_pdf'),
 
-    
     # Reportes
     path('reportes/inventario/', ReporteInventarioView.as_view(), name='reporte_inventario'),
     path('reportes/inventario/exportar/', ReporteInventarioExportView.as_view(), name='exportar_inventario'),
@@ -136,4 +136,5 @@ urlpatterns = [
     path('reportes/ordenes-compra/exportar/', ReporteOrdenCompraExportView.as_view(), name='reporte_ordenes_compra_exportar'),
     path('reportes/clientes/', ReporteClienteView.as_view(), name='reporte_clientes'),
     path('reportes/clientes/exportar/', ReporteClienteExportView.as_view(), name='reporte_clientes_exportar'),
+    path('reportes/grafico-entradas-salidas/', views.datos_entradas_salidas, name='grafico_entradas_salidas'),
 ]

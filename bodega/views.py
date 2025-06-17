@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.utils.crypto import get_random_string
@@ -14,7 +14,6 @@ from django.views import View
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
 from django.forms import inlineformset_factory
-from django.http import HttpResponse
 from datetime import datetime
 import openpyxl
 from django.utils.timezone import localtime
@@ -26,6 +25,7 @@ from django.utils.encoding import smart_str
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from io import BytesIO
+from num2words import num2words
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
@@ -502,127 +502,6 @@ class OrdenCompraUpdateView(LoginRequiredMixin, View):
             'formset': formset
         })
 
-# @method_decorator(permiso_requerido('crear_orden_compra'), name='dispatch')
-# class OrdenCompraCreateView(LoginRequiredMixin, View):
-#     def get(self, request):
-#         orden_form = OrdenCompraForm()
-#         formset = DetalleFormSet()
-#         return render(request, 'bodega/orden_compra_form.html', {
-#             'orden_form': orden_form,
-#             'formset': formset
-#         })
-
-#     def post(self, request):
-#         orden_form = OrdenCompraForm(request.POST)
-#         formset = DetalleFormSet(request.POST)
-
-#         if orden_form.is_valid() and formset.is_valid():
-#             orden = orden_form.save()
-#             detalles = formset.save(commit=False)
-#             for detalle in detalles:
-#                 detalle.orden = orden
-#                 detalle.save()
-#             return redirect('orden_compra_list')
-
-#         return render(request, 'bodega/orden_compra_form.html', {
-#             'orden_form': orden_form,
-#             'formset': formset
-#         })
-
-# @method_decorator(permiso_requerido('editar_orden_compra'), name='dispatch')
-# class OrdenCompraUpdateView(LoginRequiredMixin, View):
-#     def get(self, request, pk):
-#         orden = OrdenCompra.objects.get(pk=pk)
-#         orden_form = OrdenCompraForm(instance=orden)
-#         formset = DetalleFormSet(instance=orden)
-#         return render(request, 'bodega/orden_compra_form.html', {
-#             'orden_form': orden_form,
-#             'formset': formset
-#         })
-
-#     def post(self, request, pk):
-#         orden = OrdenCompra.objects.get(pk=pk)
-#         orden_form = OrdenCompraForm(request.POST, instance=orden)
-#         formset = DetalleFormSet(request.POST, instance=orden)
-
-#         if orden_form.is_valid() and formset.is_valid():
-#             orden_form.save()
-#             formset.save()
-#             return redirect('orden_compra_list')
-
-#         return render(request, 'bodega/orden_compra_form.html', {
-#             'orden_form': orden_form,
-#             'formset': formset
-#         })
-
-
-# @method_decorator(permiso_requerido('crear_orden_compra'), name='dispatch')
-# class OrdenCompraCreateView(LoginRequiredMixin, View):
-#     def get(self, request):
-#         orden_form = OrdenCompraForm()
-#         DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
-#         formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.none())
-#         return render(request, 'bodega/orden_compra_form.html', {
-#             'orden_form': orden_form,
-#             'formset': formset
-#         })
-
-#     def post(self, request):
-#         orden_form = OrdenCompraForm(request.POST)
-#         DetalleFormSet = modelformset_factory(DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=3, can_delete=False)
-#         formset = DetalleFormSet(request.POST)
-
-#         if orden_form.is_valid() and formset.is_valid():
-#             orden = orden_form.save()
-#             for form in formset:
-#                 detalle = form.save(commit=False)
-#                 detalle.orden = orden
-#                 detalle.save()
-#             return redirect('orden_compra_list')
-
-#         return render(request, 'bodega/orden_compra_form.html', {
-#             'orden_form': orden_form,
-#             'formset': formset
-#         })
-
-# @method_decorator(permiso_requerido('editar_orden_compra'), name='dispatch')
-# class OrdenCompraUpdateView(LoginRequiredMixin, View):
-#     def get(self, request, pk):
-#         orden = OrdenCompra.objects.get(pk=pk)
-#         orden_form = OrdenCompraForm(instance=orden)
-
-#         DetalleFormSet = modelformset_factory(
-#             DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
-#         )
-#         formset = DetalleFormSet(queryset=DetalleOrdenCompra.objects.filter(orden=orden))
-
-#         return render(request, 'bodega/orden_compra_form.html', {
-#             'orden_form': orden_form,
-#             'formset': formset
-#         })
-
-#     def post(self, request, pk):
-#         orden = OrdenCompra.objects.get(pk=pk)
-#         orden_form = OrdenCompraForm(request.POST, instance=orden)
-
-#         DetalleFormSet = modelformset_factory(
-#             DetalleOrdenCompra, form=DetalleOrdenCompraForm, extra=0, can_delete=False
-#         )
-#         formset = DetalleFormSet(request.POST, queryset=DetalleOrdenCompra.objects.filter(orden=orden))
-
-#         if orden_form.is_valid() and formset.is_valid():
-#             orden_form.save()
-#             for form in formset:
-#                 detalle = form.save(commit=False)
-#                 detalle.orden = orden
-#                 detalle.save()
-#             return redirect('orden_compra_list')
-
-#         return render(request, 'bodega/orden_compra_form.html', {
-#             'orden_form': orden_form,
-#             'formset': formset
-#         })
-
 @method_decorator(permiso_requerido('recibir_orden_compra'), name='dispatch')
 class OrdenCompraRecibirView(LoginRequiredMixin, View):
     def get(self, request, pk):
@@ -1029,6 +908,35 @@ class MovimientoReporteView(LoginRequiredMixin, ListView):
         context['almacenes'] = Almacen.objects.all()
         return context
 
+# Vista para el gráfico de Entradas vs Salidas
+@login_required
+def datos_entradas_salidas(request):
+    movimientos = Movimiento.objects.all()
+
+    producto = request.GET.get("producto")
+    tipo = request.GET.get("tipo")
+    almacen = request.GET.get("almacen")
+    fecha_inicio = request.GET.get("fecha_inicio")
+    fecha_fin = request.GET.get("fecha_fin")
+
+    if producto:
+        movimientos = movimientos.filter(producto_id=producto)
+    if tipo:
+        movimientos = movimientos.filter(tipo=tipo)
+    if almacen:
+        movimientos = movimientos.filter(almacen_id=almacen)
+    if fecha_inicio:
+        movimientos = movimientos.filter(fecha__date__gte=fecha_inicio)
+    if fecha_fin:
+        movimientos = movimientos.filter(fecha__date__lte=fecha_fin)
+
+    entradas = movimientos.filter(tipo='entrada').count()
+    salidas = movimientos.filter(tipo='salida').count()
+
+    return JsonResponse({
+        'labels': ['Entradas', 'Salidas'],
+        'data': [entradas, salidas]
+    })
 
 @method_decorator(permiso_requerido('ver_movimiento'), name='dispatch')
 class MovimientoReporteExportView(LoginRequiredMixin, View):
@@ -1249,36 +1157,6 @@ class ReporteClienteExportView(LoginRequiredMixin, View):
         wb.save(response)
         return response
 
-# @method_decorator(permiso_requerido('crear_factura'), name='dispatch')
-# class GenerarFacturaDesdePedidoView(LoginRequiredMixin, View):
-#     def get(self, request, pedido_id):
-#         pedido = get_object_or_404(Pedido, pk=pedido_id)
-#         cliente = pedido.cliente
-#         detalles = pedido.detalles.all()
-
-#         factura = Factura.objects.create(
-#             cliente=cliente,
-#             nro_factura='001-001-0000001',  # luego automatizamos esto
-#             timbrado='12345678',
-#             condicion_venta='contado',
-#             estado='pendiente',
-#         )
-
-#         for item in detalles:
-#             DetalleFactura.objects.create(
-#                 factura=factura,
-#                 producto=item.producto,
-#                 cantidad=item.cantidad,
-#                 precio_unitario=item.precio_unitario,
-#                 iva_aplicado=item.producto.iva,
-#             )
-
-#         # Calcular total
-#         factura.total = sum([d.cantidad * d.precio_unitario for d in factura.detalles.all()])
-#         factura.save()
-
-#         return redirect('factura_list')
-
 class ImprimirFacturaView(LoginRequiredMixin, View):
     def get(self, request, pk):
         factura = get_object_or_404(Factura, pk=pk)
@@ -1318,6 +1196,7 @@ class GenerarFacturaDesdePedidoView(LoginRequiredMixin, View):
             total += detalle.cantidad * detalle.precio_unitario
 
         factura.total = total
+        pedido.facturado = True
         factura.save()
 
         messages.success(request, "Factura generada correctamente.")
@@ -1333,8 +1212,15 @@ class FacturaPrintView(LoginRequiredMixin, View):
 class FacturaPDFView(LoginRequiredMixin, View):
     def get(self, request, pk):
         factura = get_object_or_404(Factura, pk=pk)
+        
+        # Convertir total a letras en guaraníes
+        total_letras = num2words(factura.total, lang='es').replace("coma cero cero", "") + " guaraníes"
+        
         template = get_template('bodega/factura_pdf.html')
-        html = template.render({'factura': factura})
+        html = template.render({
+            'factura': factura,
+            'total_letras': total_letras
+        })
 
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename=factura_{factura.pk}.pdf'
