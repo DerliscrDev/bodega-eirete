@@ -21,6 +21,12 @@
               {{ orden_form.proveedor.errors }}
             </div>
             <div class="col-md-6 mb-3">
+              {{ orden_form.almacen_destino.label_tag }}
+              {{ orden_form.almacen_destino }}
+              {{ orden_form.almacen_destino.errors }}
+            </div>
+            
+            <div class="col-md-6 mb-3">
               {{ orden_form.estado.label_tag }}
               {{ orden_form.estado }}
               {{ orden_form.estado.errors }}
@@ -58,6 +64,7 @@
                   {{ field.errors }}
                 </div>
               {% endfor %}
+              {{ form.DELETE }}
             </div>
           {% endfor %}
 
@@ -74,76 +81,3 @@
   </div>
 </div>
 {% endblock %}
-
-
-
-
-
-{% comment %} {% extends 'bodega/base.html' %}
-{% load static %}
-
-{% block title %}Orden de Compra - Bodega Eirete{% endblock %}
-
-{% block content %}
-<div class="card shadow-sm mb-4">
-  <div class="card-body">
-    <h2 class="card-title mb-3">Orden de Compra</h2>
-
-    <form method="post">
-      {% csrf_token %}
-      {{ formset.management_form }}
-      {{ orden_form.non_field_errors }}
-
-      <!-- Datos de la Orden -->
-      <div class="mb-4">
-        <div class="mb-3">
-          <label for="id_proveedor" class="form-label">Proveedor</label>
-          {{ orden_form.proveedor }}
-          {% for error in orden_form.proveedor.errors %}
-            <div class="text-danger">{{ error }}</div>
-          {% endfor %}
-        </div>
-        <div class="mb-3">
-          <label for="id_observacion" class="form-label">Observación</label>
-          {{ orden_form.observacion }}
-          {% for error in orden_form.observacion.errors %}
-            <div class="text-danger">{{ error }}</div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- Detalles -->
-      <h5>Detalles de la Orden</h5>
-      <table class="table table-bordered table-sm align-middle">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio Unitario</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for f in formset.forms %}
-          <tr>
-            {% for hidden in f.hidden_fields %}
-              {{ hidden }}
-            {% endfor %}
-            <td>{{ f.producto }}</td>
-            <td>{{ f.cantidad }}</td>
-            <td>{{ f.precio_unitario }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      {% if formset.non_form_errors %}
-        <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
-      {% endif %}
-
-      <div class="d-flex justify-content-end">
-        <button type="submit" class="btn btn-custom">Guardar Orden</button>
-      </div>
-    </form>
-  </div>
-</div>
-{% endblock %} {% endcomment %}

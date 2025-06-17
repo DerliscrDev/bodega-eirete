@@ -145,6 +145,7 @@ class OrdenCompra(models.Model):
     )
 
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
+    almacen_destino = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True)
     fecha = models.DateField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
     nro_factura = models.CharField(max_length=50, blank=True, null=True)

@@ -1,6 +1,6 @@
 # forms.py actualizado con herencia desde Persona
 from django import forms
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, DateInput
 from django.contrib.auth.forms import SetPasswordForm
 from .models import (
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra,
@@ -40,7 +40,7 @@ class PermisoForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['nombre', 'descripcion', 'codigo', 'precio', 'stock', 'unidad_medida', 'iva', 'marca', 'activo']
+        fields = ['nombre', 'descripcion', 'categoria', 'codigo', 'precio', 'stock', 'unidad_medida', 'iva', 'marca', 'activo']
 
 class MovimientoForm(forms.ModelForm):
     class Meta:
@@ -53,9 +53,13 @@ class ProveedorForm(forms.ModelForm):
         fields = ['nombre', 'ruc', 'direccion', 'telefono', 'email', 'activo']
 
 class OrdenCompraForm(forms.ModelForm):
+    fecha_entrega = forms.DateField(
+        widget=DateInput(attrs={'type': 'date'}),  # genera <input type="date">
+        input_formats=['%Y-%m-%d']  # asegura el formato correcto
+    )
     class Meta:
         model = OrdenCompra
-        fields = ['proveedor', 'nro_factura', 'fecha_entrega', 'estado', 'observacion']
+        fields = ['proveedor', 'almacen_destino', 'nro_factura', 'fecha_entrega', 'estado', 'observacion']
 
 class DetalleOrdenCompraForm(forms.ModelForm):
     class Meta:
@@ -105,6 +109,14 @@ DetalleFacturaFormSet = inlineformset_factory(
     DetalleFactura,
     form=DetalleFacturaForm,
     extra=1,
+    can_delete=True
+)
+
+DetalleOrdenCompraFormSet = inlineformset_factory(
+    OrdenCompra,
+    DetalleOrdenCompra,
+    form=DetalleOrdenCompraForm,
+    extra=0,
     can_delete=True
 )
 
