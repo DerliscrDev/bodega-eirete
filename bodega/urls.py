@@ -23,7 +23,8 @@ from .views import (
     ReporteOrdenCompraView, ReporteClienteView,
     MovimientoReporteExportView, ReporteInventarioExportView, ReportePedidoExportView, ReporteFacturaExportView, 
     ReporteOrdenCompraExportView, ReporteClienteExportView,
-    GenerarFacturaDesdePedidoView, FacturaPrintView, FacturaPDFView
+    GenerarFacturaDesdePedidoView, FacturaPrintView, FacturaPDFView,
+    CajaListView, CajaCreateView, CajaCloseView, MovimientoCajaCreateView, CajaMovimientosView
 )
 
 urlpatterns = [
@@ -137,4 +138,11 @@ urlpatterns = [
     path('reportes/clientes/', ReporteClienteView.as_view(), name='reporte_clientes'),
     path('reportes/clientes/exportar/', ReporteClienteExportView.as_view(), name='reporte_clientes_exportar'),
     path('reportes/grafico-entradas-salidas/', views.datos_entradas_salidas, name='grafico_entradas_salidas'),
+    
+    # Caja
+    path('cajas/', CajaListView.as_view(), name='caja_list'),
+    path('cajas/abrir/', CajaCreateView.as_view(), name='caja_create'),
+    path('cajas/cerrar/<int:pk>/', CajaCloseView.as_view(), name='caja_close'),
+    path('cajas/movimientos/<int:pk>/', CajaMovimientosView.as_view(), name='caja_movimientos'),
+    path('cajas/movimientos/nuevo/', MovimientoCajaCreateView.as_view(), name='movimiento_caja_create'),
 ]

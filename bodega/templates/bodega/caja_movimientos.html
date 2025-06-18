@@ -1,0 +1,38 @@
+{% extends 'bodega/base.html' %}
+
+{% block title %}Movimientos de Caja - Bodega Eirete{% endblock %}
+
+{% block content %}
+<h2>Movimientos de Caja #{{ caja.id }}</h2>
+<p><strong>Estado:</strong> {{ caja.estado|title }}</p>
+<p><strong>Fecha Apertura:</strong> {{ caja.fecha_apertura|date:"Y-m-d H:i" }}</p>
+
+{% if caja.estado == 'abierta' and tiene_permiso "registrar_movimiento_caja" %}
+  <a href="{% url 'movimiento_caja_create' %}" class="btn btn-success mb-3">Registrar Movimiento</a>
+{% endif %}
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Tipo</th>
+      <th>Descripción</th>
+      <th>Monto</th>
+      <th>Usuario</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in movimientos %}
+      <tr>
+        <td>{{ m.fecha|date:"Y-m-d H:i" }}</td>
+        <td>{{ m.tipo|title }}</td>
+        <td>{{ m.descripcion }}</td>
+        <td>{{ m.monto }} Gs</td>
+        <td>{{ m.usuario.username }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">Sin movimientos registrados.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

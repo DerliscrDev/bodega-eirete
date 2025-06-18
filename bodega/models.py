@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth import get_user_model
+# User = get_user_model()
 
 # === BASE ===
 class Persona(models.Model):
@@ -221,3 +222,27 @@ class DetalleFactura(models.Model):
 
     def __str__(self):
         return f"{self.producto} x {self.cantidad}"
+
+class Caja(models.Model):
+    fecha_apertura = models.DateTimeField(auto_now_add=True)
+    fecha_cierre = models.DateTimeField(null=True, blank=True)
+    usuario_apertura = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='aperturas_caja')
+    usuario_cierre = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name='cierres_caja')
+    monto_inicial = models.DecimalField(max_digits=12, decimal_places=2)
+    monto_final = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    estado = models.CharField(max_length=10, choices=[('abierta', 'Abierta'), ('cerrada', 'Cerrada')], default='abierta')
+
+    def __str__(self):
+        return f"Caja {self.pk} - {self.estado}"
+
+
+class MovimientoCaja(models.Model):
+    caja = models.ForeignKey(Caja, on_delete=models.CASCADE, related_name='movimientos')
+    tipo = models.CharField(max_length=10, choices=[('ingreso', 'Ingreso'), ('egreso', 'Egreso')])
+    descripcion = models.TextField()
+    monto = models.DecimalField(max_digits=12, decimal_places=2)
+    fecha = models.DateTimeField(auto_now_add=True)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.tipo.capitalize()} - {self.monto} Gs"

@@ -29,12 +29,12 @@ from num2words import num2words
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
-    Almacen, CategoriaProducto, Inventario, Pedido, DetallePedido, Factura, DetalleFactura
+    Almacen, CategoriaProducto, Inventario, Pedido, DetallePedido, Factura, DetalleFactura, Caja, MovimientoCaja
 )
 from .forms import (
     EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm,
     OrdenCompraForm, DetalleOrdenCompraForm, ClienteForm, AlmacenForm, CategoriaProductoForm, PedidoForm, DetallePedidoFormSet,
-    FacturaForm, DetalleFacturaForm, DetalleOrdenCompraFormSet
+    FacturaForm, DetalleFacturaForm, DetalleOrdenCompraFormSet, CajaForm, MovimientoCajaForm
 ) 
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
@@ -1394,3 +1394,59 @@ class FacturaPDFView(LoginRequiredMixin, View):
             return HttpResponse('Ocurrió un error al generar el PDF', status=500)
 
         return response
+    
+@method_decorator(permiso_requerido('abrir_caja'), name='dispatch')
+class CajaCreateView(LoginRequiredMixin, CreateView):
+    model = Caja
+    form_class = CajaForm
+    template_name = 'bodega/caja_form.html'
+
+    def form_valid(self, form):
+        form.instance.usuario_apertura = self.request.user
+        form.instance.fecha_apertura = timezone.now()
+        form.instance.estado = 'abierta'
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('caja_list')
+
+@method_decorator(permiso_requerido('cerrar_caja'), name='dispatch')
+class CajaCloseView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        caja = get_object_or_404(Caja, pk=pk, estado='abierta')
+        caja.fecha_cierre = timezone.now()
+        caja.usuario_cierre = request.user
+        caja.estado = 'cerrada'
+        caja.save()
+        return redirect('caja_list')
+
+@method_decorator(permiso_requerido('registrar_movimiento_caja'), name='dispatch')
+class MovimientoCajaCreateView(LoginRequiredMixin, CreateView):
+    model = MovimientoCaja
+    form_class = MovimientoCajaForm
+    template_name = 'bodega/movimientocaja_form.html'
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        form.instance.fecha = timezone.now()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('caja_list')
+
+@method_decorator(permiso_requerido('ver_caja'), name='dispatch')
+class CajaListView(LoginRequiredMixin, ListView):
+    model = Caja
+    template_name = 'bodega/caja_list.html'
+    context_object_name = 'cajas'
+
+@method_decorator(permiso_requerido('ver_movimientos_caja'), name='dispatch')
+class CajaMovimientosView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        caja = get_object_or_404(Caja, pk=pk)
+        movimientos = caja.movimientos.all()
+        return render(request, 'bodega/caja_movimientos.html', {
+            'caja': caja,
+            'movimientos': movimientos
+        })
+

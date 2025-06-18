@@ -4,7 +4,8 @@ from django.forms import inlineformset_factory, DateInput
 from django.contrib.auth.forms import SetPasswordForm
 from .models import (
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra,
-    Cliente, Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura
+    Cliente, Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura,
+    Caja, MovimientoCaja
 )
 
 class EmpleadoForm(forms.ModelForm):
@@ -122,3 +123,14 @@ DetalleOrdenCompraFormSet = inlineformset_factory(
 
 class CambiarPasswordForm(SetPasswordForm):
     pass
+
+class CajaForm(forms.ModelForm):
+    class Meta:
+        model = Caja
+        fields = ['monto_inicial']
+
+
+class MovimientoCajaForm(forms.ModelForm):
+    class Meta:
+        model = MovimientoCaja
+        fields = ['tipo', 'descripcion', 'monto']
