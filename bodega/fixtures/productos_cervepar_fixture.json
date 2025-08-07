@@ -1,0 +1,1802 @@
+[
+  {
+    "model": "bodega.producto",
+    "pk": 1,
+    "fields": {
+      "nombre": "Johnnie Walker 1L",
+      "codigo": "WHI0001",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 2,
+    "fields": {
+      "nombre": "Bacard\u00ed 330ml",
+      "codigo": "RON0002",
+      "categoria": "Ron",
+      "marca": "Bacard\u00ed",
+      "precio_compra": "90000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 3,
+    "fields": {
+      "nombre": "Brahma 1L",
+      "codigo": "CER0003",
+      "categoria": "Cerveza",
+      "marca": "Brahma",
+      "precio_compra": "10000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 14,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 4,
+    "fields": {
+      "nombre": "Budweiser 500ml",
+      "codigo": "CER0004",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 5,
+    "fields": {
+      "nombre": "Johnnie Walker 1L",
+      "codigo": "WHI0005",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 6,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0006",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 7,
+    "fields": {
+      "nombre": "Smirnoff 1L",
+      "codigo": "VOD0007",
+      "categoria": "Vodka",
+      "marca": "Smirnoff",
+      "precio_compra": "85000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 8,
+    "fields": {
+      "nombre": "Patagonia 330ml",
+      "codigo": "CER0008",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 11,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 9,
+    "fields": {
+      "nombre": "Frizz\u00e9 750ml",
+      "codigo": "VIN0009",
+      "categoria": "Vino Blanco",
+      "marca": "Frizz\u00e9",
+      "precio_compra": "22000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 10,
+    "fields": {
+      "nombre": "Patagonia 330ml",
+      "codigo": "CER0010",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 11,
+    "fields": {
+      "nombre": "Budweiser 330ml",
+      "codigo": "CER0011",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 12,
+    "fields": {
+      "nombre": "Corona 330ml",
+      "codigo": "CER0012",
+      "categoria": "Cerveza",
+      "marca": "Corona",
+      "precio_compra": "11000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 13,
+    "fields": {
+      "nombre": "Budweiser 750ml",
+      "codigo": "CER0013",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 14,
+    "fields": {
+      "nombre": "Toro Viejo 750ml",
+      "codigo": "VIN0014",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 15,
+    "fields": {
+      "nombre": "Brahma 500ml",
+      "codigo": "CER0015",
+      "categoria": "Cerveza",
+      "marca": "Brahma",
+      "precio_compra": "10000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 11,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 16,
+    "fields": {
+      "nombre": "Frizz\u00e9 750ml",
+      "codigo": "VIN0016",
+      "categoria": "Vino Blanco",
+      "marca": "Frizz\u00e9",
+      "precio_compra": "22000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 17,
+    "fields": {
+      "nombre": "Patagonia 1L",
+      "codigo": "CER0017",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 18,
+    "fields": {
+      "nombre": "Smirnoff 330ml",
+      "codigo": "VOD0018",
+      "categoria": "Vodka",
+      "marca": "Smirnoff",
+      "precio_compra": "85000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 19,
+    "fields": {
+      "nombre": "Toro Viejo 500ml",
+      "codigo": "VIN0019",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 20,
+    "fields": {
+      "nombre": "Smirnoff 500ml",
+      "codigo": "VOD0020",
+      "categoria": "Vodka",
+      "marca": "Smirnoff",
+      "precio_compra": "85000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 21,
+    "fields": {
+      "nombre": "Patagonia 500ml",
+      "codigo": "CER0021",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 22,
+    "fields": {
+      "nombre": "Budweiser 500ml",
+      "codigo": "CER0022",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 11,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 23,
+    "fields": {
+      "nombre": "Bacard\u00ed 500ml",
+      "codigo": "RON0023",
+      "categoria": "Ron",
+      "marca": "Bacard\u00ed",
+      "precio_compra": "90000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 6,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 24,
+    "fields": {
+      "nombre": "Brahma 330ml",
+      "codigo": "CER0024",
+      "categoria": "Cerveza",
+      "marca": "Brahma",
+      "precio_compra": "10000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 25,
+    "fields": {
+      "nombre": "Smirnoff 500ml",
+      "codigo": "VOD0025",
+      "categoria": "Vodka",
+      "marca": "Smirnoff",
+      "precio_compra": "85000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 14,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 26,
+    "fields": {
+      "nombre": "Corona 500ml",
+      "codigo": "CER0026",
+      "categoria": "Cerveza",
+      "marca": "Corona",
+      "precio_compra": "11000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 27,
+    "fields": {
+      "nombre": "Patagonia 330ml",
+      "codigo": "CER0027",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 14,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 28,
+    "fields": {
+      "nombre": "Pilsen 750ml",
+      "codigo": "CER0028",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 29,
+    "fields": {
+      "nombre": "Corona 1L",
+      "codigo": "CER0029",
+      "categoria": "Cerveza",
+      "marca": "Corona",
+      "precio_compra": "11000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 30,
+    "fields": {
+      "nombre": "Pilsen 330ml",
+      "codigo": "CER0030",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 31,
+    "fields": {
+      "nombre": "Toro Viejo 750ml",
+      "codigo": "VIN0031",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 32,
+    "fields": {
+      "nombre": "Corona 330ml",
+      "codigo": "CER0032",
+      "categoria": "Cerveza",
+      "marca": "Corona",
+      "precio_compra": "11000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 33,
+    "fields": {
+      "nombre": "Toro Viejo 500ml",
+      "codigo": "VIN0033",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 34,
+    "fields": {
+      "nombre": "Toro Viejo 750ml",
+      "codigo": "VIN0034",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 12,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 35,
+    "fields": {
+      "nombre": "Patagonia 330ml",
+      "codigo": "CER0035",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 36,
+    "fields": {
+      "nombre": "Budweiser 500ml",
+      "codigo": "CER0036",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 37,
+    "fields": {
+      "nombre": "Budweiser 750ml",
+      "codigo": "CER0037",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 38,
+    "fields": {
+      "nombre": "Patagonia 330ml",
+      "codigo": "CER0038",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 39,
+    "fields": {
+      "nombre": "Toro Viejo 1L",
+      "codigo": "VIN0039",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 6,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 40,
+    "fields": {
+      "nombre": "Budweiser 1L",
+      "codigo": "CER0040",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 41,
+    "fields": {
+      "nombre": "Bacard\u00ed 1L",
+      "codigo": "RON0041",
+      "categoria": "Ron",
+      "marca": "Bacard\u00ed",
+      "precio_compra": "90000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 42,
+    "fields": {
+      "nombre": "Pilsen 330ml",
+      "codigo": "CER0042",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 11,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 43,
+    "fields": {
+      "nombre": "Budweiser 1L",
+      "codigo": "CER0043",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 12,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 44,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0044",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 45,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0045",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 46,
+    "fields": {
+      "nombre": "Brahma 500ml",
+      "codigo": "CER0046",
+      "categoria": "Cerveza",
+      "marca": "Brahma",
+      "precio_compra": "10000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 47,
+    "fields": {
+      "nombre": "Brahma 1L",
+      "codigo": "CER0047",
+      "categoria": "Cerveza",
+      "marca": "Brahma",
+      "precio_compra": "10000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 48,
+    "fields": {
+      "nombre": "Smirnoff 500ml",
+      "codigo": "VOD0048",
+      "categoria": "Vodka",
+      "marca": "Smirnoff",
+      "precio_compra": "85000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 11,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 49,
+    "fields": {
+      "nombre": "Johnnie Walker 330ml",
+      "codigo": "WHI0049",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 50,
+    "fields": {
+      "nombre": "Corona 330ml",
+      "codigo": "CER0050",
+      "categoria": "Cerveza",
+      "marca": "Corona",
+      "precio_compra": "11000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 51,
+    "fields": {
+      "nombre": "Toro Viejo 1L",
+      "codigo": "VIN0051",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 52,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0052",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 6,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 53,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0053",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 54,
+    "fields": {
+      "nombre": "Toro Viejo 750ml",
+      "codigo": "VIN0054",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 55,
+    "fields": {
+      "nombre": "Frizz\u00e9 750ml",
+      "codigo": "VIN0055",
+      "categoria": "Vino Blanco",
+      "marca": "Frizz\u00e9",
+      "precio_compra": "22000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 56,
+    "fields": {
+      "nombre": "Toro Viejo 1L",
+      "codigo": "VIN0056",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 57,
+    "fields": {
+      "nombre": "Pilsen 750ml",
+      "codigo": "CER0057",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 58,
+    "fields": {
+      "nombre": "Patagonia 330ml",
+      "codigo": "CER0058",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 59,
+    "fields": {
+      "nombre": "Patagonia 750ml",
+      "codigo": "CER0059",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 60,
+    "fields": {
+      "nombre": "Smirnoff 330ml",
+      "codigo": "VOD0060",
+      "categoria": "Vodka",
+      "marca": "Smirnoff",
+      "precio_compra": "85000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 61,
+    "fields": {
+      "nombre": "Pilsen 750ml",
+      "codigo": "CER0061",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 62,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0062",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 11,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 63,
+    "fields": {
+      "nombre": "Johnnie Walker 500ml",
+      "codigo": "WHI0063",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 64,
+    "fields": {
+      "nombre": "Johnnie Walker 750ml",
+      "codigo": "WHI0064",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 6,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 65,
+    "fields": {
+      "nombre": "Bacard\u00ed 750ml",
+      "codigo": "RON0065",
+      "categoria": "Ron",
+      "marca": "Bacard\u00ed",
+      "precio_compra": "90000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 66,
+    "fields": {
+      "nombre": "Johnnie Walker 750ml",
+      "codigo": "WHI0066",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 67,
+    "fields": {
+      "nombre": "Budweiser 1L",
+      "codigo": "CER0067",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 68,
+    "fields": {
+      "nombre": "Brahma 1L",
+      "codigo": "CER0068",
+      "categoria": "Cerveza",
+      "marca": "Brahma",
+      "precio_compra": "10000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 69,
+    "fields": {
+      "nombre": "Toro Viejo 750ml",
+      "codigo": "VIN0069",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 14,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 70,
+    "fields": {
+      "nombre": "Bacard\u00ed 750ml",
+      "codigo": "RON0070",
+      "categoria": "Ron",
+      "marca": "Bacard\u00ed",
+      "precio_compra": "90000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 71,
+    "fields": {
+      "nombre": "Smirnoff 750ml",
+      "codigo": "VOD0071",
+      "categoria": "Vodka",
+      "marca": "Smirnoff",
+      "precio_compra": "85000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 72,
+    "fields": {
+      "nombre": "Bacard\u00ed 1L",
+      "codigo": "RON0072",
+      "categoria": "Ron",
+      "marca": "Bacard\u00ed",
+      "precio_compra": "90000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 73,
+    "fields": {
+      "nombre": "Corona 330ml",
+      "codigo": "CER0073",
+      "categoria": "Cerveza",
+      "marca": "Corona",
+      "precio_compra": "11000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 6,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 74,
+    "fields": {
+      "nombre": "Budweiser 500ml",
+      "codigo": "CER0074",
+      "categoria": "Cerveza",
+      "marca": "Budweiser",
+      "precio_compra": "9500.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 14,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 75,
+    "fields": {
+      "nombre": "Smirnoff 330ml",
+      "codigo": "VOD0075",
+      "categoria": "Vodka",
+      "marca": "Smirnoff",
+      "precio_compra": "85000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 76,
+    "fields": {
+      "nombre": "Toro Viejo 750ml",
+      "codigo": "VIN0076",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 77,
+    "fields": {
+      "nombre": "Patagonia 1L",
+      "codigo": "CER0077",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 78,
+    "fields": {
+      "nombre": "Bacard\u00ed 500ml",
+      "codigo": "RON0078",
+      "categoria": "Ron",
+      "marca": "Bacard\u00ed",
+      "precio_compra": "90000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 6,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 79,
+    "fields": {
+      "nombre": "Brahma 1L",
+      "codigo": "CER0079",
+      "categoria": "Cerveza",
+      "marca": "Brahma",
+      "precio_compra": "10000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 5,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 80,
+    "fields": {
+      "nombre": "Johnnie Walker 500ml",
+      "codigo": "WHI0080",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 81,
+    "fields": {
+      "nombre": "Corona 1L",
+      "codigo": "CER0081",
+      "categoria": "Cerveza",
+      "marca": "Corona",
+      "precio_compra": "11000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 9,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 82,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0082",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 83,
+    "fields": {
+      "nombre": "Johnnie Walker 500ml",
+      "codigo": "WHI0083",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 84,
+    "fields": {
+      "nombre": "Corona 1L",
+      "codigo": "CER0084",
+      "categoria": "Cerveza",
+      "marca": "Corona",
+      "precio_compra": "11000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 6,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 85,
+    "fields": {
+      "nombre": "Johnnie Walker 750ml",
+      "codigo": "WHI0085",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 6,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 86,
+    "fields": {
+      "nombre": "Johnnie Walker 750ml",
+      "codigo": "WHI0086",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 87,
+    "fields": {
+      "nombre": "Frizz\u00e9 750ml",
+      "codigo": "VIN0087",
+      "categoria": "Vino Blanco",
+      "marca": "Frizz\u00e9",
+      "precio_compra": "22000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 88,
+    "fields": {
+      "nombre": "Toro Viejo 330ml",
+      "codigo": "VIN0088",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 89,
+    "fields": {
+      "nombre": "Frizz\u00e9 1L",
+      "codigo": "VIN0089",
+      "categoria": "Vino Blanco",
+      "marca": "Frizz\u00e9",
+      "precio_compra": "22000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 90,
+    "fields": {
+      "nombre": "Pilsen 1L",
+      "codigo": "CER0090",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 7,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 91,
+    "fields": {
+      "nombre": "Patagonia 500ml",
+      "codigo": "CER0091",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 92,
+    "fields": {
+      "nombre": "Patagonia 1L",
+      "codigo": "CER0092",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 93,
+    "fields": {
+      "nombre": "Toro Viejo 750ml",
+      "codigo": "VIN0093",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 13,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 94,
+    "fields": {
+      "nombre": "Brahma 500ml",
+      "codigo": "CER0094",
+      "categoria": "Cerveza",
+      "marca": "Brahma",
+      "precio_compra": "10000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 11,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 95,
+    "fields": {
+      "nombre": "Johnnie Walker 1L",
+      "codigo": "WHI0095",
+      "categoria": "Whisky",
+      "marca": "Johnnie Walker",
+      "precio_compra": "120000.00",
+      "margen_ganancia": "20",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 8,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 96,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0096",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 14,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 97,
+    "fields": {
+      "nombre": "Pilsen 500ml",
+      "codigo": "CER0097",
+      "categoria": "Cerveza",
+      "marca": "Pilsen",
+      "precio_compra": "8000.00",
+      "margen_ganancia": "25",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 12,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 98,
+    "fields": {
+      "nombre": "Patagonia 1L",
+      "codigo": "CER0098",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "30",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 10,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 99,
+    "fields": {
+      "nombre": "Toro Viejo 1L",
+      "codigo": "VIN0099",
+      "categoria": "Vino Tinto",
+      "marca": "Toro Viejo",
+      "precio_compra": "25000.00",
+      "margen_ganancia": "40",
+      "iva": 10,
+      "isc": 12,
+      "precio_venta": "0.00",
+      "stock_minimo": 15,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.producto",
+    "pk": 100,
+    "fields": {
+      "nombre": "Patagonia 500ml",
+      "codigo": "CER0100",
+      "categoria": "Cerveza",
+      "marca": "Patagonia",
+      "precio_compra": "13000.00",
+      "margen_ganancia": "35",
+      "iva": 10,
+      "isc": 8,
+      "precio_venta": "0.00",
+      "stock_minimo": 12,
+      "unidad_medida": "unidad",
+      "activo": true
+    }
+  }
+]

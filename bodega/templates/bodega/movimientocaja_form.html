@@ -1,0 +1,28 @@
+{% extends 'bodega/base.html' %}
+
+{% block title %}Registrar Movimiento de Caja - Bodega Eirete{% endblock %}
+
+{% block content %}
+<h2>Registrar Movimiento de Caja</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="mb-3">
+    <label for="id_tipo" class="form-label">Tipo</label>
+    {{ form.tipo }}
+    {{ form.tipo.errors }}
+  </div>
+  <div class="mb-3">
+    <label for="id_descripcion" class="form-label">Descripción</label>
+    {{ form.descripcion }}
+    {{ form.descripcion.errors }}
+  </div>
+  <div class="mb-3">
+    <label for="id_monto" class="form-label">Monto</label>
+    {{ form.monto }}
+    {{ form.monto.errors }}
+  </div>
+  <button type="submit" class="btn btn-primary">Guardar Movimiento</button>
+</form>
+{% endblock %}

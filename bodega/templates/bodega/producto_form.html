@@ -1,154 +1,70 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
-{% block title %}{% if object %}Editar Producto{% else %}Nuevo Producto{% endif %} - Bodega Eirete{% endblock %}
 
-{% block content %}
-<div class="row">
-  <div class="col-md-8 offset-md-2">
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <h2 class="card-title mb-4">{% if object %}Editar Producto{% else %}Nuevo Producto{% endif %}</h2>
-
-        {% if request.user|tiene_permiso:"crear_producto" or request.user|tiene_permiso:"editar_producto" %}
-        <form method="post">
-          {% csrf_token %}
-          {{ form.non_field_errors }}
-
-          <div class="mb-3">
-            {{ form.nombre.label_tag }}
-            {{ form.nombre }}
-            {{ form.nombre.errors }}
-          </div>
-
-          <div class="mb-3">
-            {{ form.descripcion.label_tag }}
-            {{ form.descripcion }}
-            {{ form.descripcion.errors }}
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.codigo.label_tag }}
-              {{ form.codigo }}
-              {{ form.codigo.errors }}
-            </div>
-            <div class="col-md-6 mb-3">
-              {{ form.precio.label_tag }}
-              {{ form.precio }}
-              {{ form.precio.errors }}
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.stock.label_tag }}
-              {{ form.stock }}
-              {{ form.stock.errors }}
-            </div>
-            <div class="col-md-6 mb-3">
-              {{ form.unidad_medida.label_tag }}
-              {{ form.unidad_medida }}
-              {{ form.unidad_medida.errors }}
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.iva.label_tag }}
-              {{ form.iva }}
-              {{ form.iva.errors }}
-            </div>
-            <div class="col-md-6 mb-3">
-              {{ form.marca.label_tag }}
-              {{ form.marca }}
-              {{ form.marca.errors }}
-            </div>
-          </div>
-
-          <div class="form-check mb-3">
-            {{ form.activo }} {{ form.activo.label_tag }}
-            {{ form.activo.errors }}
-          </div>
-
-          <button type="submit" class="btn btn-custom">{% if object %}Actualizar{% else %}Guardar{% endif %}</button>
-          <a href="{% url 'producto_list' %}" class="btn btn-secondary">Cancelar</a>
-        </form>
-        {% else %}
-        <div class="alert alert-warning">
-          No tienes permiso para crear o editar productos.
-        </div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
-
-
-
-
-
-{% comment %} {% extends 'bodega/base.html' %}
 {% block title %}
   {% if object %}Editar Producto{% else %}Nuevo Producto{% endif %} - Bodega Eirete
 {% endblock %}
 
 {% block content %}
 <div class="row">
-  <div class="col-md-8 offset-md-2">
+  <div class="col-md-10 offset-md-1">
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h2 class="card-title mb-4">
-          {% if object %}Editar Producto{% else %}Nuevo Producto{% endif %}
-        </h2>
+        <h2 class="card-title mb-4">{% if object %}Editar Producto{% else %}Nuevo Producto{% endif %}</h2>
 
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           {{ form.non_field_errors }}
 
-          <div class="mb-3">
-            {{ form.nombre.label_tag }}
-            {{ form.nombre }}
-            {{ form.nombre.errors }}
-          </div>
-
-          <div class="mb-3">
-            {{ form.codigo.label_tag }}
-            {{ form.codigo }}
-            {{ form.codigo.errors }}
-          </div>
-
-          <div class="mb-3">
-            {{ form.descripcion.label_tag }}
-            {{ form.descripcion }}
-            {{ form.descripcion.errors }}
-          </div>
-
           <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.precio.label_tag }}
-              {{ form.precio }}
-              {{ form.precio.errors }}
+            <div class="col-md-6">
+              <div class="mb-3">{{ form.nombre.label_tag }} {{ form.nombre }}</div>
+              <div class="mb-3">{{ form.descripcion.label_tag }} {{ form.descripcion }}</div>
+              <div class="mb-3">{{ form.marca.label_tag }} {{ form.marca }}</div>
+              <div class="mb-3">{{ form.categoria.label_tag }} {{ form.categoria }}</div>
+              <div class="mb-3">{{ form.codigo.label_tag }} {{ form.codigo }}</div>
+              <div class="mb-3">{{ form.codigo_barra.label_tag }} {{ form.codigo_barra }}</div>
+              <div class="mb-3">{{ form.unidad_medida.label_tag }} {{ form.unidad_medida }}</div>
+              <div class="mb-3">{{ form.volumen.label_tag }} {{ form.volumen }}</div>
             </div>
-            <div class="col-md-6 mb-3">
-              {{ form.stock.label_tag }}
-              {{ form.stock }}
-              {{ form.stock.errors }}
+
+            <div class="col-md-6">
+              <div class="mb-3">{{ form.tipo_bebida.label_tag }} {{ form.tipo_bebida }}</div>
+              <div class="mb-3 alcohol-fields d-none">
+                {{ form.graduacion_alcoholica.label_tag }} {{ form.graduacion_alcoholica }}
+              </div>
+              <div class="mb-3">{{ form.iva.label_tag }} {{ form.iva }}</div>
+              <div class="form-check mb-3">{{ form.activo }} {{ form.activo.label_tag }}</div>
             </div>
           </div>
 
-          <div class="form-check mb-3">
-            {{ form.activo }}
-            {{ form.activo.label_tag }}
+          <div class="mt-3">
+            <button type="submit" class="btn btn-custom">
+              {% if object %}Actualizar{% else %}Guardar{% endif %}
+            </button>
+            <a href="{% url 'producto_list' %}" class="btn btn-secondary">Cancelar</a>
           </div>
-
-          <button type="submit" class="btn btn-custom">
-            {% if object %}Actualizar{% else %}Guardar{% endif %}
-          </button>
-          <a href="{% url 'producto_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
       </div>
     </div>
   </div>
 </div>
-{% endblock %} {% endcomment %}
+
+<script>
+  function toggleAlcoholFields() {
+    const tipo = document.getElementById("id_tipo_bebida").value;
+    const alcoholFields = document.querySelector(".alcohol-fields");
+
+    if (tipo === "vino" || tipo === "cerveza") {
+      alcoholFields.classList.remove("d-none");
+    } else {
+      alcoholFields.classList.add("d-none");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    toggleAlcoholFields();
+    document.getElementById("id_tipo_bebida").addEventListener("change", toggleAlcoholFields);
+  });
+</script>
+{% endblock %}

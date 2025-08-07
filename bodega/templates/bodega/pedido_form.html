@@ -45,6 +45,11 @@
                   {{ field.errors }}
                 </div>
               {% endfor %}
+              {% if form.instance.pk %}
+                <div class="form-check">
+                  {{ form.DELETE }} {{ form.DELETE.label_tag }}
+                </div>
+              {% endif %}
             </div>
           {% endfor %}
 

@@ -1,6 +1,13 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
-{% block title %}Confirmar {{ object.activo|yesno:"Inactivación,Reactivación" }} - Bodega Eirete{% endblock %}
+
+{% block title %}
+  {% if object.estado == 'cancelado' %}
+    Confirmar Reactivación - Bodega Eirete
+  {% else %}
+    Confirmar Cancelación - Bodega Eirete
+  {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -8,24 +15,28 @@
     <div class="card shadow-sm mb-4">
       <div class="card-body">
         <h2 class="card-title mb-4">
-          {% if object.activo %}Confirmar Inactivación{% else %}Confirmar Reactivación{% endif %}
+          {% if object.estado == 'cancelado' %}
+            Confirmar Reactivación
+          {% else %}
+            Confirmar Cancelación
+          {% endif %}
         </h2>
 
         {% if request.user|tiene_permiso:"cancelar_pedido" %}
         <p>
-          {% if object.activo %}
-            ¿Estás seguro de que deseas cancelar el pedido <strong>{{ object }}</strong>?
+          {% if object.estado == 'cancelado' %}
+            ¿Estás seguro de que deseas <strong>reactivar</strong> el pedido <strong>#{{ object.pk }}</strong> del cliente <strong>{{ object.cliente }}</strong>?
           {% else %}
-            ¿Estás seguro de que deseas reactivar el pedido <strong>{{ object }}</strong>?
+            ¿Estás seguro de que deseas <strong>cancelar</strong> el pedido <strong>#{{ object.pk }}</strong> del cliente <strong>{{ object.cliente }}</strong>?
           {% endif %}
         </p>
 
         <form method="post">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger">
-            {% if object.activo %}Inactivar{% else %}Reactivar{% endif %}
+          <button type="submit" class="btn {% if object.estado == 'cancelado' %}btn-success{% else %}btn-danger{% endif %}">
+            {% if object.estado == 'cancelado' %}Reactivar{% else %}Cancelar{% endif %}
           </button>
-          <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Cancelar</a>
+          <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Volver</a>
         </form>
         {% else %}
         <div class="alert alert-warning">
@@ -37,63 +48,3 @@
   </div>
 </div>
 {% endblock %}
-
-
-
-
-{% comment %} {% extends 'bodega/base.html' %}
-{% load permisos_tags %}
-
-{% block title %}Confirmar Inactivación - Bodega Eirete{% endblock %}
-
-{% block content %}
-<div class="row">
-  <div class="col-md-8 offset-md-2">
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <h2 class="card-title mb-4">Confirmar Inactivación</h2>
-        <p>¿Estás seguro de que deseas inactivar al proveedor <strong>{{ object.nombre }}</strong>?</p>
-
-        <form method="post">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-danger">Inactivar</button>
-          <a href="{% url 'proveedor_list' %}" class="btn btn-secondary">Cancelar</a>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %} {% endcomment %}
-
-
-
-
-
-{% comment %} {% extends 'bodega/base.html' %}
-{% load static %}
-
-{% block title %}Confirmación - Pedido{% endblock %}
-
-{% block content %}
-<div class="container mt-4">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h2 class="card-title">
-        {% if pedido.estado != 'cancelado' %}Cancelar{% else %}Reactivar{% endif %} Pedido
-      </h2>
-      <p class="mb-4">
-        ¿Estás seguro que querés 
-        {% if pedido.estado != 'cancelado' %}cancelar{% else %}reactivar{% endif %}
-        el pedido <strong>#{{ pedido.pk }}</strong> del cliente <strong>{{ pedido.cliente }}</strong>?
-      </p>
-      <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn {% if pedido.estado != 'cancelado' %}btn-danger{% else %}btn-success{% endif %}">
-          {% if pedido.estado != 'cancelado' %}Cancelar{% else %}Reactivar{% endif %}
-        </button>
-        <a href="{% url 'pedido_list' %}" class="btn btn-secondary">Volver</a>
-      </form>
-    </div>
-  </div>
-</div>
-{% endblock %} {% endcomment %}

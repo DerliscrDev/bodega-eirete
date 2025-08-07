@@ -242,5 +242,18 @@
       </div>  
     </div>
     {% endif %}
+
+    <!-- Reporte de Facturas -->
+    {% if request.user|tiene_permiso:"ver_caja" %}
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title">Caja</h5>
+          <p class="card-text">Gestión de apertura, cierre y movimientos de caja.</p>
+          <a href="{% url 'caja_list' %}" class="btn btn-custom">Ver Caja</a>
+        </div>
+      </div>  
+    </div>
+    {% endif %}
   </div>
 {% endblock %}

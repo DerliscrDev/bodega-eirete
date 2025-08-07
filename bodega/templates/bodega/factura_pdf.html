@@ -1,0 +1,108 @@
+{% comment %} {% load factura_tags humanize %} {% endcomment %}
+{% load humanize factura_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: DejaVu Sans, sans-serif; font-size: 10pt; }
+    .title { text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 5px; }
+    .info, .detalle, .totales { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .info td, .detalle th, .detalle td, .totales th, .totales td {
+      border: 1px solid black; padding: 4px;
+    }
+    .detalle th { background-color: #eee; }
+    .right { text-align: right; }
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    .small { font-size: 9pt; }
+    .observacion { margin-top: 10px; font-size: 9pt; }
+    .firma { margin-top: 40px; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="title">FACTURA</div>
+
+  <table class="info">
+    <tr>
+      <td colspan="2"><strong>RUC Emisor:</strong> 80000001-2</td>
+      <td><strong>Factura N°:</strong> {{ factura.nro_factura }}</td>
+    </tr>
+    <tr>
+      <td colspan="2"><strong>Razón Social:</strong> Bodega Eirete</td>
+      <td><strong>Timbrado:</strong> {{ factura.timbrado }}</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>Dirección:</strong> Ruta PY-02 Km 30, Itauguá</td>
+    </tr>
+    <tr>
+      <td><strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y" }}</td>
+      <td><strong>Condición:</strong> {{ factura.get_condicion_venta_display }}</td>
+      <td><strong>Hora:</strong> {{ factura.fecha|date:"H:i" }}</td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <strong>Cliente:</strong> {{ factura.cliente.nombre }} {{ factura.cliente.apellido }}<br>
+        <strong>RUC/CI:</strong> {{ factura.cliente.documento }}
+      </td>
+      <td><strong>Teléfono:</strong> {{ factura.cliente.telefono }}</td>
+    </tr>
+  </table>
+
+  <table class="detalle">
+    <thead>
+      <tr class="center">
+        <th>Producto</th>
+        <th>Cant.</th>
+        <th>Precio Unit.</th>
+        <th>IVA</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in factura.detalles.all %}
+      <tr>
+        <td>{{ item.producto.nombre }}</td>
+        <td class="center">{{ item.cantidad }}</td>
+        <td class="right">Gs. {{ item.precio_unitario|intcomma }}</td>
+        <td class="center">{{ item.get_iva_aplicado_display }}</td>
+        <td class="right">Gs. {{ item.subtotal|intcomma }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="totales">
+    <tr>
+      <th class="right">Exento</th>
+      <td class="right">
+        Gs. {{ factura.detalles.all|filter_by_iva:"exento"|sum_subtotal|intcomma }}
+      </td>
+    </tr>
+    <tr>
+      <th class="right">IVA 5%</th>
+      <td class="right">
+        Gs. {{ factura.detalles.all|filter_by_iva:"5"|sum_subtotal|intcomma }}
+      </td>
+    </tr>
+    <tr>
+      <th class="right">IVA 10%</th>
+      <td class="right">
+        Gs. {{ factura.detalles.all|filter_by_iva:"10"|sum_subtotal|intcomma }}
+      </td>
+    </tr>
+    <tr>
+      <th class="right">Total a pagar</th>
+      <td class="right bold">Gs. {{ factura.total|intcomma }}</td>
+    </tr>
+  </table>
+
+  {% if factura.observacion %}
+  <div class="observacion">
+    <strong>Observación:</strong> {{ factura.observacion }}
+  </div>
+  {% endif %}
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from . import views
 from .views import (
     home,
     crear_empleado, EmpleadoListView, EmpleadoUpdateView, EmpleadoInactivateView,
@@ -22,6 +23,9 @@ from .views import (
     ReporteOrdenCompraView, ReporteClienteView,
     MovimientoReporteExportView, ReporteInventarioExportView, ReportePedidoExportView, ReporteFacturaExportView, 
     ReporteOrdenCompraExportView, ReporteClienteExportView,
+    GenerarFacturaDesdePedidoView, FacturaPrintView, FacturaPDFView,
+    CajaListView, CajaCreateView, CajaCloseView, MovimientoCajaCreateView, CajaMovimientosView,
+    TipoProductoListView, TipoProductoCreateView, TipoProductoUpdateView, TipoProductoInactivateView
 )
 
 urlpatterns = [
@@ -117,7 +121,10 @@ urlpatterns = [
     path('facturas/nueva/', FacturaCreateView.as_view(), name='factura_create'),
     path('facturas/editar/<int:pk>/', FacturaUpdateView.as_view(), name='factura_update'),
     path('facturas/anular/<int:pk>/', FacturaInactivateView.as_view(), name='factura_inactivate'),
-    
+    path('facturas/generar/<int:pedido_id>/', GenerarFacturaDesdePedidoView.as_view(), name='factura_generar_desde_pedido'),
+    path('facturas/imprimir/<int:pk>/', FacturaPrintView.as_view(), name='factura_print'),
+    path('facturas/pdf/<int:pk>/', FacturaPDFView.as_view(), name='factura_pdf'),
+
     # Reportes
     path('reportes/inventario/', ReporteInventarioView.as_view(), name='reporte_inventario'),
     path('reportes/inventario/exportar/', ReporteInventarioExportView.as_view(), name='exportar_inventario'),
@@ -131,4 +138,19 @@ urlpatterns = [
     path('reportes/ordenes-compra/exportar/', ReporteOrdenCompraExportView.as_view(), name='reporte_ordenes_compra_exportar'),
     path('reportes/clientes/', ReporteClienteView.as_view(), name='reporte_clientes'),
     path('reportes/clientes/exportar/', ReporteClienteExportView.as_view(), name='reporte_clientes_exportar'),
+    path('reportes/grafico-entradas-salidas/', views.datos_entradas_salidas, name='grafico_entradas_salidas'),
+    
+    # Caja
+    path('cajas/', CajaListView.as_view(), name='caja_list'),
+    path('cajas/abrir/', CajaCreateView.as_view(), name='caja_create'),
+    path('cajas/cerrar/<int:pk>/', CajaCloseView.as_view(), name='caja_close'),
+    path('cajas/movimientos/<int:pk>/', CajaMovimientosView.as_view(), name='caja_movimientos'),
+    path('cajas/movimientos/nuevo/', MovimientoCajaCreateView.as_view(), name='movimiento_caja_create'),
+    
+    # Tipos de productos
+    path('tipos/', TipoProductoListView.as_view(), name='tipoproducto_list'),
+    path('tipos/nuevo/', TipoProductoCreateView.as_view(), name='tipoproducto_create'),
+    path('tipos/<int:pk>/editar/', TipoProductoUpdateView.as_view(), name='tipoproducto_update'),
+    path('tipos/<int:pk>/inactivar/', TipoProductoInactivateView.as_view(), name='tipoproducto_inactivate'),
+
 ]

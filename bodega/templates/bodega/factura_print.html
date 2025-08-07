@@ -1,0 +1,93 @@
+{% extends 'bodega/base.html' %}
+{% load humanize %}
+
+{% block title %}Factura #{{ factura.pk }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="font-family: 'Courier New', monospace;">
+  <div class="border p-4 shadow">
+    <div class="text-center">
+      <h4 class="mb-1">Bodega Eirete</h4>
+      <small>Dirección: Ruta PY-02 Km 30, Itauguá</small><br>
+      <small>Tel: (0981) 000-000 • Email: bodegaeirete@gmail.com</small>
+    </div>
+
+    <hr>
+
+    <div class="row mb-3">
+      <div class="col-6">
+        <strong>Cliente:</strong> {{ factura.cliente }}<br>
+        <strong>RUC/CI:</strong> {{ factura.cliente.documento }}<br>
+        <strong>Condición:</strong> {{ factura.get_condicion_venta_display }}
+      </div>
+      <div class="col-6 text-end">
+        <strong>Factura N°:</strong> {{ factura.nro_factura }}<br>
+        <strong>Timbrado:</strong> {{ factura.timbrado }}<br>
+        <strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y H:i" }}
+      </div>
+    </div>
+
+    <table class="table table-sm table-bordered mb-4">
+      <thead class="table-light">
+        <tr class="text-center">
+          <th>Producto</th>
+          <th>Cant.</th>
+          <th>Precio Unit.</th>
+          <th>IVA</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in factura.detalles.all %}
+        <tr>
+          <td>{{ item.producto.nombre }}</td>
+          <td class="text-end">{{ item.cantidad }}</td>
+          <td class="text-end">Gs. {{ item.precio_unitario|intcomma }}</td>
+          <td class="text-center">{{ item.get_iva_aplicado_display }}</td>
+          <td class="text-end">
+            Gs. {{ item.subtotal|intcomma }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="row">
+      <div class="col-6">
+        <strong>Total en letras:</strong><br>
+        <em>{{ factura.total|apnumber }} guaraníes</em><br>
+        {% if factura.observacion %}
+        <strong>Observaciones:</strong><br>
+        <em>{{ factura.observacion }}</em>
+        {% endif %}
+      </div>
+      <div class="col-6">
+        <table class="table table-sm table-bordered">
+          <tr>
+            <th>Exento</th>
+            <td class="text-end">
+              Gs. {{ factura.detalles.all|filter_by_iva:"exento"|sum_subtotal|intcomma }}
+            </td>
+          </tr>
+          <tr>
+            <th>IVA 5%</th>
+            <td class="text-end">
+              Gs. {{ factura.detalles.all|filter_by_iva:"5"|sum_subtotal|intcomma }}
+            </td>
+          </tr>
+          <tr>
+            <th>IVA 10%</th>
+            <td class="text-end">
+              Gs. {{ factura.detalles.all|filter_by_iva:"10"|sum_subtotal|intcomma }}
+            </td>
+          </tr>
+          <tr>
+            <th class="text-end">Total:</th>
+            <td class="text-end fw-bold">Gs. {{ factura.total|intcomma }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

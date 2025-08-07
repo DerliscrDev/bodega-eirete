@@ -51,6 +51,7 @@
                 <a href="{% url 'factura_inactivate' factura.pk %}" class="btn btn-sm btn-success">Reactivar</a>
                 {% endif %}
               {% endif %}
+              <a href="{% url 'factura_pdf' factura.pk %}" class="btn btn-sm btn-secondary">PDF</a>
             </td>
           </tr>
           {% empty %}

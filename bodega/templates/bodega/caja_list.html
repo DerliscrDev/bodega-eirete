@@ -1,0 +1,50 @@
+{% extends 'bodega/base.html' %}
+{% load permisos_tags %}
+
+{% block title %}Cajas - Bodega Eirete{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Listado de Cajas</h2>
+  {% if tiene_permiso "abrir_caja" %}
+    <a href="{% url 'caja_create' %}" class="btn btn-success">Abrir Nueva Caja</a>
+  {% endif %}
+</div>
+
+<table class="table table-bordered table-hover">
+  <thead class="thead-light">
+    <tr>
+      <th>ID</th>
+      <th>Fecha Apertura</th>
+      <th>Usuario Apertura</th>
+      <th>Estado</th>
+      <th>Monto Inicial</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for caja in cajas %}
+      <tr>
+        <td>{{ caja.id }}</td>
+        <td>{{ caja.fecha_apertura|date:"Y-m-d H:i" }}</td>
+        <td>{{ caja.usuario_apertura.username }}</td>
+        <td>{{ caja.estado|title }}</td>
+        <td>{{ caja.monto_inicial }} Gs</td>
+        <td>
+          {% if tiene_permiso "ver_movimientos_caja" %}
+            <a href="{% url 'caja_movimientos' caja.id %}" class="btn btn-info btn-sm">Ver Movimientos</a>
+          {% endif %}
+          {% if caja.estado == 'abierta' and tiene_permiso "cerrar_caja" %}
+            <form action="{% url 'caja_close' caja.id %}" method="post" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Cerrar esta caja?')">Cerrar Caja</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">No hay cajas registradas.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

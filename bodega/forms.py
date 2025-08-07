@@ -1,10 +1,11 @@
 # forms.py actualizado con herencia desde Persona
 from django import forms
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, DateInput
 from django.contrib.auth.forms import SetPasswordForm
 from .models import (
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra,
-    Cliente, Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura
+    Cliente, Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura,
+    Caja, MovimientoCaja, TipoProducto
 )
 
 class EmpleadoForm(forms.ModelForm):
@@ -40,7 +41,12 @@ class PermisoForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['nombre', 'descripcion', 'codigo', 'precio', 'stock', 'unidad_medida', 'iva', 'marca', 'activo']
+        fields = [
+            'nombre', 'descripcion', 'marca', 'categoria',
+            'codigo', 'unidad_medida', 'tipo_bebida',
+            'precio_compra', 'iva', 'stock_minimo', 'fecha_vencimiento',
+            'proveedor', 'activo'
+        ]
 
 class MovimientoForm(forms.ModelForm):
     class Meta:
@@ -53,9 +59,13 @@ class ProveedorForm(forms.ModelForm):
         fields = ['nombre', 'ruc', 'direccion', 'telefono', 'email', 'activo']
 
 class OrdenCompraForm(forms.ModelForm):
+    fecha_entrega = forms.DateField(
+        widget=DateInput(attrs={'type': 'date'}),  # genera <input type="date">
+        input_formats=['%Y-%m-%d']  # asegura el formato correcto
+    )
     class Meta:
         model = OrdenCompra
-        fields = ['proveedor', 'nro_factura', 'fecha_entrega', 'estado', 'observacion']
+        fields = ['proveedor', 'almacen_destino', 'nro_factura', 'fecha_entrega', 'estado', 'observacion']
 
 class DetalleOrdenCompraForm(forms.ModelForm):
     class Meta:
@@ -70,7 +80,7 @@ class AlmacenForm(forms.ModelForm):
 class CategoriaProductoForm(forms.ModelForm):
     class Meta:
         model = CategoriaProducto
-        fields = ['nombre', 'descripcion', 'activo']
+        fields = ['nombre', 'activo']
 
 class PedidoForm(forms.ModelForm):
     class Meta:
@@ -108,5 +118,28 @@ DetalleFacturaFormSet = inlineformset_factory(
     can_delete=True
 )
 
+DetalleOrdenCompraFormSet = inlineformset_factory(
+    OrdenCompra,
+    DetalleOrdenCompra,
+    form=DetalleOrdenCompraForm,
+    extra=0,
+    can_delete=True
+)
+
 class CambiarPasswordForm(SetPasswordForm):
     pass
+
+class CajaForm(forms.ModelForm):
+    class Meta:
+        model = Caja
+        fields = ['monto_inicial']
+
+class MovimientoCajaForm(forms.ModelForm):
+    class Meta:
+        model = MovimientoCaja
+        fields = ['tipo', 'descripcion', 'monto']
+
+class TipoProductoForm(forms.ModelForm):
+    class Meta:
+        model = TipoProducto
+        fields = ['nombre', 'categoria', 'activo']

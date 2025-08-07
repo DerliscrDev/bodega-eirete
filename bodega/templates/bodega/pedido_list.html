@@ -50,6 +50,9 @@
                 <a href="{% url 'pedido_inactivate' pedido.pk %}" class="btn btn-sm btn-success">Reactivar</a>
                 {% endif %}
               {% endif %}
+              {% if pedido.estado == 'entregado' and request.user|tiene_permiso:"crear_factura" %}
+                <a href="{% url 'factura_generar_desde_pedido' pedido.id %}" class="btn btn-sm btn-success">Facturar</a>
+              {% endif %}
             </td>
           </tr>
           {% empty %}

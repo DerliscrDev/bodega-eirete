@@ -18,12 +18,12 @@
           {% endif %}
         </h2>
 
-        {% if request.user|tiene_permiso:"inactivar_categoria" %}
+        {% if request.user|tiene_permiso:"inactivar_tipoproducto" %}
         <p class="text-center">
           {% if object.activo %}
-            ¿Estás seguro de que deseas <strong class="text-danger">inactivar</strong> la categoría <strong>{{ object.nombre }}</strong>?
+            ¿Estás seguro de que deseas <strong class="text-danger">inactivar</strong> el tipo <strong>{{ object.nombre }}</strong>?
           {% else %}
-            ¿Estás seguro de que deseas <strong class="text-success">reactivar</strong> la categoría <strong>{{ object.nombre }}</strong>?
+            ¿Estás seguro de que deseas <strong class="text-success">reactivar</strong> el tipo <strong>{{ object.nombre }}</strong>?
           {% endif %}
         </p>
 
@@ -32,7 +32,7 @@
           <button type="submit" class="btn {% if object.activo %}btn-danger{% else %}btn-success{% endif %} me-2">
             {% if object.activo %}Inactivar{% else %}Reactivar{% endif %}
           </button>
-          <a href="{% url 'categoria_list' %}" class="btn btn-secondary">Cancelar</a>
+          <a href="{% url 'tipoproducto_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
         {% else %}
         <div class="alert alert-warning text-center">

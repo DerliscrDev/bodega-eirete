@@ -1,0 +1,248 @@
+[
+  {
+    "model": "bodega.categoriaproducto",
+    "pk": 1,
+    "fields": {
+      "nombre": "Bebida alcohólica",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 1,
+    "fields": {
+      "nombre": "Cerveza",
+      "categoria": 1,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 2,
+    "fields": {
+      "nombre": "Vino",
+      "categoria": 1,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 3,
+    "fields": {
+      "nombre": "Whisky",
+      "categoria": 1,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 4,
+    "fields": {
+      "nombre": "Ron",
+      "categoria": 1,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 5,
+    "fields": {
+      "nombre": "Vodka",
+      "categoria": 1,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 6,
+    "fields": {
+      "nombre": "Aperitivos",
+      "categoria": 1,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.categoriaproducto",
+    "pk": 2,
+    "fields": {
+      "nombre": "Bebida sin alcohol",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 7,
+    "fields": {
+      "nombre": "Gaseosa",
+      "categoria": 2,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 8,
+    "fields": {
+      "nombre": "Agua",
+      "categoria": 2,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 9,
+    "fields": {
+      "nombre": "Energética",
+      "categoria": 2,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 10,
+    "fields": {
+      "nombre": "Jugo",
+      "categoria": 2,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 11,
+    "fields": {
+      "nombre": "Té frío",
+      "categoria": 2,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.categoriaproducto",
+    "pk": 3,
+    "fields": {
+      "nombre": "Cigarrillos",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 12,
+    "fields": {
+      "nombre": "Nacionales",
+      "categoria": 3,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 13,
+    "fields": {
+      "nombre": "Importados",
+      "categoria": 3,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.categoriaproducto",
+    "pk": 4,
+    "fields": {
+      "nombre": "Snacks",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 14,
+    "fields": {
+      "nombre": "Papas fritas",
+      "categoria": 4,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 15,
+    "fields": {
+      "nombre": "Palitos salados",
+      "categoria": 4,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 16,
+    "fields": {
+      "nombre": "Maní",
+      "categoria": 4,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.categoriaproducto",
+    "pk": 5,
+    "fields": {
+      "nombre": "Lácteos",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 17,
+    "fields": {
+      "nombre": "Leche",
+      "categoria": 5,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 18,
+    "fields": {
+      "nombre": "Yogurt",
+      "categoria": 5,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 19,
+    "fields": {
+      "nombre": "Queso",
+      "categoria": 5,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.categoriaproducto",
+    "pk": 6,
+    "fields": {
+      "nombre": "Otros",
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 20,
+    "fields": {
+      "nombre": "Hielo",
+      "categoria": 6,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 21,
+    "fields": {
+      "nombre": "Carbón",
+      "categoria": 6,
+      "activo": true
+    }
+  },
+  {
+    "model": "bodega.tipoproducto",
+    "pk": 22,
+    "fields": {
+      "nombre": "Vasos descartables",
+      "categoria": 6,
+      "activo": true
+    }
+  }
+]

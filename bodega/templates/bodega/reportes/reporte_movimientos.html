@@ -55,7 +55,14 @@
         </a>
     </div>
   </form>
-
+  <div class="card mb-4">
+    <div class="card-header">
+      <strong>Gráfico: Entradas vs Salidas</strong>
+    </div>
+    <div class="card-body">
+      <canvas id="graficoEntradasSalidas" height: "120"></canvas>
+    </div>
+  </div>  
   {% if movimientos %}
   <div class="table-responsive">
     <table class="table table-bordered table-hover shadow-sm">
@@ -91,4 +98,61 @@
   </div>
   {% endif %}
 </div>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+  function obtenerGrafico() {
+    const params = new URLSearchParams({
+      producto: document.getElementById('producto').value,
+      tipo: document.getElementById('tipo').value,
+      almacen: document.getElementById('almacen').value,
+      fecha_inicio: document.querySelector('input[name="fecha_inicio"]').value,
+      fecha_fin: document.querySelector('input[name="fecha_fin"]').value
+    });
+  
+    fetch(`/reportes/grafico-entradas-salidas/?${params.toString()}`)
+      .then(response => response.json())
+      .then(({ labels, data }) => {
+        new Chart(document.getElementById('graficoEntradasSalidas'), {
+          type: 'pie',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Movimientos',
+              data: data,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' },
+              title: {
+                display: true,
+                text: 'Distribución de Entradas y Salidas'
+              },
+              datalabels: {
+                formatter: (value, context) => {
+                  const sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                  const percentage = (value / sum * 100).toFixed(1) + '%';
+                  return percentage;
+                },
+                color: '#fff',
+                font: {
+                  weight: 'bold',
+                  size: 14
+                }
+              }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+      });
+  }
+  
+  obtenerGrafico();  // Ejecutar al cargar la página
+  </script>  
 {% endblock %}
