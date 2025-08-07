@@ -256,4 +256,18 @@
     </div>
     {% endif %}
   </div>
+
+  <!-- Requisiciones -->
+  {% if request.user|tiene_permiso:"ver_requisicion" %}
+  <div class="col-md-3">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body text-center">
+        <h5 class="card-title">Requisiciones</h5>
+        <p class="card-text">Solicitudes internas de stock.</p>
+        <a href="{% url 'requisicion_list' %}" class="btn btn-custom">Ver Requisiciones</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
 {% endblock %}

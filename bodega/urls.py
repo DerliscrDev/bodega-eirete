@@ -25,7 +25,8 @@ from .views import (
     ReporteOrdenCompraExportView, ReporteClienteExportView,
     GenerarFacturaDesdePedidoView, FacturaPrintView, FacturaPDFView,
     CajaListView, CajaCreateView, CajaCloseView, MovimientoCajaCreateView, CajaMovimientosView,
-    TipoProductoListView, TipoProductoCreateView, TipoProductoUpdateView, TipoProductoInactivateView
+    TipoProductoListView, TipoProductoCreateView, TipoProductoUpdateView, TipoProductoInactivateView,
+    RequisicionListView, RequisicionCreateView, RequisicionAprobarView, RequisicionRechazarView
 )
 
 urlpatterns = [
@@ -153,4 +154,9 @@ urlpatterns = [
     path('tipos/<int:pk>/editar/', TipoProductoUpdateView.as_view(), name='tipoproducto_update'),
     path('tipos/<int:pk>/inactivar/', TipoProductoInactivateView.as_view(), name='tipoproducto_inactivate'),
 
+    # Requisiciones
+    path('requisiciones/', RequisicionListView.as_view(), name='requisicion_list'),
+    path('requisiciones/nueva/', RequisicionCreateView.as_view(), name='requisicion_create'),
+    path('requisiciones/<int:pk>/aprobar/', RequisicionAprobarView.as_view(), name='requisicion_aprobar'),
+    path('requisiciones/<int:pk>/rechazar/', RequisicionRechazarView.as_view(), name='requisicion_rechazar'),
 ]

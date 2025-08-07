@@ -1,0 +1,105 @@
+{% extends "bodega/base.html" %}
+{% load static %}
+{% load form_filters %} {# si usas el filtro add_class #}
+
+{% block title %}{{ view.object|default_if_none:"Nueva" }} Requisición{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mx-auto" style="max-width: 900px;">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">
+      {% if view.object %}Editar{% else %}Nueva{% endif %} Requisición
+    </h5>
+  </div>
+
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+
+      {# --- Datos de cabecera --- #}
+      {{ form.non_field_errors }}
+      <div class="mb-3">
+        {{ form.observacion.label_tag }}
+        {{ form.observacion|add_class:"form-control" }}
+        {{ form.observacion.errors }}
+      </div>
+
+      <hr>
+
+      {# --- Detalles --- #}
+      {{ formset.management_form }}
+      <h6>Productos solicitados</h6>
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th style="width:55%">Producto</th>
+            <th style="width:25%">Cantidad</th>
+            <th style="width:20%"></th>
+          </tr>
+        </thead>
+        <tbody id="detalle-rows">
+          {% for form_det in formset %}
+          <tr class="item-row">
+            <td>{{ form_det.producto|add_class:"form-select" }}</td>
+            <td>{{ form_det.cantidad|add_class:"form-control" }}</td>
+            <td>
+              {% if form_det.instance.pk %}
+                <a href="#" class="btn btn-sm btn-danger remove-row">Quitar</a>
+              {% endif %}
+              {{ form_det.DELETE }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="add-row">
+        + Agregar ítem
+      </button>
+
+      <div class="mt-4 text-end">
+        <a href="{% url 'requisicion_list' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Añadir y quitar filas dinámicamente
+  document.getElementById('add-row').addEventListener('click', function () {
+    const totalForms = document.getElementById('id_detalles-TOTAL_FORMS');
+    const currentIndex = parseInt(totalForms.value);
+    const emptyRow = document.querySelector('.item-row').cloneNode(true);
+
+    // limpiar valores
+    emptyRow.querySelectorAll('input, select').forEach(el => {
+      el.name = el.name.replace(/\d+/, currentIndex);
+      el.id   = el.id.replace(/\d+/, currentIndex);
+      if (el.type === 'number') el.value = '';
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    });
+    emptyRow.querySelector('input[type="checkbox"]').remove(); // checkbox DELETE
+
+    document.getElementById('detalle-rows').appendChild(emptyRow);
+    totalForms.value = currentIndex + 1;
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('remove-row')) {
+      e.preventDefault();
+      const row = e.target.closest('.item-row');
+      // marcar para borrar si ya existe en BD
+      const chkDelete = row.querySelector('input[type="checkbox"]');
+      if (chkDelete) { chkDelete.checked = true; row.style.display = 'none'; }
+      else           { row.remove(); }
+
+      const totalForms = document.getElementById('id_detalles-TOTAL_FORMS');
+      totalForms.value = parseInt(totalForms.value) - 1;
+    }
+  });
+</script>
+{% endblock %}

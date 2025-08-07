@@ -5,7 +5,7 @@ from django.contrib.auth.forms import SetPasswordForm
 from .models import (
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra,
     Cliente, Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura,
-    Caja, MovimientoCaja, TipoProducto
+    Caja, MovimientoCaja, TipoProducto, Requisicion, DetalleRequisicion
 )
 
 class EmpleadoForm(forms.ModelForm):
@@ -143,3 +143,21 @@ class TipoProductoForm(forms.ModelForm):
     class Meta:
         model = TipoProducto
         fields = ['nombre', 'categoria', 'activo']
+
+class RequisicionForm(forms.ModelForm):
+    class Meta:
+        model  = Requisicion
+        fields = ['observacion']
+
+class DetalleRequisicionForm(forms.ModelForm):
+    class Meta:
+        model  = DetalleRequisicion
+        fields = ['producto', 'cantidad']
+
+DetalleRequisicionFormSet = inlineformset_factory(
+    Requisicion,
+    DetalleRequisicion,
+    form=DetalleRequisicionForm,
+    extra=1,
+    can_delete=True
+)

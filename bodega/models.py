@@ -116,32 +116,6 @@ class Producto(models.Model):
     def __str__(self):
         return f"{self.nombre} ({self.codigo})"
 
-# class Producto(models.Model):
-#     UNIDADES = [
-#         ("unidad", "Unidad"),
-#         ("litros", "Litros"),
-#         ("cajas", "Cajas"),
-#     ]
-#     IVA = [
-#         ("exento", "Exento"),
-#         ("5", "5%"),
-#         ("10", "10%"),
-#     ]
-
-#     nombre = models.CharField(max_length=100)
-#     descripcion = models.TextField(blank=True, null=True)
-#     categoria = models.ForeignKey(CategoriaProducto, on_delete=models.SET_NULL, null=True, blank=True)
-#     codigo = models.CharField(max_length=50, unique=True)
-#     precio = models.DecimalField(max_digits=10, decimal_places=0)
-#     stock = models.PositiveIntegerField(default=0)
-#     unidad_medida = models.CharField(max_length=20, choices=UNIDADES, default='unidad')
-#     iva = models.CharField(max_length=10, choices=IVA, default='10')
-#     marca = models.CharField(max_length=100, blank=True, null=True)
-#     activo = models.BooleanField(default=True)
-
-#     def __str__(self):
-#         return f"{self.nombre} ({self.codigo})"
-
 class Almacen(models.Model):
     nombre = models.CharField(max_length=100)
     direccion = models.CharField(max_length=255)
@@ -179,7 +153,41 @@ class Movimiento(models.Model):
     def __str__(self):
         return f"{self.tipo.title()} - {self.producto.nombre} ({self.cantidad})"
 
-# === COMPRAS ===
+# === COMPRAS – REQUISICIONES ===
+class Requisicion(models.Model):
+    ESTADOS = [
+        ('borrador',   'Borrador'),
+        ('aprobada',   'Aprobada'),
+        ('rechazada',  'Rechazada'),
+    ]
+
+    fecha        = models.DateField(auto_now_add=True)
+    solicitante  = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    estado       = models.CharField(max_length=10, choices=ESTADOS, default='borrador')
+    observacion  = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-fecha']
+
+    def __str__(self):
+        return f"Req #{self.pk} – {self.get_estado_display()}"
+
+class DetalleRequisicion(models.Model):
+    requisicion = models.ForeignKey(
+        Requisicion,
+        related_name='detalles',
+        on_delete=models.CASCADE
+    )
+    producto = models.ForeignKey('Producto', on_delete=models.PROTECT)
+    cantidad = models.PositiveIntegerField()
+
+    class Meta:
+        verbose_name = 'Ítem de requisición'
+        verbose_name_plural = 'Ítems de requisición'
+
+    def __str__(self):
+        return f"{self.producto} × {self.cantidad}"
+
 class Proveedor(models.Model):
     nombre = models.CharField(max_length=100)
     ruc = models.CharField(max_length=50)

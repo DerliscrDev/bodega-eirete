@@ -30,13 +30,13 @@ from num2words import num2words
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
     Almacen, CategoriaProducto, Inventario, Pedido, DetallePedido, Factura, DetalleFactura, Caja, MovimientoCaja,
-    TipoProducto
+    TipoProducto, Requisicion, DetalleRequisicion,
 )
 from .forms import (
     EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm,
     OrdenCompraForm, DetalleOrdenCompraForm, ClienteForm, AlmacenForm, CategoriaProductoForm, PedidoForm, DetallePedidoFormSet,
     FacturaForm, DetalleFacturaForm, DetalleOrdenCompraFormSet, CajaForm, MovimientoCajaForm,
-    TipoProductoForm,
+    TipoProductoForm, RequisicionForm, DetalleRequisicionFormSet
 ) 
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
@@ -1491,3 +1491,48 @@ class TipoProductoInactivateView(LoginRequiredMixin, View):
         tipo.activo = not tipo.activo
         tipo.save()
         return redirect('tipoproducto_list')
+
+# --- Requisiciones ---
+@method_decorator(permiso_requerido('ver_requisicion'), name='dispatch')
+class RequisicionListView(LoginRequiredMixin, ListView):
+    model               = Requisicion
+    template_name       = 'bodega/requisicion_list.html'
+    context_object_name = 'requisiciones'
+    paginate_by         = 10
+
+@method_decorator(permiso_requerido('crear_requisicion'), name='dispatch')
+class RequisicionCreateView(LoginRequiredMixin, View):
+    def get(self, request):
+        form     = RequisicionForm()
+        formset  = DetalleRequisicionFormSet()
+        return render(request, 'bodega/requisicion_form.html',
+                      {'form': form, 'formset': formset})
+
+    def post(self, request):
+        form    = RequisicionForm(request.POST)
+        formset = DetalleRequisicionFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            requisicion           = form.save(commit=False)
+            requisicion.solicitante = request.user
+            requisicion.save()
+            formset.instance = requisicion
+            formset.save()
+            return redirect('requisicion_list')
+        return render(request, 'bodega/requisicion_form.html',
+                      {'form': form, 'formset': formset})
+
+@method_decorator(permiso_requerido('aprobar_requisicion'), name='dispatch')
+class RequisicionAprobarView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        req = get_object_or_404(Requisicion, pk=pk)
+        req.estado = 'aprobada'
+        req.save()
+        return redirect('requisicion_list')
+
+@method_decorator(permiso_requerido('rechazar_requisicion'), name='dispatch')
+class RequisicionRechazarView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        req = get_object_or_404(Requisicion, pk=pk)
+        req.estado = 'rechazada'
+        req.save()
+        return redirect('requisicion_list')
