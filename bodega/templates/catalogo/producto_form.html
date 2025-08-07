@@ -1,0 +1,48 @@
+{% extends "bodega/base.html" %}
+{% load form_filters %}
+
+{% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} producto{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} producto</h3>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="row">
+    {% for field in form.visible_fields %}
+    <div class="col-md-4 mb-3">
+      <label class="form-label">{{ field.label }}{% if field.field.required %}*{% endif %}</label>
+      {{ field|add_class:"form-control" }}
+      {% if field.help_text %}
+      <div class="form-text">{{ field.help_text }}</div>
+      {% endif %}
+      {% for error in field.errors %}
+      <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <hr class="my-4">
+
+  <h5 class="mb-3">Precio vigente</h5>
+  {{ formset.management_form }}
+  {% for pform in formset.forms %}
+  <div class="row">
+    {% for fld in pform.visible_fields %}
+    <div class="col-md-3 mb-3">
+      <label class="form-label">{{ fld.label }}</label>
+      {{ fld|add_class:"form-control" }}
+      {% for err in fld.errors %}
+      <div class="text-danger small">{{ err }}</div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  <button class="btn btn-custom">Guardar</button>
+  <a href="{% url 'producto_list' %}" class="btn btn-secondary ms-2">Cancelar</a>
+</form>
+{% endblock %}
