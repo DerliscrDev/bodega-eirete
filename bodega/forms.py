@@ -5,7 +5,7 @@ from django.contrib.auth.forms import SetPasswordForm
 from .models import (
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra,
     Cliente, Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura,
-    Caja, MovimientoCaja
+    Caja, MovimientoCaja, TipoProducto
 )
 
 class EmpleadoForm(forms.ModelForm):
@@ -41,7 +41,12 @@ class PermisoForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['nombre', 'descripcion', 'categoria', 'codigo', 'precio', 'stock', 'unidad_medida', 'iva', 'marca', 'activo']
+        fields = [
+            'nombre', 'descripcion', 'marca', 'categoria',
+            'codigo', 'unidad_medida', 'tipo_bebida',
+            'precio_compra', 'iva', 'stock_minimo', 'fecha_vencimiento',
+            'proveedor', 'activo'
+        ]
 
 class MovimientoForm(forms.ModelForm):
     class Meta:
@@ -75,7 +80,7 @@ class AlmacenForm(forms.ModelForm):
 class CategoriaProductoForm(forms.ModelForm):
     class Meta:
         model = CategoriaProducto
-        fields = ['nombre', 'descripcion', 'activo']
+        fields = ['nombre', 'activo']
 
 class PedidoForm(forms.ModelForm):
     class Meta:
@@ -129,8 +134,12 @@ class CajaForm(forms.ModelForm):
         model = Caja
         fields = ['monto_inicial']
 
-
 class MovimientoCajaForm(forms.ModelForm):
     class Meta:
         model = MovimientoCaja
         fields = ['tipo', 'descripcion', 'monto']
+
+class TipoProductoForm(forms.ModelForm):
+    class Meta:
+        model = TipoProducto
+        fields = ['nombre', 'categoria', 'activo']

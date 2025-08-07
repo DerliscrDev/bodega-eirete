@@ -1,54 +1,54 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
 
-{% block title %}Categorías de Producto - Bodega Eirete{% endblock %}
+{% block title %}Tipos de Producto - Bodega Eirete{% endblock %}
 
 {% block content %}
 <div class="card shadow-sm mb-4">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="card-title mb-0">Categorías de Producto</h2>
-      {% if request.user|tiene_permiso:"crear_categoria" %}
-      <a href="{% url 'categoria_create' %}" class="btn btn-custom">Nueva Categoría</a>
+      <h2 class="card-title mb-0">Tipos de Producto</h2>
+      {% if request.user|tiene_permiso:"crear_tipoproducto" %}
+      <a href="{% url 'tipoproducto_create' %}" class="btn btn-custom">Nuevo Tipo</a>
       {% endif %}
     </div>
 
-    <!-- Buscador -->
     <form method="get" class="mb-3 d-flex" role="search">
-      <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar categoría" value="{{ request.GET.buscar }}">
+      <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar tipo" value="{{ request.GET.buscar }}">
       <button type="submit" class="btn btn-outline-primary">Buscar</button>
     </form>
 
-    <!-- Tabla -->
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
         <thead>
           <tr>
             <th>Nombre</th>
+            <th>Categoría</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {% for categoria in categorias %}
+          {% for tipo in tipos %}
           <tr>
-            <td>{{ categoria.nombre }}</td>
-            <td>{% if categoria.activo %}Activo{% else %}Inactivo{% endif %}</td>
+            <td>{{ tipo.nombre }}</td>
+            <td>{{ tipo.categoria.nombre }}</td>
+            <td>{% if tipo.activo %}Activo{% else %}Inactivo{% endif %}</td>
             <td>
-              {% if request.user|tiene_permiso:"editar_categoria" %}
-              <a href="{% url 'categoria_update' categoria.pk %}" class="btn btn-sm btn-warning">Editar</a>
+              {% if request.user|tiene_permiso:"editar_tipoproducto" %}
+              <a href="{% url 'tipoproducto_update' tipo.pk %}" class="btn btn-sm btn-warning">Editar</a>
               {% endif %}
-              {% if request.user|tiene_permiso:"inactivar_categoria" %}
-              {% if categoria.activo %}
-              <a href="{% url 'categoria_inactivate' categoria.pk %}" class="btn btn-sm btn-danger">Inactivar</a>
+              {% if request.user|tiene_permiso:"inactivar_tipoproducto" %}
+              {% if tipo.activo %}
+              <a href="{% url 'tipoproducto_inactivate' tipo.pk %}" class="btn btn-sm btn-danger">Inactivar</a>
               {% else %}
-              <a href="{% url 'categoria_inactivate' categoria.pk %}?reactivar=1" class="btn btn-sm btn-success">Reactivar</a>
+              <a href="{% url 'tipoproducto_inactivate' tipo.pk %}?reactivar=1" class="btn btn-sm btn-success">Reactivar</a>
               {% endif %}
               {% endif %}
             </td>
           </tr>
           {% empty %}
-          <tr><td colspan="4" class="text-center">No hay categorías registradas.</td></tr>
+          <tr><td colspan="4" class="text-center">No hay tipos registrados.</td></tr>
           {% endfor %}
         </tbody>
       </table>

@@ -29,12 +29,14 @@ from num2words import num2words
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
-    Almacen, CategoriaProducto, Inventario, Pedido, DetallePedido, Factura, DetalleFactura, Caja, MovimientoCaja
+    Almacen, CategoriaProducto, Inventario, Pedido, DetallePedido, Factura, DetalleFactura, Caja, MovimientoCaja,
+    TipoProducto
 )
 from .forms import (
     EmpleadoForm, UsuarioForm, RolForm, PermisoForm, CambiarPasswordForm, ProductoForm, MovimientoForm, ProveedorForm,
     OrdenCompraForm, DetalleOrdenCompraForm, ClienteForm, AlmacenForm, CategoriaProductoForm, PedidoForm, DetallePedidoFormSet,
-    FacturaForm, DetalleFacturaForm, DetalleOrdenCompraFormSet, CajaForm, MovimientoCajaForm
+    FacturaForm, DetalleFacturaForm, DetalleOrdenCompraFormSet, CajaForm, MovimientoCajaForm,
+    TipoProductoForm,
 ) 
 from django.contrib.auth.tokens import default_token_generator
 from .decorators import permiso_requerido
@@ -1450,3 +1452,42 @@ class CajaMovimientosView(LoginRequiredMixin, View):
             'movimientos': movimientos
         })
 
+@method_decorator([login_required, permiso_requerido('ver_tipoproducto')], name='dispatch')
+class TipoProductoListView(LoginRequiredMixin, ListView):
+    model = TipoProducto
+    template_name = 'bodega/tipoproducto_list.html'
+    context_object_name = 'tipos'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = TipoProducto.objects.all()
+        buscar = self.request.GET.get('buscar')
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+        return queryset
+
+@method_decorator([login_required, permiso_requerido('crear_tipoproducto')], name='dispatch')
+class TipoProductoCreateView(LoginRequiredMixin, CreateView):
+    model = TipoProducto
+    form_class = TipoProductoForm
+    template_name = 'bodega/tipoproducto_form.html'
+    success_url = reverse_lazy('tipoproducto_list')
+
+@method_decorator([login_required, permiso_requerido('editar_tipoproducto')], name='dispatch')
+class TipoProductoUpdateView(LoginRequiredMixin, UpdateView):
+    model = TipoProducto
+    form_class = TipoProductoForm
+    template_name = 'bodega/tipoproducto_form.html'
+    success_url = reverse_lazy('tipoproducto_list')
+
+@method_decorator([login_required, permiso_requerido('inactivar_tipoproducto')], name='dispatch')
+class TipoProductoInactivateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        tipo = get_object_or_404(TipoProducto, pk=pk)
+        return render(request, 'bodega/tipoproducto_confirm_inactivate.html', {'object': tipo})
+
+    def post(self, request, pk):
+        tipo = get_object_or_404(TipoProducto, pk=pk)
+        tipo.activo = not tipo.activo
+        tipo.save()
+        return redirect('tipoproducto_list')

@@ -57,37 +57,90 @@ class Usuario(AbstractUser):
 # === INVENTARIO ===
 class CategoriaProducto(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.TextField(blank=True, null=True)
     activo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.nombre
 
-class Producto(models.Model):
-    UNIDADES = [
-        ("unidad", "Unidad"),
-        ("litros", "Litros"),
-        ("cajas", "Cajas"),
-    ]
-    IVA = [
-        ("exento", "Exento"),
-        ("5", "5%"),
-        ("10", "10%"),
-    ]
-
+class TipoProducto(models.Model):
     nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True, null=True)
-    categoria = models.ForeignKey(CategoriaProducto, on_delete=models.SET_NULL, null=True, blank=True)
-    codigo = models.CharField(max_length=50, unique=True)
-    precio = models.DecimalField(max_digits=10, decimal_places=0)
-    stock = models.PositiveIntegerField(default=0)
-    unidad_medida = models.CharField(max_length=20, choices=UNIDADES, default='unidad')
-    iva = models.CharField(max_length=10, choices=IVA, default='10')
-    marca = models.CharField(max_length=100, blank=True, null=True)
+    categoria = models.ForeignKey(CategoriaProducto, on_delete=models.CASCADE, related_name='tipos')
     activo = models.BooleanField(default=True)
 
     def __str__(self):
+        return f"{self.nombre} ({self.categoria.nombre})"
+
+class Producto(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True)
+    marca = models.CharField(max_length=100, blank=True)
+    categoria = models.ForeignKey('CategoriaProducto', on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Datos logísticos y físicos
+    codigo = models.CharField(max_length=50, unique=True, help_text="Código interno del producto")
+    unidad_medida = models.CharField(max_length=50, default="unidad")  # Ej: botella, litro, caja
+    volumen = models.FloatField(help_text="Contenido neto en mililitros", null=True, blank=True)
+
+    # Información para bebidas alcohólicas
+    tipo_bebida = models.CharField(
+        max_length=50,
+        choices=[
+            ('vino', 'Vino'),
+            ('cerveza', 'Cerveza'),
+            ('otro', 'Otro'),
+        ],
+        blank=True
+    )
+
+    # Precios y tributación
+    precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
+    precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
+    iva = models.DecimalField(max_digits=4, decimal_places=2, default=10.00, help_text="IVA aplicado (%)")
+
+    # Control de stock
+    stock_minimo = models.PositiveIntegerField(default=0)
+    fecha_vencimiento = models.DateField(null=True, blank=True)
+    proveedor = models.ForeignKey('Proveedor', on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Otros
+    activo = models.BooleanField(default=True)
+    
+    def save(self, *args, **kwargs):
+        # Calcular el precio sin IVA con el margen
+        precio_base = self.precio_compra * (Decimal("1.0") + self.margen_ganancia / Decimal("100.0"))
+        # Aplicar IVA
+        self.precio_venta = precio_base * (Decimal("1.0") + self.iva / Decimal("100.0"))
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
         return f"{self.nombre} ({self.codigo})"
+
+# class Producto(models.Model):
+#     UNIDADES = [
+#         ("unidad", "Unidad"),
+#         ("litros", "Litros"),
+#         ("cajas", "Cajas"),
+#     ]
+#     IVA = [
+#         ("exento", "Exento"),
+#         ("5", "5%"),
+#         ("10", "10%"),
+#     ]
+
+#     nombre = models.CharField(max_length=100)
+#     descripcion = models.TextField(blank=True, null=True)
+#     categoria = models.ForeignKey(CategoriaProducto, on_delete=models.SET_NULL, null=True, blank=True)
+#     codigo = models.CharField(max_length=50, unique=True)
+#     precio = models.DecimalField(max_digits=10, decimal_places=0)
+#     stock = models.PositiveIntegerField(default=0)
+#     unidad_medida = models.CharField(max_length=20, choices=UNIDADES, default='unidad')
+#     iva = models.CharField(max_length=10, choices=IVA, default='10')
+#     marca = models.CharField(max_length=100, blank=True, null=True)
+#     activo = models.BooleanField(default=True)
+
+#     def __str__(self):
+#         return f"{self.nombre} ({self.codigo})"
 
 class Almacen(models.Model):
     nombre = models.CharField(max_length=100)

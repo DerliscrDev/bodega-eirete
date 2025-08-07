@@ -20,11 +20,18 @@
     </form>
 
     <div class="table-responsive">
-      <table class="table table-bordered table-striped">
+      <table class="table table-bordered table-striped text-center">
         <thead>
           <tr>
             <th>Nombre</th>
             <th>Código</th>
+            <th>Categoría</th>
+            <th>Marca</th>
+            <th>Unidad</th>
+            <th>Volumen (ml)</th>
+            <th>Tipo de Bebida</th>
+            <th>Precio Venta</th>
+            <th>IVA (%)</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -34,6 +41,13 @@
           <tr>
             <td>{{ producto.nombre }}</td>
             <td>{{ producto.codigo }}</td>
+            <td>{{ producto.categoria }}</td>
+            <td>{{ producto.marca }}</td>
+            <td>{{ producto.unidad_medida }}</td>
+            <td>{{ producto.volumen }}</td>
+            <td>{{ producto.get_tipo_bebida_display }}</td>
+            <td>{{ producto.precio_venta }}</td>
+            <td>{{ producto.iva }}</td>
             <td>{% if producto.activo %}Activo{% else %}Inactivo{% endif %}</td>
             <td>
               {% if request.user|tiene_permiso:"editar_producto" %}
@@ -49,7 +63,7 @@
             </td>
           </tr>
           {% empty %}
-          <tr><td colspan="6" class="text-center">No hay productos registrados.</td></tr>
+          <tr><td colspan="11" class="text-center">No hay productos registrados.</td></tr>
           {% endfor %}
         </tbody>
       </table>

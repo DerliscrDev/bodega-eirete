@@ -24,7 +24,8 @@ from .views import (
     MovimientoReporteExportView, ReporteInventarioExportView, ReportePedidoExportView, ReporteFacturaExportView, 
     ReporteOrdenCompraExportView, ReporteClienteExportView,
     GenerarFacturaDesdePedidoView, FacturaPrintView, FacturaPDFView,
-    CajaListView, CajaCreateView, CajaCloseView, MovimientoCajaCreateView, CajaMovimientosView
+    CajaListView, CajaCreateView, CajaCloseView, MovimientoCajaCreateView, CajaMovimientosView,
+    TipoProductoListView, TipoProductoCreateView, TipoProductoUpdateView, TipoProductoInactivateView
 )
 
 urlpatterns = [
@@ -145,4 +146,11 @@ urlpatterns = [
     path('cajas/cerrar/<int:pk>/', CajaCloseView.as_view(), name='caja_close'),
     path('cajas/movimientos/<int:pk>/', CajaMovimientosView.as_view(), name='caja_movimientos'),
     path('cajas/movimientos/nuevo/', MovimientoCajaCreateView.as_view(), name='movimiento_caja_create'),
+    
+    # Tipos de productos
+    path('tipos/', TipoProductoListView.as_view(), name='tipoproducto_list'),
+    path('tipos/nuevo/', TipoProductoCreateView.as_view(), name='tipoproducto_create'),
+    path('tipos/<int:pk>/editar/', TipoProductoUpdateView.as_view(), name='tipoproducto_update'),
+    path('tipos/<int:pk>/inactivar/', TipoProductoInactivateView.as_view(), name='tipoproducto_inactivate'),
+
 ]
