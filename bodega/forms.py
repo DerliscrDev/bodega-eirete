@@ -11,12 +11,14 @@ from .models import (
 class EmpleadoForm(forms.ModelForm):
     class Meta:
         model = Empleado
-        fields = ['nombre', 'apellido', 'cedula', 'direccion', 'telefono', 'email', 'fecha_contratacion', 'cargo', 'sucursal', 'activo']
+        fields = ['nombre', 'apellido', 'cedula', 'direccion', 'telefono', 'email', 'fecha_contratacion', 'sucursal', 'activo']
 
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nombre', 'apellido', 'documento', 'direccion', 'telefono', 'email', 'activo']
+        fields = ['nombre', 'apellido', 'direccion', 'telefono', 'email',
+                  'condicion_venta', 'limite_credito', 'activo']
+
 
 class UsuarioForm(forms.ModelForm):
     class Meta:
@@ -44,9 +46,11 @@ class ProductoForm(forms.ModelForm):
         fields = [
             'nombre', 'descripcion', 'marca', 'categoria',
             'codigo', 'unidad_medida', 'tipo_bebida',
-            'precio_compra', 'iva', 'stock_minimo', 'fecha_vencimiento',
+            'precio_compra', 'margen_ganancia', 'iva',
+            'stock_minimo', 'fecha_vencimiento',
             'proveedor', 'activo'
         ]
+
 
 class MovimientoForm(forms.ModelForm):
     class Meta:
