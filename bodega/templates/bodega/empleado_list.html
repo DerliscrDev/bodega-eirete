@@ -15,74 +15,114 @@
     </div>
 
     <!-- Formulario de búsqueda -->
-    <form method="get" class="mb-3 d-flex" role="search">
-      <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar por nombre o apellido" value="{{ request.GET.buscar }}">
-      <button type="submit" class="btn btn-outline-primary">Buscar</button>
-    </form>
+    <form class="row g-2 mb-3" method="get">
+  <div class="col-md-6">
+    <input type="search"
+           class="form-control"
+           name="q"
+           placeholder="Buscar por nombre, apellido, cédula, teléfono o email"
+           value="{{ q }}">
+  </div>
+  <div class="col-md-3">
+    <select class="form-select" name="estado" aria-label="Filtrar por estado">
+      <option value="">Todos</option>
+      <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Activos</option>
+      <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Inactivos</option>
+    </select>
+  </div>
+  <div class="col-md-3 text-end">
+    <button type="submit" class="btn btn-outline-primary">Buscar</button>
+    {% if q or estado %}
+      <a href="{% url 'empleado_list' %}" class="btn btn-outline-secondary">Limpiar</a>
+    {% endif %}
+  </div>
+</form>
+
+  <p class="text-muted">
+  Mostrando {{ empleados|length }} de {{ filtrados }} (total {{ total }})
+</p>
 
     <div class="table-responsive">
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Cargo</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for empleado in empleados %}
-          <tr>
-            <td>{{ empleado.id }}</td>
-            <td>{{ empleado.nombre }} {{ empleado.apellido }}</td>
-            <td>{{ empleado.email }}</td>
-            <td>{{ empleado.cargo }}</td>
-            <td>{% if empleado.activo %}Activo{% else %}Inactivo{% endif %}</td>
-            <td>
+    <table class="table table-bordered table-striped align-middle">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Cédula</th>
+        <th>Sucursal</th>
+        <th>Teléfono</th>
+        <th>Email</th>
+        <th>F. Contratación</th>
+        <th>Estado</th>
+        <th style="width: 160px;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in empleados %}
+        <tr>
+          <td>{{ e.pk }}</td>
+          <td>{{ e.nombre }} {{ e.apellido }}</td>
+          <td>{{ e.cedula|default:"—" }}</td>
+          <td>{{ e.sucursal.nombre|default:"—" }}</td>
+          <td>{{ e.telefono|default:"—" }}</td>
+          <td>{{ e.email|default:"—" }}</td>
+          <td>{{ e.fecha_contratacion|date:"Y-m-d" }}</td>
+          <td>
+            {% if e.activo %}
+              <span class="badge text-bg-success">Activo</span>
+            {% else %}
+              <span class="badge text-bg-secondary">Inactivo</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
               {% if request.user|tiene_permiso:"editar_empleado" %}
-              <a href="{% url 'empleado_update' empleado.id %}" class="btn btn-sm btn-warning">Editar</a>
+              <a href="{% url 'empleado_update' e.pk %}" class="btn btn-sm btn-warning">Editar</a>
               {% endif %}
               {% if request.user|tiene_permiso:"inactivar_empleado" %}
                 {% if empleado.activo %}
-                <a href="{% url 'empleado_inactivate' empleado.id %}" class="btn btn-sm btn-danger">Inactivar</a>
+                <a href="{% url 'empleado_inactivate' e.pk %}" class="btn btn-sm btn-danger">Inactivar</a>
                 {% else %}
-                <a href="{% url 'empleado_inactivate' empleado.id %}?reactivar=1" class="btn btn-sm btn-success">Reactivar</a>
+                <a href="{% url 'empleado_inactivate' e.pk %}?reactivar=1" class="btn btn-sm btn-success">Reactivar</a>
                 {% endif %}
               {% endif %}
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="6" class="text-center">No se encontraron empleados.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="9" class="text-center text-muted py-4">
+            No hay empleados que coincidan con tu búsqueda.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
     <!-- Paginación -->
     {% if is_paginated %}
-    <nav class="mt-3">
-      <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&buscar={{ request.GET.buscar }}">Anterior</a>
-        </li>
-        {% endif %}
-        {% for num in paginator.page_range %}
-        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-          <a class="page-link" href="?page={{ num }}&buscar={{ request.GET.buscar }}">{{ num }}</a>
-        </li>
-        {% endfor %}
-        {% if page_obj.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}&buscar={{ request.GET.buscar }}">Siguiente</a>
-        </li>
-        {% endif %}
-      </ul>
-    </nav>
+    <nav aria-label="Paginación">
+<ul class="pagination pagination-sm">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?q={{ q }}&estado={{ estado }}&page=1">&laquo;</a></li>
+      <li class="page-item"><a class="page-link" href="?q={{ q }}&estado={{ estado }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+    {% endif %}
+
+    <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ paginator.num_pages }}</span></li>
+
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?q={{ q }}&estado={{ estado }}&page={{ page_obj.next_page_number }}">Siguiente</a></li>
+      <li class="page-item"><a class="page-link" href="?q={{ q }}&estado={{ estado }}&page={{ paginator.num_pages }}">&raquo;</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+      <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+    {% endif %}
+  </ul>
+</nav>
     {% endif %}
 
   </div>

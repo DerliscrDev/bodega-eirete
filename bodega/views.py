@@ -77,19 +77,59 @@ def crear_empleado(request):
         form = EmpleadoForm()
     return render(request, 'bodega/empleado_form.html', {'form': form})
 
+
 @method_decorator(permiso_requerido('ver_empleado'), name='dispatch')
-class EmpleadoListView(LoginRequiredMixin, ListView):
+class EmpleadoListView(ListView):
     model = Empleado
-    template_name = 'bodega/empleado_list.html'
-    context_object_name = 'empleados'
-    paginate_by = 10
+    template_name = "bodega/empleado_list.html"
+    context_object_name = "empleados"
+    paginate_by = 20
 
     def get_queryset(self):
-        queryset = Empleado.objects.all()
-        busqueda = self.request.GET.get('buscar')
-        if busqueda:
-            queryset = queryset.filter(nombre__icontains=busqueda) | queryset.filter(apellido__icontains=busqueda)
-        return queryset
+        qs = Empleado.objects.select_related("sucursal")  # evita N+1 en sucursal
+        q = (self.request.GET.get("q") or "").strip()
+        estado = (self.request.GET.get("estado") or "").strip()
+
+        if q:
+            qs = qs.filter(
+                Q(nombre__icontains=q)
+                | Q(apellido__icontains=q)
+                | Q(cedula__icontains=q)
+                | Q(email__icontains=q)
+                | Q(telefono__icontains=q)
+            )
+
+        if estado == "activos":
+            qs = qs.filter(activo=True)
+        elif estado == "inactivos":
+            qs = qs.filter(activo=False)
+
+        return qs.order_by("-activo", "apellido", "nombre", "id")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["q"] = (self.request.GET.get("q") or "").strip()
+        ctx["estado"] = (self.request.GET.get("estado") or "").strip()
+        ctx["total"] = Empleado.objects.count()
+        # cantidad luego de aplicar filtros (si hay paginator, úsalo)
+        ctx["filtrados"] = getattr(
+            ctx.get("paginator"), "count", len(ctx.get("empleados", []))
+        )
+        return ctx
+
+
+# class EmpleadoListView(LoginRequiredMixin, ListView):
+#     model = Empleado
+#     template_name = 'bodega/empleado_list.html'
+#     context_object_name = 'empleados'
+#     paginate_by = 10
+
+#     def get_queryset(self):
+#         queryset = Empleado.objects.all()
+#         busqueda = self.request.GET.get('buscar')
+#         if busqueda:
+#             queryset = queryset.filter(nombre__icontains=busqueda) | queryset.filter(apellido__icontains=busqueda)
+#         return queryset
 
 @method_decorator(permiso_requerido('editar_empleado'), name='dispatch')
 class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
@@ -645,7 +685,7 @@ class OrdenCompraRecibirView(LoginRequiredMixin, View):
 #                 producto = detalle.producto
 #                 producto.stock += detalle.cantidad
 #                 producto.save()
-                
+
 #                 # Actualizar inventario por almacén
 #                 inventario, _ = Inventario.objects.get_or_create(
 #                     producto=producto,
@@ -849,7 +889,7 @@ class PedidoCreateView(LoginRequiredMixin, View):
             'form': pedido_form,
             'formset': formset
         })
-        
+
 @method_decorator(permiso_requerido('editar_pedido'), name='dispatch')
 class PedidoUpdateView(LoginRequiredMixin, UpdateView):
     model = Pedido
@@ -939,7 +979,7 @@ class DetallePedidoDeleteView(LoginRequiredMixin, View):
         detalle = DetallePedido.objects.get(pk=pk)
         detalle.delete()
         return redirect('pedido_list')  # O redirigir a la vista de edición del pedido
-    
+
 @method_decorator(permiso_requerido('ver_factura'), name='dispatch')
 class FacturaListView(LoginRequiredMixin, ListView):
     model = Factura
@@ -1036,7 +1076,7 @@ class ReporteInventarioView(LoginRequiredMixin, ListView):
                 almacen__nombre__icontains=buscar
             )
         return queryset.order_by('almacen__nombre', 'producto__nombre')
-    
+
 @method_decorator(permiso_requerido('ver_movimiento'), name='dispatch')
 class MovimientoReporteView(LoginRequiredMixin, ListView):
     model = Movimiento
@@ -1130,7 +1170,7 @@ class MovimientoReporteExportView(LoginRequiredMixin, View):
         response['Content-Disposition'] = 'attachment; filename=movimientos.xlsx'
         wb.save(response)
         return response
-    
+
 @method_decorator(permiso_requerido('ver_inventario'), name='dispatch')
 class ReporteInventarioExportView(LoginRequiredMixin, View):
     def get(self, request):
@@ -1396,7 +1436,7 @@ class FacturaPDFView(LoginRequiredMixin, View):
             return HttpResponse('Ocurrió un error al generar el PDF', status=500)
 
         return response
-    
+
 @method_decorator(permiso_requerido('abrir_caja'), name='dispatch')
 class CajaCreateView(LoginRequiredMixin, CreateView):
     model = Caja

@@ -1,30 +1,139 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.db.models.functions import Lower
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from decimal import Decimal
+
+# =========================
+# Helpers / Choices
+# =========================
+TELEFONO_REGEX = RegexValidator(
+    r'^\+?\d{7,15}$',
+    'Use formato internacional sin espacios, ej: +595981123456'
+)
+
+GENERO = (
+    ('M', 'Masculino'),
+    ('F', 'Femenino'),
+)
+
+TIPO_DOC = (
+    ('CI', 'Cédula'),
+    ('RUC', 'RUC'),
+    ('OTRO', 'Otro'),
+)
+
+CONDICION_VENTA = (
+    ('contado', 'Contado'),
+    ('credito', 'Crédito'),
+)
+
+# =========================
+# Modelo base con trazas
+# =========================
+class TimeStampedModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        abstract = True
 
 # === BASE ===
 class Persona(models.Model):
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    direccion = models.CharField(max_length=255)
-    telefono = models.CharField(max_length=20)
-    email = models.EmailField(unique=True)
+    genero = models.CharField(max_length=1, choices=GENERO, blank=True, null=True)
+    fecha_nacimiento = models.DateField(blank=True, null=True)
+    documento_tipo = models.CharField(max_length=10, choices=TIPO_DOC, default='CI')
+    documento_num = models.CharField(max_length=30, blank=True, null=True)
+    ruc = models.CharField(max_length=20, blank=True, null=True)
+    direccion = models.CharField(max_length=255, blank=True, null=True)
+    barrio = models.CharField(max_length=120, blank=True, null=True)
+    ciudad = models.CharField(max_length=120, blank=True, null=True)
+    departamento = models.CharField(max_length=120, blank=True, null=True)
+    pais = models.CharField(max_length=120, default='Paraguay')
+    codigo_postal = models.CharField(max_length=12, blank=True, null=True)
+    telefono = models.CharField(max_length=20, validators=[TELEFONO_REGEX], blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)  # unicidad case-insensitive con constraint abajo
+    activo = models.BooleanField(default=True, db_index=True)
+
+    class Meta:
+        db_table = 'bodega_persona'   # ajusta a tu realidad; si quieres que Django cree la tabla, deja managed=True por defecto
+        # managed = False             # descomenta si ya tienes la tabla creada manualmente
+        ordering = ['apellido', 'nombre']
+        indexes = [
+            models.Index(fields=['apellido', 'nombre'], name='idx_persona_nombre'),
+            models.Index(fields=['ruc'], name='idx_persona_ruc'),
+            models.Index(fields=['documento_tipo', 'documento_num'], name='idx_persona_doc'),
+        ]
+        constraints = [
+            # Documento único por tipo cuando está informado
+            models.UniqueConstraint(
+                fields=['documento_tipo', 'documento_num'],
+                condition=Q(documento_num__isnull=False),
+                name='uq_persona_documento'
+            ),
+            # Email único case-insensitive cuando NO es NULL
+            models.UniqueConstraint(
+                Lower('email'),
+                condition=Q(email__isnull=False),
+                name='uq_persona_email_lower'
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido}"
+        return self.nombre_completo
+
+    @property
+    def nombre_completo(self) -> str:
+        base = f"{self.nombre or ''} {self.apellido or ''}".strip()
+        return base or f"Persona #{self.pk}"
+
+    def save(self, *args, **kwargs):
+        # Normalizaciones suaves
+        if self.nombre:
+            self.nombre = self.nombre.strip().title()
+        if self.apellido:
+            self.apellido = self.apellido.strip().title()
+        if self.documento_tipo:
+            self.documento_tipo = self.documento_tipo.strip().upper()
+        if self.email:
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
 
 # === RRHH ===
 class Empleado(Persona):
     cedula = models.CharField(max_length=20, unique=True)
     fecha_contratacion = models.DateField()
-    cargo = models.ForeignKey('Rol', on_delete=models.SET_NULL, null=True, blank=True)
-    sucursal = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True)
-    activo = models.BooleanField(default=True)
+    sucursal = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
+    fecha_baja = models.DateField(blank=True, null=True)
+    motivo_baja = models.CharField(max_length=255, blank=True, null=True)
+    # 'activo' ya lo hereda de Persona
+
+    class Meta:
+        db_table = 'bodega_empleado'   # si ya existe, podés usar managed=False
+        managed = False
+        ordering = ['-activo', 'apellido', 'nombre']
+        indexes = [
+            models.Index(fields=['fecha_contratacion'], name='idx_empleado_estado_fecha'),
+            models.Index(fields=['cedula'], name='idx_empleado_cedula'),
+        ]
 
 class Cliente(Persona):
-    documento = models.CharField(max_length=20, unique=True)
-    activo = models.BooleanField(default=True)
+    condicion_venta = models.CharField(max_length=20, choices=CONDICION_VENTA, default='contado', db_index=True)
+    limite_credito = models.DecimalField(max_digits=14, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+    # 'activo' ya lo hereda de Persona
 
+    class Meta:
+        db_table = 'bodega_cliente'    # si ya existe, podés usar managed=False
+        managed = False
+        ordering = ['-activo', 'apellido', 'nombre']
+        indexes = [
+            models.Index(fields=['condicion_venta'], name='idx_cliente_cond_venta'),
+        ]
+        
 # === SEGURIDAD ===
 class Permiso(models.Model):
     nombre = models.CharField(max_length=50)
@@ -93,8 +202,9 @@ class Producto(models.Model):
 
     # Precios y tributación
     precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
-    precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
-    iva = models.DecimalField(max_digits=4, decimal_places=2, default=10.00, help_text="IVA aplicado (%)")
+    margen_ganancia = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'), help_text="Margen %")
+    precio_venta = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    iva = models.DecimalField(max_digits=4, decimal_places=2, default=Decimal('10.00'), help_text="IVA aplicado (%)")
 
     # Control de stock
     stock_minimo = models.PositiveIntegerField(default=0)
@@ -105,11 +215,15 @@ class Producto(models.Model):
     activo = models.BooleanField(default=True)
     
     def save(self, *args, **kwargs):
-        # Calcular el precio sin IVA con el margen
-        precio_base = self.precio_compra * (Decimal("1.0") + self.margen_ganancia / Decimal("100.0"))
-        # Aplicar IVA
-        self.precio_venta = precio_base * (Decimal("1.0") + self.iva / Decimal("100.0"))
-
+        """
+        Calcula precio_venta = precio_compra * (1 + margen/100) * (1 + iva/100)
+        Solo recalcula si hay precio_compra y margen definidos.
+        """
+        pc = Decimal(self.precio_compra or 0)
+        mg = Decimal(self.margen_ganancia or 0) / Decimal('100')
+        iva = Decimal(self.iva or 0) / Decimal('100')
+        base = pc * (Decimal('1') + mg)
+        self.precio_venta = (base * (Decimal('1') + iva)).quantize(Decimal('0.01'))
         super().save(*args, **kwargs)
 
     def __str__(self):
