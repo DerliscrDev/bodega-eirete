@@ -2,6 +2,7 @@
 from django import forms
 from django.forms import inlineformset_factory, DateInput
 from django.contrib.auth.forms import SetPasswordForm
+from django.core.exceptions import ValidationError
 from .models import (
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra,
     Cliente, Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura,
@@ -9,9 +10,112 @@ from .models import (
 )
 
 class EmpleadoForm(forms.ModelForm):
+    # Datepickers nativos
+    fecha_contratacion = forms.DateField(widget=DateInput(attrs={"type": "date"}))
+    fecha_nacimiento = forms.DateField(widget=DateInput(attrs={"type": "date"}), required=False)
+
+    # Hacemos “activo” una selección obligatoria (Sí/No) para que cuente como “requerido”
+    ACTIVO_CHOICES = (("True", "Sí"), ("False", "No"))
+    activo = forms.TypedChoiceField(
+        choices=ACTIVO_CHOICES,
+        coerce=lambda v: v == "True",
+        widget=forms.RadioSelect,
+        required=True,
+    )
+
     class Meta:
         model = Empleado
-        fields = ['nombre', 'apellido', 'cedula', 'direccion', 'telefono', 'email', 'fecha_contratacion', 'sucursal', 'activo']
+        fields = [
+            # Persona
+            'nombre', 'apellido', 'genero', 'fecha_nacimiento',
+            'documento_tipo', 'documento_num', 'ruc',
+            'direccion', 'barrio', 'ciudad', 'departamento',
+            'pais', 'codigo_postal', 'telefono', 'email',
+            # Empleado
+            'cedula', 'fecha_contratacion', 'sucursal',
+            # Estado
+            'activo',
+        ]
+        widgets = {
+            'genero': forms.Select(attrs={'class': 'form-select'}),
+            'documento_tipo': forms.Select(attrs={'class': 'form-select'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control'}),
+            'barrio': forms.TextInput(attrs={'class': 'form-control'}),
+            'ciudad': forms.TextInput(attrs={'class': 'form-control'}),
+            'departamento': forms.TextInput(attrs={'class': 'form-control'}),
+            'pais': forms.TextInput(attrs={'class': 'form-control'}),
+            'codigo_postal': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'cedula': forms.TextInput(attrs={'class': 'form-control'}),
+            'sucursal': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Por requerimiento: TODO requerido excepto codigo_postal
+        for name, field in self.fields.items():
+            field.required = (name != 'codigo_postal')
+
+        # Sucursal (en modelo es null=True), pero aquí lo forzamos a requerido
+        self.fields['sucursal'].required = True
+
+        # Valor inicial de “activo” (Sí)
+        if not self.instance.pk:
+            self.fields['activo'].initial = "True"
+        else:
+            self.fields['activo'].initial = "True" if self.instance.activo else "False"
+
+    # Validaciones para feedback claro (evitar IntegrityError genérico)
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip().lower()
+        if not email:
+            raise ValidationError("El email es obligatorio.")
+        qs = Empleado.objects.filter(email__iexact=email)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError("Este email ya está registrado.")
+        return email
+
+    def clean_cedula(self):
+        ced = (self.cleaned_data.get('cedula') or '').strip()
+        if not ced:
+            raise ValidationError("La cédula es obligatoria.")
+        qs = Empleado.objects.filter(cedula=ced)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError("Esta cédula ya está registrada.")
+        return ced
+
+# class EmpleadoForm(forms.ModelForm):
+#     class Meta:
+#         model = Empleado
+#         fields = ['nombre', 'apellido', 'cedula', 'direccion', 'telefono', 'email',
+#                   'fecha_contratacion', 'sucursal', 'activo']
+
+#     def clean_email(self):
+#         email = (self.cleaned_data.get('email') or '').strip().lower() or None
+#         if email:
+#             qs = Empleado.objects.filter(email__iexact=email)
+#             if self.instance.pk:
+#                 qs = qs.exclude(pk=self.instance.pk)
+#             if qs.exists():
+#                 raise ValidationError("Este email ya está registrado.")
+#         return email
+
+#     def clean_cedula(self):
+#         ced = (self.cleaned_data.get('cedula') or '').strip()
+#         if not ced:
+#             return ced
+#         qs = Empleado.objects.filter(cedula=ced)
+#         if self.instance.pk:
+#             qs = qs.exclude(pk=self.instance.pk)
+#         if qs.exists():
+#             raise ValidationError("Esta cédula ya está registrada.")
+#         return ced
 
 class ClienteForm(forms.ModelForm):
     class Meta:

@@ -1,183 +1,268 @@
 {% extends 'bodega/base.html' %}
 {% load permisos_tags %}
+
 {% block title %}{% if object %}Editar Empleado{% else %}Nuevo Empleado{% endif %} - Bodega Eirete{% endblock %}
 
 {% block content %}
 <div class="row">
-  <div class="col-md-8 offset-md-2">
+  <div class="col-md-10 offset-md-1">
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h2 class="card-title mb-4">{% if object %}Editar Empleado{% else %}Nuevo Empleado{% endif %}</h2>
-
+        <h2 class="card-title mb-3">{% if object %}Editar Empleado{% else %}Nuevo Empleado{% endif %}</h2>
         {% if request.user|tiene_permiso:"crear_empleado" or request.user|tiene_permiso:"editar_empleado" %}
-        <form method="post">
+        <form method="post" novalidate>
           {% csrf_token %}
           {{ form.non_field_errors }}
 
+          <!-- Datos personales -->
+          <h5 class="mb-2">Datos personales</h5>
           <div class="row">
             <div class="col-md-6 mb-3">
-              {{ form.nombre.label_tag }}
-              {{ form.nombre }}
-              {{ form.nombre.errors }}
+              <label class="form-label" for="{{ form.nombre.id_for_label }}">
+                {{ form.nombre.label }} {% if form.nombre.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.nombre }} {{ form.nombre.errors }}
             </div>
             <div class="col-md-6 mb-3">
-              {{ form.apellido.label_tag }}
-              {{ form.apellido }}
-              {{ form.apellido.errors }}
+              <label class="form-label" for="{{ form.apellido.id_for_label }}">
+                {{ form.apellido.label }} {% if form.apellido.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.apellido }} {{ form.apellido.errors }}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.genero.id_for_label }}">
+                {{ form.genero.label }} {% if form.genero.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.genero }} {{ form.genero.errors }}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.fecha_nacimiento.id_for_label }}">
+                {{ form.fecha_nacimiento.label }} {% if form.fecha_nacimiento.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.fecha_nacimiento }} {{ form.fecha_nacimiento.errors }}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.telefono.id_for_label }}">
+                {{ form.telefono.label }} {% if form.telefono.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.telefono }} {{ form.telefono.errors }}
             </div>
           </div>
 
+          <!-- Identificación -->
+          <h5 class="mt-3 mb-2">Identificación</h5>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.documento_tipo.id_for_label }}">
+                {{ form.documento_tipo.label }} {% if form.documento_tipo.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.documento_tipo }} {{ form.documento_tipo.errors }}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.documento_num.id_for_label }}">
+                {{ form.documento_num.label }} {% if form.documento_num.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.documento_num }} {{ form.documento_num.errors }}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.cedula.id_for_label }}">
+                {{ form.cedula.label }} {% if form.cedula.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.cedula }} {{ form.cedula.errors }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.ruc.id_for_label }}">
+                {{ form.ruc.label }} {% if form.ruc.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.ruc }} {{ form.ruc.errors }}
+            </div>
+            <div class="col-md-8 mb-3">
+              <label class="form-label" for="{{ form.email.id_for_label }}">
+                {{ form.email.label }} {% if form.email.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.email }} {{ form.email.errors }}
+            </div>
+          </div>
+
+          <!-- Domicilio -->
+          <h5 class="mt-3 mb-2">Domicilio</h5>
           <div class="row">
             <div class="col-md-6 mb-3">
-              {{ form.direccion.label_tag }}
-              {{ form.direccion }}
-              {{ form.direccion.errors }}
+              <label class="form-label" for="{{ form.direccion.id_for_label }}">
+                {{ form.direccion.label }} {% if form.direccion.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.direccion }} {{ form.direccion.errors }}
             </div>
             <div class="col-md-6 mb-3">
-              {{ form.telefono.label_tag }}
-              {{ form.telefono }}
-              {{ form.telefono.errors }}
+              <label class="form-label" for="{{ form.barrio.id_for_label }}">
+                {{ form.barrio.label }} {% if form.barrio.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.barrio }} {{ form.barrio.errors }}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.ciudad.id_for_label }}">
+                {{ form.ciudad.label }} {% if form.ciudad.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.ciudad }} {{ form.ciudad.errors }}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.departamento.id_for_label }}">
+                {{ form.departamento.label }} {% if form.departamento.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.departamento }} {{ form.departamento.errors }}
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label" for="{{ form.pais.id_for_label }}">
+                {{ form.pais.label }} {% if form.pais.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.pais }} {{ form.pais.errors }}
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label" for="{{ form.codigo_postal.id_for_label }}">
+                {{ form.codigo_postal.label }} {% if form.codigo_postal.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.codigo_postal }} {{ form.codigo_postal.errors }}
             </div>
           </div>
 
-          <div class="mb-3">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-            {{ form.email.errors }}
-          </div>
-
-          <div class="mb-3">
-            {{ form.cedula.label_tag }}
-            {{ form.cedula }}
-            {{ form.cedula.errors }}
-          </div>
-
+          <!-- Datos laborales -->
+          <h5 class="mt-3 mb-2">Datos laborales</h5>
           <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.fecha_contratacion.label_tag }}
-              {{ form.fecha_contratacion }}
-              {{ form.fecha_contratacion.errors }}
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.fecha_contratacion.id_for_label }}">
+                {{ form.fecha_contratacion.label }} {% if form.fecha_contratacion.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.fecha_contratacion }} {{ form.fecha_contratacion.errors }}
             </div>
-            <div class="col-md-6 mb-3">
-              {{ form.cargo.label_tag }}
-              {{ form.cargo }}
-              {{ form.cargo.errors }}
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ form.sucursal.id_for_label }}">
+                {{ form.sucursal.label }} {% if form.sucursal.field.required %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(opcional)</small>{% endif %}
+              </label>
+              {{ form.sucursal }} {{ form.sucursal.errors }}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label d-block">{{ form.activo.label }} <span class="text-danger">*</span></label>
+              {{ form.activo }} {{ form.activo.errors }}
             </div>
           </div>
 
-          <div class="mb-3">
-            {{ form.sucursal.label_tag }}
-            {{ form.sucursal }}
-            {{ form.sucursal.errors }}
+          <div class="mt-3 d-flex gap-2">
+            <button type="submit" class="btn btn-custom rounded-2">
+              {% if object %}Actualizar{% else %}Guardar{% endif %}
+            </button>
+            <a href="{% url 'empleado_list' %}" class="btn btn-outline-secondary rounded-2">Cancelar</a>
           </div>
-
-          <div class="form-check mb-3">
-            {{ form.activo }} {{ form.activo.label_tag }}
-            {{ form.activo.errors }}
-          </div>
-
-          <button type="submit" class="btn btn-custom">{% if object %}Actualizar{% else %}Guardar{% endif %}</button>
-          <a href="{% url 'empleado_list' %}" class="btn btn-secondary">Cancelar</a>
         </form>
         {% else %}
-        <div class="alert alert-warning">
-          No tienes permiso para crear o editar empleados.
-        </div>
+          <div class="alert alert-warning">No tienes permiso para crear o editar empleados.</div>
         {% endif %}
       </div>
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  const form  = document.querySelector('form');
+  const tipo  = $('id_documento_tipo');
+  const doc   = $('id_documento_num');
+  const ruc   = $('id_ruc');
+  const ced   = $('id_cedula');
+  const tel   = $('id_telefono');
+  const pais  = $('id_pais');
+  const fnac  = $('id_fecha_nacimiento');
+  const fcont = $('id_fecha_contratacion');
+
+  // Placeholders de teléfono por país (expandible)
+  const phonePH = {
+    'Paraguay':  '+595981123456',
+    'Argentina': '+5491112345678',
+    'Brasil':    '+5511991234567',
+    'Chile':     '+56991234567',
+    'Uruguay':   '+59891234567',
+    'Bolivia':   '+59171234567',
+  };
+
+  // 1) Placeholders dinámicos por tipo de documento
+  function updateDocPlaceholders() {
+    if (!tipo || !doc) return;
+    const t = tipo.value;
+    if (t === 'CI') {
+      doc.placeholder = '1234567';
+      if (doc.value) doc.value = doc.value.replace(/\D/g, ''); // solo dígitos
+    } else if (t === 'RUC') {
+      doc.placeholder = '80012345-6';
+      // permitimos dígitos y un solo guion
+      if (doc.value) {
+        let v = doc.value.replace(/[^\d-]/g, '');
+        v = v.replace(/-+/g, '-');
+        doc.value = v;
+      }
+    } else {
+      doc.placeholder = 'Nro. documento';
+    }
+  }
+
+  // 2) Placeholder de teléfono según país
+  function updatePhonePlaceholder() {
+    if (!tel || !pais) return;
+    const p = pais.value || 'Paraguay';
+    tel.placeholder = phonePH[p] || '+595981123456';
+  }
+
+  // 3) Filtros de entrada suaves (no envían caracteres inválidos)
+  function keepDigits(el) {
+    if (!el) return;
+    el.value = el.value.replace(/\D/g, '');
+  }
+  function keepDigitsHyphen(el) {
+    if (!el) return;
+    let v = el.value.replace(/[^\d-]/g, '');
+    v = v.replace(/-+/g, '-'); // colapsar múltiples guiones
+    el.value = v;
+  }
+  function keepDigitsPlus(el) {
+    if (!el) return;
+    // permite solo un '+' al inicio, resto dígitos
+    let v = el.value.replace(/[^\d+]/g, '');
+    v = v.replace(/(?!^)\+/g, ''); // quitar '+' que no estén al inicio
+    el.value = v;
+  }
+
+  // 4) Límite de fechas (no futuro)
+  const today = new Date().toISOString().split('T')[0];
+  if (fnac)  fnac.setAttribute('max', today);
+  if (fcont) fcont.setAttribute('max', today);
+
+  // Eventos
+  if (tipo)  tipo.addEventListener('change', updateDocPlaceholders);
+  if (doc)   doc.addEventListener('input', () => {
+    if (tipo && tipo.value === 'CI') keepDigits(doc);
+    else if (tipo && tipo.value === 'RUC') keepDigitsHyphen(doc);
+  });
+  if (ruc)   ruc.addEventListener('input', () => keepDigitsHyphen(ruc));
+  if (ced)   ced.addEventListener('input', () => keepDigits(ced));
+  if (tel)   tel.addEventListener('input', () => keepDigitsPlus(tel));
+  if (pais)  pais.addEventListener('input', updatePhonePlaceholder);
+
+  // Inicializar
+  updateDocPlaceholders();
+  updatePhonePlaceholder();
+
+  // 5) Normalización antes de enviar (evita espacios accidentales)
+  if (form) {
+    form.addEventListener('submit', function () {
+      [doc, ruc, ced, tel].forEach((el) => {
+        if (!el) return;
+        el.value = (el.value || '').trim().replace(/\s+/g, '');
+      });
+    });
+  }
+})();
+</script>
+
 {% endblock %}
-
-
-
-
-
-{% comment %} {% extends 'bodega/base.html' %}
-{% load permisos_tags %}
-
-{% block title %}
-  {% if object %}Editar Empleado{% else %}Nuevo Empleado{% endif %} - Bodega Eirete
-{% endblock %}
-
-{% block content %}
-<div class="row">
-  <div class="col-md-8 offset-md-2">
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <h2 class="card-title mb-4">
-          {% if object %}Editar Empleado{% else %}Nuevo Empleado{% endif %}
-        </h2>
-
-        {% if request.user|tiene_permiso:"crear_empleado" or request.user|tiene_permiso:"editar_empleado" %}
-        <form method="post">
-          {% csrf_token %}
-          {{ form.non_field_errors }}
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.nombre.label_tag }}
-              {{ form.nombre }}
-              {{ form.nombre.errors }}
-            </div>
-            <div class="col-md-6 mb-3">
-              {{ form.apellido.label_tag }}
-              {{ form.apellido }}
-              {{ form.apellido.errors }}
-            </div>
-          </div>
-
-          <div class="mb-3">
-            {{ form.direccion.label_tag }}
-            {{ form.direccion }}
-            {{ form.direccion.errors }}
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.telefono.label_tag }}
-              {{ form.telefono }}
-              {{ form.telefono.errors }}
-            </div>
-            <div class="col-md-6 mb-3">
-              {{ form.email.label_tag }}
-              {{ form.email }}
-              {{ form.email.errors }}
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.fecha_contratacion.label_tag }}
-              {{ form.fecha_contratacion }}
-              {{ form.fecha_contratacion.errors }}
-            </div>
-            <div class="col-md-6 mb-3">
-              {{ form.cargo.label_tag }}
-              {{ form.cargo }}
-              {{ form.cargo.errors }}
-            </div>
-          </div>
-
-          <div class="form-check mb-3">
-            {{ form.activo }}
-            {{ form.activo.label_tag }}
-            {{ form.activo.errors }}
-          </div>
-
-          <button type="submit" class="btn btn-custom">
-            {% if object %}Actualizar{% else %}Guardar{% endif %}
-          </button>
-          <a href="{% url 'empleado_list' %}" class="btn btn-secondary">Cancelar</a>
-        </form>
-        {% else %}
-        <div class="alert alert-warning">
-          No tienes permiso para crear o editar empleados.
-        </div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %} {% endcomment %}

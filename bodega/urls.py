@@ -3,7 +3,8 @@ from django.contrib.auth import views as auth_views
 from . import views
 from .views import (
     home,
-    crear_empleado, EmpleadoListView, EmpleadoUpdateView, EmpleadoInactivateView,
+    # crear_empleado, EmpleadoInactivateView
+    EmpleadoListView, EmpleadoUpdateView, EmpleadoCreateView, empleado_inactivate,
     UsuarioListView, UsuarioCreateView, UsuarioUpdateView, UsuarioInactivateView,
     PrimerCambioPasswordView,
     RolListView, RolCreateView, RolUpdateView, RolInactivateView, RolAsignarPermisosView,
@@ -37,10 +38,15 @@ urlpatterns = [
     path('home/', home, name='home'),
 
     # Empleados
-    path('empleados/nuevo/', crear_empleado, name='empleado_create'),
+    # path('empleados/nuevo/', crear_empleado, name='empleado_create'),
+    # path('empleados/', EmpleadoListView.as_view(), name='empleado_list'),
+    # path('empleados/editar/<int:pk>/', EmpleadoUpdateView.as_view(), name='empleado_update'),
+    # path('empleados/inactivar/<int:pk>/', EmpleadoInactivateView.as_view(), name='empleado_inactivate'),
+    
     path('empleados/', EmpleadoListView.as_view(), name='empleado_list'),
-    path('empleados/editar/<int:pk>/', EmpleadoUpdateView.as_view(), name='empleado_update'),
-    path('empleados/inactivar/<int:pk>/', EmpleadoInactivateView.as_view(), name='empleado_inactivate'),
+    path('empleados/nuevo/', EmpleadoCreateView.as_view(), name='empleado_create'),
+    path('empleados/<int:pk>/editar/', EmpleadoUpdateView.as_view(), name='empleado_update'),
+    path('empleados/<int:pk>/inactivar/', empleado_inactivate, name='empleado_inactivate'),
 
     # Usuarios
     path('usuarios/', UsuarioListView.as_view(), name='usuario_list'),

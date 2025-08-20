@@ -11,21 +11,6 @@
 
   /* Centrar todo el texto de la tabla */
   .table-center th, .table-center td { text-align: center; }
-
-  /* Radio global para todos los botones (ajusta el valor a gusto) */
-  :root { --btn-radius: .5rem; }  /* usa 999px para estilo "pill" */
-
-  /* Redondea TODOS los botones bootstrap y tu .btn-custom */
-  .btn, .btn-sm, .btn-lg, .btn-custom {
-    border-radius: var(--btn-radius) !important;
-  }
-
-  /* Mantén el espaciado entre botones del grupo y fuerza el borde redondeado en cada uno */
-  .btn-group.btn-spacing > .btn {
-    margin-right: .5rem;
-    border-radius: var(--btn-radius) !important;
-  }
-  .btn-group.btn-spacing > .btn:last-child { margin-right: 0; }
 </style>
 
 <div class="card shadow-sm mb-4">
@@ -100,13 +85,13 @@
                 <!-- Agrego btn-spacing para separar botones; con btn-group mantenés el estilo -->
                 <div class="btn-group btn-group-sm btn-spacing" role="group" aria-label="Acciones">
                   {% if request.user|tiene_permiso:"editar_empleado" %}
-                    <a href="{% url 'empleado_update' e.pk %}" class="btn btn-outline-primary">Editar</a>
+                    <a href="{% url 'empleado_update' e.pk %}" class="btn btn-outline-primary rounded-2">Editar</a>
                   {% endif %}
                   {% if request.user|tiene_permiso:"inactivar_empleado" %}
                     {% if e.activo %}
-                      <a href="{% url 'empleado_inactivate' e.pk %}" class="btn btn-outline-danger">Inactivar</a>
+                      <a href="{% url 'empleado_inactivate' e.pk %}" class="btn btn-outline-danger rounded-2">Inactivar</a>
                     {% else %}
-                      <a href="{% url 'empleado_inactivate' e.pk %}?reactivar=1" class="btn btn-outline-success">Reactivar</a>
+                      <a href="{% url 'empleado_inactivate' e.pk %}?reactivar=1" class="btn btn-outline-success rounded-2">Reactivar</a>
                     {% endif %}
                   {% endif %}
                 </div>

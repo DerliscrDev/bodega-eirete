@@ -26,6 +26,10 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 from io import BytesIO
 from num2words import num2words
+from django.db import IntegrityError
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from django.db.models import Q
 
 from .models import ( 
     Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra, Cliente,
@@ -66,16 +70,33 @@ def home(request):
     return render(request, 'bodega/home.html')
 
 # --- Empleados ---
-@permiso_requerido('crear_empleado')
-def crear_empleado(request):
-    if request.method == 'POST':
-        form = EmpleadoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    else:
-        form = EmpleadoForm()
-    return render(request, 'bodega/empleado_form.html', {'form': form})
+# @permiso_requerido('crear_empleado')
+@method_decorator(permiso_requerido('crear_empleado'), name='dispatch')
+class EmpleadoCreateView(CreateView):
+    model = Empleado
+    form_class = EmpleadoForm
+    template_name = "bodega/empleado_form.html"
+    success_url = reverse_lazy('empleado_list')
+
+    def form_valid(self, form):
+        try:
+            resp = super().form_valid(form)
+            messages.success(self.request, "Empleado creado correctamente.")
+            return resp
+        except IntegrityError as e:
+            # Errores típicos: cedula única, email único (lower), documento único
+            msg = "No se pudo crear el empleado. Verifica que la cédula y el email no estén en uso."
+            messages.error(self.request, msg)
+            return self.form_invalid(form)
+# def crear_empleado(request):
+#     if request.method == 'POST':
+#         form = EmpleadoForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('home')
+#     else:
+#         form = EmpleadoForm()
+#     return render(request, 'bodega/empleado_form.html', {'form': form})
 
 
 @method_decorator(permiso_requerido('ver_empleado'), name='dispatch')
@@ -86,69 +107,130 @@ class EmpleadoListView(ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        qs = Empleado.objects.select_related("sucursal")  # evita N+1 en sucursal
-        q = (self.request.GET.get("q") or "").strip()
-        estado = (self.request.GET.get("estado") or "").strip()
+        qs = Empleado.objects.select_related('sucursal')
+        q = (self.request.GET.get('q') or '').strip()
+        estado = (self.request.GET.get('estado') or '').strip()
 
         if q:
             qs = qs.filter(
-                Q(nombre__icontains=q)
-                | Q(apellido__icontains=q)
-                | Q(cedula__icontains=q)
-                | Q(email__icontains=q)
-                | Q(telefono__icontains=q)
+                Q(nombre__icontains=q) |
+                Q(apellido__icontains=q) |
+                Q(cedula__icontains=q) |
+                Q(email__icontains=q) |
+                Q(telefono__icontains=q)
             )
 
-        if estado == "activos":
+        if estado == 'activos':
             qs = qs.filter(activo=True)
-        elif estado == "inactivos":
+        elif estado == 'inactivos':
             qs = qs.filter(activo=False)
 
-        return qs.order_by("-activo", "apellido", "nombre", "id")
+        return qs.order_by('-activo', 'apellido', 'nombre', 'id')
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["q"] = (self.request.GET.get("q") or "").strip()
-        ctx["estado"] = (self.request.GET.get("estado") or "").strip()
-        ctx["total"] = Empleado.objects.count()
-        # cantidad luego de aplicar filtros (si hay paginator, úsalo)
-        ctx["filtrados"] = getattr(
-            ctx.get("paginator"), "count", len(ctx.get("empleados", []))
-        )
+        ctx['q'] = (self.request.GET.get('q') or '').strip()
+        ctx['estado'] = (self.request.GET.get('estado') or '').strip()
+        ctx['total'] = Empleado.objects.count()
+        ctx['filtrados'] = getattr(ctx.get('paginator'), 'count', len(ctx.get('empleados', [])))
         return ctx
-
-
-# class EmpleadoListView(LoginRequiredMixin, ListView):
+    
+# class EmpleadoListView(ListView):
 #     model = Empleado
-#     template_name = 'bodega/empleado_list.html'
-#     context_object_name = 'empleados'
-#     paginate_by = 10
+#     template_name = "bodega/empleado_list.html"
+#     context_object_name = "empleados"
+#     paginate_by = 20
 
 #     def get_queryset(self):
-#         queryset = Empleado.objects.all()
-#         busqueda = self.request.GET.get('buscar')
-#         if busqueda:
-#             queryset = queryset.filter(nombre__icontains=busqueda) | queryset.filter(apellido__icontains=busqueda)
-#         return queryset
+#         qs = Empleado.objects.select_related("sucursal")  # evita N+1 en sucursal
+#         q = (self.request.GET.get("q") or "").strip()
+#         estado = (self.request.GET.get("estado") or "").strip()
+
+#         if q:
+#             qs = qs.filter(
+#                 Q(nombre__icontains=q)
+#                 | Q(apellido__icontains=q)
+#                 | Q(cedula__icontains=q)
+#                 | Q(email__icontains=q)
+#                 | Q(telefono__icontains=q)
+#             )
+
+#         if estado == "activos":
+#             qs = qs.filter(activo=True)
+#         elif estado == "inactivos":
+#             qs = qs.filter(activo=False)
+
+#         return qs.order_by("-activo", "apellido", "nombre", "id")
+
+#     def get_context_data(self, **kwargs):
+#         ctx = super().get_context_data(**kwargs)
+#         ctx["q"] = (self.request.GET.get("q") or "").strip()
+#         ctx["estado"] = (self.request.GET.get("estado") or "").strip()
+#         ctx["total"] = Empleado.objects.count()
+#         # cantidad luego de aplicar filtros (si hay paginator, úsalo)
+#         ctx["filtrados"] = getattr(
+#             ctx.get("paginator"), "count", len(ctx.get("empleados", []))
+#         )
+#         return ctx
+
 
 @method_decorator(permiso_requerido('editar_empleado'), name='dispatch')
-class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
+class EmpleadoUpdateView(UpdateView):
     model = Empleado
     form_class = EmpleadoForm
-    template_name = 'bodega/empleado_form.html'
+    template_name = "bodega/empleado_form.html"
     success_url = reverse_lazy('empleado_list')
 
-@method_decorator(permiso_requerido('inactivar_empleado'), name='dispatch')
-class EmpleadoInactivateView(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        self.object = Empleado.objects.get(pk=kwargs['pk'])
-        return render(request, 'bodega/empleado_confirm_inactivate.html', {'object': self.object})
+    def form_valid(self, form):
+        try:
+            resp = super().form_valid(form)
+            messages.success(self.request, "Empleado actualizado correctamente.")
+            return resp
+        except IntegrityError:
+            messages.error(self.request, "No se pudo actualizar. Revisa cédula/email duplicados.")
+            return self.form_invalid(form)
+# class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
+#     model = Empleado
+#     form_class = EmpleadoForm
+#     template_name = 'bodega/empleado_form.html'
+#     success_url = reverse_lazy('empleado_list')
 
-    def post(self, request, *args, **kwargs):
-        self.object = Empleado.objects.get(pk=kwargs['pk'])
-        self.object.activo = not self.object.activo
-        self.object.save()
-        return redirect('empleado_list')
+# @method_decorator(permiso_requerido('inactivar_empleado'), name='dispatch')
+permiso_requerido('inactivar_empleado')
+def empleado_inactivate(request, pk):
+    """
+    Toggle activo/inactivo. Si se inactiva, opcionalmente setea fecha_baja y motivo_baja
+    mediante querystring ?motivo=... (simple y opcional).
+    Si se reactiva, limpia fecha_baja/motivo_baja.
+    """
+    e = get_object_or_404(Empleado, pk=pk)
+    reactivar = request.GET.get('reactivar')
+    if reactivar:
+        e.activo = True
+        e.fecha_baja = None
+        e.motivo_baja = None
+        e.save(update_fields=['activo', 'fecha_baja', 'motivo_baja'])
+        messages.success(request, "Empleado reactivado.")
+    else:
+        motivo = (request.GET.get('motivo') or '').strip() or 'Inactivación desde listado'
+        e.activo = False
+        # si definiste DateField: podrías setear hoy. Si prefieres, déjalo Null.
+        # from datetime import date
+        # e.fecha_baja = date.today()
+        e.motivo_baja = motivo
+        e.save(update_fields=['activo', 'motivo_baja'])  # agrega 'fecha_baja' si la usas
+        messages.info(request, "Empleado inactivado.")
+    return redirect(reverse('empleado_list'))
+# class EmpleadoInactivateView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         self.object = Empleado.objects.get(pk=kwargs['pk'])
+#         return render(request, 'bodega/empleado_confirm_inactivate.html', {'object': self.object})
+
+#     def post(self, request, *args, **kwargs):
+#         self.object = Empleado.objects.get(pk=kwargs['pk'])
+#         self.object.activo = not self.object.activo
+#         self.object.save()
+#         return redirect('empleado_list')
 
 # --- Usuarios ---
 @method_decorator(permiso_requerido('crear_usuario'), name='dispatch')
