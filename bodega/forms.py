@@ -16,9 +16,10 @@ class EmpleadoForm(forms.ModelForm):
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nombre', 'apellido', 'direccion', 'telefono', 'email',
-                  'condicion_venta', 'limite_credito', 'activo']
-
+        fields = [
+            'nombre', 'apellido', 'direccion', 'telefono', 'email',
+            'condicion_venta', 'limite_credito', 'activo'
+        ]
 
 class UsuarioForm(forms.ModelForm):
     class Meta:
