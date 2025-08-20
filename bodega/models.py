@@ -101,6 +101,8 @@ class Persona(models.Model):
             self.documento_tipo = self.documento_tipo.strip().upper()
         if self.email:
             self.email = self.email.strip().lower()
+        if self.pk is None:          # solo al crear
+            self.activo = True
         super().save(*args, **kwargs)
 
 # === RRHH ===

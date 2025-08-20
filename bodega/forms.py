@@ -26,15 +26,10 @@ class EmpleadoForm(forms.ModelForm):
     class Meta:
         model = Empleado
         fields = [
-            # Persona
-            'nombre', 'apellido', 'genero', 'fecha_nacimiento',
-            'documento_tipo', 'documento_num', 'ruc',
-            'direccion', 'barrio', 'ciudad', 'departamento',
-            'pais', 'codigo_postal', 'telefono', 'email',
-            # Empleado
-            'cedula', 'fecha_contratacion', 'sucursal',
-            # Estado
-            'activo',
+            'nombre', 'apellido', 'cedula', 'genero', 'fecha_nacimiento',
+            'direccion', 'barrio', 'ciudad', 'departamento', 'pais',
+            'codigo_postal', 'telefono', 'email',
+            'fecha_contratacion', 'sucursal'
         ]
         widgets = {
             'genero': forms.Select(attrs={'class': 'form-select'}),

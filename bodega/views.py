@@ -77,17 +77,29 @@ class EmpleadoCreateView(CreateView):
     form_class = EmpleadoForm
     template_name = "bodega/empleado_form.html"
     success_url = reverse_lazy('empleado_list')
-
+    
     def form_valid(self, form):
         try:
-            resp = super().form_valid(form)
+            obj = form.save(commit=False)
+            obj.activo = True          # fuerza activo al crear
+            obj.save()
             messages.success(self.request, "Empleado creado correctamente.")
-            return resp
-        except IntegrityError as e:
-            # Errores típicos: cedula única, email único (lower), documento único
-            msg = "No se pudo crear el empleado. Verifica que la cédula y el email no estén en uso."
-            messages.error(self.request, msg)
+            return redirect(self.success_url)
+        except IntegrityError:
+            messages.error(self.request, "No se pudo crear el empleado. Verifica cédula/email.")
             return self.form_invalid(form)
+
+
+    # def form_valid(self, form):
+    #     try:
+    #         resp = super().form_valid(form)
+    #         messages.success(self.request, "Empleado creado correctamente.")
+    #         return resp
+    #     except IntegrityError as e:
+    #         # Errores típicos: cedula única, email único (lower), documento único
+    #         msg = "No se pudo crear el empleado. Verifica que la cédula y el email no estén en uso."
+    #         messages.error(self.request, msg)
+    #         return self.form_invalid(form)
 # def crear_empleado(request):
 #     if request.method == 'POST':
 #         form = EmpleadoForm(request.POST)
