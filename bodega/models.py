@@ -6,9 +6,7 @@ from django.db.models.functions import Lower
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from decimal import Decimal
 
-# =========================
-# Helpers / Choices
-# =========================
+# Helpers
 TELEFONO_REGEX = RegexValidator(
     r'^\+?\d{7,15}$',
     'Use formato internacional sin espacios, ej: +595981123456'
@@ -30,9 +28,7 @@ CONDICION_VENTA = (
     ('credito', 'Crédito'),
 )
 
-# =========================
 # Modelo base con trazas
-# =========================
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
@@ -60,8 +56,8 @@ class Persona(models.Model):
     activo = models.BooleanField(default=True, db_index=True)
 
     class Meta:
-        db_table = 'bodega_persona'   # ajusta a tu realidad; si quieres que Django cree la tabla, deja managed=True por defecto
-        # managed = False             # descomenta si ya tienes la tabla creada manualmente
+        db_table = 'bodega_persona'   # para que Django cree la tabla, se managed=True por defecto
+        # managed = False             # descomentar si ya se tiene la tabla creada manualmente
         ordering = ['apellido', 'nombre']
         indexes = [
             models.Index(fields=['apellido', 'nombre'], name='idx_persona_nombre'),
