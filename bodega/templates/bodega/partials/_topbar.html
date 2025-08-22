@@ -1,0 +1,16 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+  <div class="container-fluid">
+    <button id="sidebarToggle" class="btn btn-outline-secondary btn-sm rounded-2 me-2" type="button" aria-label="Toggle menu">
+      <i class="bi bi-list"></i>
+    </button>
+    <a class="navbar-brand fw-semibold" href="{% url 'home' %}">
+      <i class="bi bi-shop-window me-1"></i> Bodega Eirete
+    </a>
+
+    <div class="ms-auto d-flex align-items-center">
+      <span class="me-3 text-muted small">Hola, {{ request.user.username }}</span>
+      <a class="btn btn-outline-secondary btn-sm rounded-2" href="{% url 'logout' %}">Salir</a>
+    </div>
+  </div>
+</nav>
