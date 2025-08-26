@@ -1,117 +1,58 @@
-{% load permisos_tags nav_tags %}
+{% load nav_tags %}
+<aside id="sidebar" class="sidebar">
+  <nav class="nav flex-column p-3">
 
-<aside id="sidebar" class="sidebar border-end">
-  <div class="p-3 text-uppercase small fw-bold text-muted">Navegación</div>
+    <div class="text-uppercase text-muted small px-2 mb-2">General</div>
 
-  <ul class="nav flex-column px-2">
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'home' %}" href="{% url 'home' %}">
-        <i class="bi bi-house-door me-2"></i> Inicio
-      </a>
-    </li>
+    <a class="nav-link rounded-2 mb-1 {% active request 'home' %}" href="{% url 'home' %}">
+      <i class="bi bi-house-door me-2"></i> Inicio
+    </a>
 
-    <!-- RRHH -->
-    {% if request.user|tiene_permiso:"ver_empleado" or request.user|tiene_permiso:"ver_persona" %}
-    <li class="nav-item mt-3 mb-1 text-uppercase small fw-bold text-muted px-3">RRHH</li>
-    <li class="nav-item mb-1">
-    <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'persona_list' 'persona_create' 'persona_update' %}" href="{% url 'persona_list' %}">
-        <i class="bi bi-person me-2"></i> Personas
-      </a>
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'empleado_list' 'empleado_create' 'empleado_update' %}" href="{% url 'empleado_list' %}">
-        <i class="bi bi-people me-2"></i> Empleados
-      </a>
-    </li>
-    {% endif %}
+    <a class="nav-link rounded-2 mb-1 {% active request 'persona_list' %}" href="{% url 'persona_list' %}">
+      <i class="bi bi-person me-2"></i> Personas
+    </a>
 
-    <!-- Inventario -->
-    {% if request.user|tiene_permiso:"ver_producto" or request.user|tiene_permiso:"ver_inventario" %}
-    <li class="nav-item mt-3 mb-1 text-uppercase small fw-bold text-muted px-3">Inventario</li>
-    {% if request.user|tiene_permiso:"ver_producto" %}
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'producto_list' 'producto_create' 'producto_update' %}" href="{% url 'producto_list' %}">
-        <i class="bi bi-box-seam me-2"></i> Productos
-      </a>
-    </li>
-    {% endif %}
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'categoria_list' 'tipoproducto_list' %}" href="{% url 'categoria_list' %}">
-        <i class="bi bi-tags me-2"></i> Categorías & Tipos
-      </a>
-    </li>
-    {% if request.user|tiene_permiso:"ver_inventario" %}
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'inventario_list' %}" href="{% url 'inventario_list' %}">
-        <i class="bi bi-clipboard-data me-2"></i> Stock por almacén
-      </a>
-    </li>
-    {% endif %}
-    {% endif %}
+    {% comment %} <a class="nav-link rounded-2 mb-1 {% active request 'empleado_list' %}" href="{% url 'empleado_list' %}">
+      <i class="bi bi-person-badge me-2"></i> Empleados
+    </a>
 
-    <!-- Compras -->
-    {% if request.user|tiene_permiso:"ver_proveedor" or request.user|tiene_permiso:"ver_orden_compra" %}
-    <li class="nav-item mt-3 mb-1 text-uppercase small fw-bold text-muted px-3">Compras</li>
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'proveedor_list' 'proveedor_create' 'proveedor_update' %}" href="{% url 'proveedor_list' %}">
-        <i class="bi bi-truck me-2"></i> Proveedores
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'orden_compra_list' %}" href="{% url 'orden_compra_list' %}">
-        <i class="bi bi-bag-plus me-2"></i> Órdenes de compra
-      </a>
-    </li>
-    {% endif %}
+    <a class="nav-link rounded-2 mb-1 {% active request 'producto_list' %}" href="{% url 'producto_list' %}">
+      <i class="bi bi-bag me-2"></i> Productos
+    </a>
 
-    <!-- Ventas -->
-    <li class="nav-item mt-3 mb-1 text-uppercase small fw-bold text-muted px-3">Ventas</li>
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'cliente_list' 'cliente_create' 'cliente_update' %}" href="{% url 'cliente_list' %}">
-        <i class="bi bi-person-check me-2"></i> Clientes
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'pedido_list' %}" href="{% url 'pedido_list' %}">
-        <i class="bi bi-basket me-2"></i> Pedidos
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'factura_list' %}" href="{% url 'factura_list' %}">
-        <i class="bi bi-receipt me-2"></i> Facturas
-      </a>
-    </li>
+    <a class="nav-link rounded-2 mb-1 {% active request 'proveedor_list' %}" href="{% url 'proveedor_list' %}">
+      <i class="bi bi-truck me-2"></i> Proveedores
+    </a>
 
-    <!-- Caja -->
-    <li class="nav-item mt-3 mb-1 text-uppercase small fw-bold text-muted px-3">Caja</li>
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'caja_list' %}" href="{% url 'caja_list' %}">
-        <i class="bi bi-cash-coin me-2"></i> Caja
-      </a>
-    </li>
+    <a class="nav-link rounded-2 mb-1 {% active request 'inventario_list' %}" href="{% url 'inventario_list' %}">
+      <i class="bi bi-boxes me-2"></i> Inventario
+    </a>
 
-    <!-- Seguridad -->
-    {% if request.user|tiene_permiso:"ver_usuario" or request.user|tiene_permiso:"ver_rol" or request.user|tiene_permiso:"ver_permiso" %}
-    <li class="nav-item mt-3 mb-1 text-uppercase small fw-bold text-muted px-3">Seguridad</li>
-    {% if request.user|tiene_permiso:"ver_usuario" %}
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'usuario_list' %}" href="{% url 'usuario_list' %}">
-        <i class="bi bi-person-gear me-2"></i> Usuarios
-      </a>
-    </li>
-    {% endif %}
-    {% if request.user|tiene_permiso:"ver_rol" %}
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'rol_list' %}" href="{% url 'rol_list' %}">
-        <i class="bi bi-shield-lock me-2"></i> Roles
-      </a>
-    </li>
-    {% endif %}
-    {% if request.user|tiene_permiso:"ver_permiso" %}
-    <li class="nav-item mb-1">
-      <a class="nav-link d-flex align-items-center rounded-2 px-3 py-2 {% active 'permiso_list' %}" href="{% url 'permiso_list' %}">
-        <i class="bi bi-key me-2"></i> Permisos
-      </a>
-    </li>
-    {% endif %}
-    {% endif %}
-  </ul>
+    <a class="nav-link rounded-2 mb-1 {% active request 'pedido_list' %}" href="{% url 'pedido_list' %}">
+      <i class="bi bi-receipt me-2"></i> Pedidos
+    </a>
+
+    <a class="nav-link rounded-2 mb-1 {% active request 'factura_list' %}" href="{% url 'factura_list' %}">
+      <i class="bi bi-file-earmark-text me-2"></i> Facturas
+    </a>
+
+    <a class="nav-link rounded-2 mb-3 {% active request 'orden_compra_list' %}" href="{% url 'orden_compra_list' %}">
+      <i class="bi bi-clipboard-check me-2"></i> Órdenes de compra
+    </a>
+
+    <div class="text-uppercase text-muted small px-2 mb-2">Seguridad</div>
+
+    <a class="nav-link rounded-2 mb-1 {% active request 'rol_list' %}" href="{% url 'rol_list' %}">
+      <i class="bi bi-diagram-3 me-2"></i> Roles
+    </a>
+
+    <a class="nav-link rounded-2 mb-1 {% active request 'permiso_list' %}" href="{% url 'permiso_list' %}">
+      <i class="bi bi-shield-lock me-2"></i> Permisos
+    </a>
+
+    <a class="nav-link rounded-2 mb-1 {% active request 'usuario_list' %}" href="{% url 'usuario_list' %}">
+      <i class="bi bi-people me-2"></i> Usuarios
+    </a> {% endcomment %}
+
+  </nav>
 </aside>

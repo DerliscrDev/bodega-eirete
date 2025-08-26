@@ -132,8 +132,9 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # bodega_eirete/settings.py
-LOGIN_REDIRECT_URL = '/home/'
 LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/home/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 # settings.py
 AUTH_USER_MODEL = 'bodega.Usuario'

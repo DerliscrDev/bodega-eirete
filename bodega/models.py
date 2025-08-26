@@ -28,64 +28,33 @@ CONDICION_VENTA = (
     ('credito', 'Crédito'),
 )
 
-# Modelo base con trazas
-class TimeStampedModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+GRUPO_SANGUINEO = (
+    ('A+', 'A+'), ('A-', 'A-'),
+    ('B+', 'B+'), ('B-', 'B-'),
+    ('AB+', 'AB+'), ('AB-', 'AB-'),
+    ('O+', 'O+'), ('O-', 'O-'),
+)
 
-    class Meta:
-        abstract = True
-
-# === BASE ===
 class Persona(models.Model):
-    nombre = models.CharField(max_length=100)
+    cedula   = models.CharField(max_length=20, unique=True, db_index=True)
+    nombre   = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    genero = models.CharField(max_length=1, choices=GENERO, blank=True, null=True)
-    fecha_nacimiento = models.DateField(blank=True, null=True)
-    documento_tipo = models.CharField(max_length=10, choices=TIPO_DOC, default='CI')
-    documento_num = models.CharField(max_length=30, blank=True, null=True)
-    ruc = models.CharField(max_length=20, blank=True, null=True)
-    direccion = models.CharField(max_length=255, blank=True, null=True)
-    barrio = models.CharField(max_length=120, blank=True, null=True)
-    ciudad = models.CharField(max_length=120, blank=True, null=True)
-    departamento = models.CharField(max_length=120, blank=True, null=True)
-    pais = models.CharField(max_length=120, default='Paraguay')
-    codigo_postal = models.CharField(max_length=12, blank=True, null=True)
-    telefono = models.CharField(max_length=20, validators=[TELEFONO_REGEX], blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)  # unicidad case-insensitive con constraint abajo
-    activo = models.BooleanField(default=True, db_index=True)
+    # Activo siempre verdadero por defecto y NO editable en formularios
+    activo   = models.BooleanField(default=True, db_index=True, editable=False)
 
     class Meta:
-        db_table = 'bodega_persona'   # para que Django cree la tabla, se managed=True por defecto
-        # managed = False             # descomentar si ya se tiene la tabla creada manualmente
+        db_table = 'bodega_persona'
         ordering = ['apellido', 'nombre']
         indexes = [
             models.Index(fields=['apellido', 'nombre'], name='idx_persona_nombre'),
-            models.Index(fields=['ruc'], name='idx_persona_ruc'),
-            models.Index(fields=['documento_tipo', 'documento_num'], name='idx_persona_doc'),
-        ]
-        constraints = [
-            # Documento único por tipo cuando está informado
-            models.UniqueConstraint(
-                fields=['documento_tipo', 'documento_num'],
-                condition=Q(documento_num__isnull=False),
-                name='uq_persona_documento'
-            ),
-            # Email único case-insensitive cuando NO es NULL
-            models.UniqueConstraint(
-                Lower('email'),
-                condition=Q(email__isnull=False),
-                name='uq_persona_email_lower'
-            ),
         ]
 
     def __str__(self):
-        return self.nombre_completo
+        return f"{self.nombre} {self.apellido} — CI {self.cedula}"
 
     @property
-    def nombre_completo(self) -> str:
-        base = f"{self.nombre or ''} {self.apellido or ''}".strip()
-        return base or f"Persona #{self.pk}"
+    def nombre_completo(self):
+        return f"{self.nombre} {self.apellido}".strip()
 
     def save(self, *args, **kwargs):
         # Normalizaciones suaves
@@ -93,31 +62,149 @@ class Persona(models.Model):
             self.nombre = self.nombre.strip().title()
         if self.apellido:
             self.apellido = self.apellido.strip().title()
-        if self.documento_tipo:
-            self.documento_tipo = self.documento_tipo.strip().upper()
-        if self.email:
-            self.email = self.email.strip().lower()
-        if self.pk is None:          # solo al crear
-            self.activo = True
+        if self.cedula:
+            self.cedula = self.cedula.strip()
         super().save(*args, **kwargs)
 
-# === RRHH ===
-class Empleado(Persona):
-    cedula = models.CharField(max_length=20, unique=True)
-    fecha_contratacion = models.DateField()
-    sucursal = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
-    fecha_baja = models.DateField(blank=True, null=True)
-    motivo_baja = models.CharField(max_length=255, blank=True, null=True)
-    # 'activo' ya lo hereda de Persona
+
+# -----------------
+# Catálogo de cargos
+# -----------------
+class Cargo(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    activo = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'bodega_empleado'   # si ya existe, podés usar managed=False
-        managed = False
+        db_table = 'bodega_cargo'
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre
+
+
+# -----------------
+# Empleado (hereda de Persona)
+# -----------------
+class Empleado(Persona):
+    # Datos personales extra
+    genero = models.CharField(max_length=1, choices=GENERO, null=True, blank=True)
+    fecha_nacimiento = models.DateField(null=True, blank=True)
+    grupo_sanguineo = models.CharField(max_length=3, choices=GRUPO_SANGUINEO, null=True, blank=True)
+
+    # Contacto / domicilio
+    telefono = models.CharField(max_length=20, validators=[TELEFONO_REGEX])
+    email = models.EmailField(unique=True)
+    direccion = models.CharField(max_length=255)
+    barrio = models.CharField(max_length=120)
+    ciudad = models.CharField(max_length=120)
+    departamento = models.CharField(max_length=120)
+    pais = models.CharField(max_length=120, default='Paraguay')
+    codigo_postal = models.CharField(max_length=12, blank=True, null=True)  # único opcional
+
+    # Laboral
+    fecha_contratacion = models.DateField()
+    sucursal = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
+    cargo = models.ForeignKey(Cargo, on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
+    fecha_baja = models.DateField(blank=True, null=True)
+    motivo_baja = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'bodega_empleado'
         ordering = ['-activo', 'apellido', 'nombre']
         indexes = [
-            models.Index(fields=['fecha_contratacion'], name='idx_empleado_estado_fecha'),
-            models.Index(fields=['cedula'], name='idx_empleado_cedula'),
+            models.Index(fields=['fecha_contratacion'], name='idx_empleado_fecha_ingreso'),
+            models.Index(fields=['email'], name='idx_empleado_email'),
         ]
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.strip().lower()
+        return super().save(*args, **kwargs)
+
+
+# === BASE ===
+# class Persona(models.Model):
+#     nombre = models.CharField(max_length=100)
+#     apellido = models.CharField(max_length=100)
+#     genero = models.CharField(max_length=1, choices=GENERO, blank=True, null=True)
+#     fecha_nacimiento = models.DateField(blank=True, null=True)
+#     documento_tipo = models.CharField(max_length=10, choices=TIPO_DOC, default='CI')
+#     documento_num = models.CharField(max_length=30, blank=True, null=True)
+#     ruc = models.CharField(max_length=20, blank=True, null=True)
+#     direccion = models.CharField(max_length=255, blank=True, null=True)
+#     barrio = models.CharField(max_length=120, blank=True, null=True)
+#     ciudad = models.CharField(max_length=120, blank=True, null=True)
+#     departamento = models.CharField(max_length=120, blank=True, null=True)
+#     pais = models.CharField(max_length=120, default='Paraguay')
+#     codigo_postal = models.CharField(max_length=12, blank=True, null=True)
+#     telefono = models.CharField(max_length=20, validators=[TELEFONO_REGEX], blank=True, null=True)
+#     email = models.EmailField(blank=True, null=True)  # unicidad case-insensitive con constraint abajo
+#     activo = models.BooleanField(default=True, db_index=True)
+
+#     class Meta:
+#         db_table = 'bodega_persona'   # para que Django cree la tabla, se managed=True por defecto
+#         # managed = False             # descomentar si ya se tiene la tabla creada manualmente
+#         ordering = ['apellido', 'nombre']
+#         indexes = [
+#             models.Index(fields=['apellido', 'nombre'], name='idx_persona_nombre'),
+#             models.Index(fields=['ruc'], name='idx_persona_ruc'),
+#             models.Index(fields=['documento_tipo', 'documento_num'], name='idx_persona_doc'),
+#         ]
+#         constraints = [
+#             # Documento único por tipo cuando está informado
+#             models.UniqueConstraint(
+#                 fields=['documento_tipo', 'documento_num'],
+#                 condition=Q(documento_num__isnull=False),
+#                 name='uq_persona_documento'
+#             ),
+#             # Email único case-insensitive cuando NO es NULL
+#             models.UniqueConstraint(
+#                 Lower('email'),
+#                 condition=Q(email__isnull=False),
+#                 name='uq_persona_email_lower'
+#             ),
+#         ]
+
+#     def __str__(self):
+#         return self.nombre_completo
+
+#     @property
+#     def nombre_completo(self) -> str:
+#         base = f"{self.nombre or ''} {self.apellido or ''}".strip()
+#         return base or f"Persona #{self.pk}"
+
+#     def save(self, *args, **kwargs):
+#         # Normalizaciones suaves
+#         if self.nombre:
+#             self.nombre = self.nombre.strip().title()
+#         if self.apellido:
+#             self.apellido = self.apellido.strip().title()
+#         if self.documento_tipo:
+#             self.documento_tipo = self.documento_tipo.strip().upper()
+#         if self.email:
+#             self.email = self.email.strip().lower()
+#         if self.pk is None:          # solo al crear
+#             self.activo = True
+#         super().save(*args, **kwargs)
+
+# # === RRHH ===
+# class Empleado(Persona):
+#     cedula = models.CharField(max_length=20, unique=True)
+#     fecha_contratacion = models.DateField()
+#     sucursal = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
+#     fecha_baja = models.DateField(blank=True, null=True)
+#     motivo_baja = models.CharField(max_length=255, blank=True, null=True)
+#     # 'activo' ya lo hereda de Persona
+
+#     class Meta:
+#         db_table = 'bodega_empleado'   # si ya existe, podés usar managed=False
+#         managed = False
+#         ordering = ['-activo', 'apellido', 'nombre']
+#         indexes = [
+#             models.Index(fields=['fecha_contratacion'], name='idx_empleado_estado_fecha'),
+#             models.Index(fields=['cedula'], name='idx_empleado_cedula'),
+#         ]
 
 class Cliente(Persona):
     condicion_venta = models.CharField(max_length=20, choices=CONDICION_VENTA, default='contado', db_index=True)
@@ -153,12 +240,48 @@ class Rol(models.Model):
 
 class Usuario(AbstractUser):
     empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE, null=True, blank=True)
-    ESTADO_CHOICES = (
-        ('activo', 'Activo'),
-        ('inactivo', 'Inactivo'),
-    )
+
+    ESTADO_CHOICES = (('activo', 'Activo'), ('inactivo', 'Inactivo'))
     estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='activo')
-    rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # 🔸 Campo antiguo (uno solo) — lo dejamos por compatibilidad con tu UI actual:
+    rol = models.ForeignKey('Rol', on_delete=models.SET_NULL, null=True, blank=True)
+
+    # 🔹 NUEVO: roles adicionales (varios)
+    roles = models.ManyToManyField('Rol', blank=True, related_name='usuarios')
+
+    # ===== Helpers para permisos efectivos =====
+    def effective_roles_qs(self):
+        """
+        Union de: roles M2M del usuario, rol simple (si existe),
+        y roles del cargo del empleado (si tiene).
+        """
+        from django.db.models import Q
+        base = self.roles.all()
+        extra_ids = []
+        if self.rol_id:
+            extra_ids.append(self.rol_id)
+        if getattr(self, 'empleado', None) and self.empleado and self.empleado.cargo:
+            extra_ids += list(self.empleado.cargo.roles.values_list('id', flat=True))
+        if extra_ids:
+            base = (base | Rol.objects.filter(id__in=extra_ids)).distinct()
+        return base
+
+    def has_custom_permission(self, permiso_nombre: str) -> bool:
+        """
+        Chequea si el user tiene un permiso (por nombre) en cualquiera de sus roles efectivos.
+        """
+        return self.effective_roles_qs().filter(permisos__nombre=permiso_nombre, permisos__activo=True).exists()
+
+
+# class Usuario(AbstractUser):
+#     empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE, null=True, blank=True)
+#     ESTADO_CHOICES = (
+#         ('activo', 'Activo'),
+#         ('inactivo', 'Inactivo'),
+#     )
+#     estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='activo')
+#     rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
 
 # === INVENTARIO ===
 class CategoriaProducto(models.Model):

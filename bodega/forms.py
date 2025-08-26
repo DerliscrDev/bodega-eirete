@@ -1,249 +1,95 @@
-# forms.py actualizado con herencia desde Persona
+# bodega/forms.py
 from django import forms
-from django.forms import inlineformset_factory, DateInput
-from django.contrib.auth.forms import SetPasswordForm
 from django.core.exceptions import ValidationError
-from .models import (
-    Empleado, Usuario, Rol, Permiso, Producto, Movimiento, Proveedor, OrdenCompra, DetalleOrdenCompra,
-    Cliente, Almacen, Inventario, CategoriaProducto, Pedido, DetallePedido, Factura, DetalleFactura,
-    Caja, MovimientoCaja, TipoProducto
-)
+from django.utils.text import capfirst
+from .models import Persona, Empleado
 
-class EmpleadoForm(forms.ModelForm):
-    # Datepickers nativos
-    fecha_contratacion = forms.DateField(widget=DateInput(attrs={"type": "date"}))
-    fecha_nacimiento = forms.DateField(widget=DateInput(attrs={"type": "date"}), required=False)
-
-    # Hacemos “activo” una selección obligatoria (Sí/No) para que cuente como “requerido”
-    ACTIVO_CHOICES = (("True", "Sí"), ("False", "No"))
-    activo = forms.TypedChoiceField(
-        choices=ACTIVO_CHOICES,
-        coerce=lambda v: v == "True",
-        widget=forms.RadioSelect,
-        required=True,
-    )
-
+class PersonaForm(forms.ModelForm):
     class Meta:
-        model = Empleado
-        fields = [
-            'nombre', 'apellido', 'cedula', 'genero', 'fecha_nacimiento',
-            'direccion', 'barrio', 'ciudad', 'departamento', 'pais',
-            'codigo_postal', 'telefono', 'email',
-            'fecha_contratacion', 'sucursal'
-        ]
+        model = Persona
+        fields = ["cedula", "nombre", "apellido"]  # 'activo' no es editable
         widgets = {
-            'genero': forms.Select(attrs={'class': 'form-select'}),
-            'documento_tipo': forms.Select(attrs={'class': 'form-select'}),
-            'direccion': forms.TextInput(attrs={'class': 'form-control'}),
-            'barrio': forms.TextInput(attrs={'class': 'form-control'}),
-            'ciudad': forms.TextInput(attrs={'class': 'form-control'}),
-            'departamento': forms.TextInput(attrs={'class': 'form-control'}),
-            'pais': forms.TextInput(attrs={'class': 'form-control'}),
-            'codigo_postal': forms.TextInput(attrs={'class': 'form-control'}),
-            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'cedula': forms.TextInput(attrs={'class': 'form-control'}),
-            'sucursal': forms.Select(attrs={'class': 'form-select'}),
+            "cedula": forms.TextInput(attrs={"class": "form-control", "placeholder": "Cédula"}),
+            "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre"}),
+            "apellido": forms.TextInput(attrs={"class": "form-control", "placeholder": "Apellido"}),
+        }
+        labels = {
+            "cedula": "Cédula",
+            "nombre": "Nombre",
+            "apellido": "Apellido",
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def clean_nombre(self):
+        v = self.cleaned_data.get("nombre", "").strip()
+        return capfirst(v)
 
-        # Por requerimiento: TODO requerido excepto codigo_postal
-        for name, field in self.fields.items():
-            field.required = (name != 'codigo_postal')
+    def clean_apellido(self):
+        v = self.cleaned_data.get("apellido", "").strip()
+        return capfirst(v)
 
-        # Sucursal (en modelo es null=True), pero aquí lo forzamos a requerido
-        self.fields['sucursal'].required = True
 
-        # Valor inicial de “activo” (Sí)
-        if not self.instance.pk:
-            self.fields['activo'].initial = "True"
-        else:
-            self.fields['activo'].initial = "True" if self.instance.activo else "False"
+class EmpleadoForm(forms.ModelForm):
+    class Meta:
+        model = Empleado
+        # Incluye campos de Persona + Empleado
+        fields = [
+            # Persona
+            "cedula", "nombre", "apellido",
+            # Empleado
+            "genero", "fecha_nacimiento", "grupo_sanguineo",
+            "telefono", "email",
+            "direccion", "barrio", "ciudad", "departamento", "pais", "codigo_postal",
+            "fecha_contratacion", "cargo", "sucursal",
+            # "fecha_baja", "motivo_baja",  # podés exponerlos si querés administrar bajas desde el form
+        ]
+        widgets = {
+            "cedula": forms.TextInput(attrs={"class": "form-control", "placeholder": "Cédula"}),
+            "nombre": forms.TextInput(attrs={"class": "form-control"}),
+            "apellido": forms.TextInput(attrs={"class": "form-control"}),
+            "genero": forms.Select(attrs={"class": "form-select"}),
+            "fecha_nacimiento": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "grupo_sanguineo": forms.Select(attrs={"class": "form-select"}),
+            "telefono": forms.TextInput(attrs={"class": "form-control", "placeholder": "+595..."}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+            "direccion": forms.TextInput(attrs={"class": "form-control"}),
+            "barrio": forms.TextInput(attrs={"class": "form-control"}),
+            "ciudad": forms.TextInput(attrs={"class": "form-control"}),
+            "departamento": forms.TextInput(attrs={"class": "form-control"}),
+            "pais": forms.TextInput(attrs={"class": "form-control"}),
+            "codigo_postal": forms.TextInput(attrs={"class": "form-control", "placeholder": "(opcional)"}),
+            "fecha_contratacion": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "cargo": forms.Select(attrs={"class": "form-select"}),
+            "sucursal": forms.Select(attrs={"class": "form-select"}),
+        }
+        labels = {
+            "cedula": "Cédula",
+            "nombre": "Nombre",
+            "apellido": "Apellido",
+            "genero": "Género",
+            "fecha_nacimiento": "Fecha de nacimiento",
+            "grupo_sanguineo": "Grupo sanguíneo",
+            "telefono": "Teléfono",
+            "email": "Email",
+            "direccion": "Dirección",
+            "barrio": "Barrio",
+            "ciudad": "Ciudad",
+            "departamento": "Departamento",
+            "pais": "País",
+            "codigo_postal": "Código postal (opcional)",
+            "fecha_contratacion": "Fecha de contratación",
+            "cargo": "Cargo",
+            "sucursal": "Sucursal",
+        }
 
-    # Validaciones para feedback claro (evitar IntegrityError genérico)
+    def clean_nombre(self):
+        return capfirst(self.cleaned_data.get("nombre", "").strip())
+
+    def clean_apellido(self):
+        return capfirst(self.cleaned_data.get("apellido", "").strip())
+
     def clean_email(self):
-        email = (self.cleaned_data.get('email') or '').strip().lower()
-        if not email:
-            raise ValidationError("El email es obligatorio.")
-        qs = Empleado.objects.filter(email__iexact=email)
-        if self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise ValidationError("Este email ya está registrado.")
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        # el modelo ya lo tiene unique, esto es sólo por UX
+        if email and Empleado.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+            raise ValidationError("Ya existe un empleado con este email.")
         return email
-
-    def clean_cedula(self):
-        ced = (self.cleaned_data.get('cedula') or '').strip()
-        if not ced:
-            raise ValidationError("La cédula es obligatoria.")
-        qs = Empleado.objects.filter(cedula=ced)
-        if self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise ValidationError("Esta cédula ya está registrada.")
-        return ced
-
-# class EmpleadoForm(forms.ModelForm):
-#     class Meta:
-#         model = Empleado
-#         fields = ['nombre', 'apellido', 'cedula', 'direccion', 'telefono', 'email',
-#                   'fecha_contratacion', 'sucursal', 'activo']
-
-#     def clean_email(self):
-#         email = (self.cleaned_data.get('email') or '').strip().lower() or None
-#         if email:
-#             qs = Empleado.objects.filter(email__iexact=email)
-#             if self.instance.pk:
-#                 qs = qs.exclude(pk=self.instance.pk)
-#             if qs.exists():
-#                 raise ValidationError("Este email ya está registrado.")
-#         return email
-
-#     def clean_cedula(self):
-#         ced = (self.cleaned_data.get('cedula') or '').strip()
-#         if not ced:
-#             return ced
-#         qs = Empleado.objects.filter(cedula=ced)
-#         if self.instance.pk:
-#             qs = qs.exclude(pk=self.instance.pk)
-#         if qs.exists():
-#             raise ValidationError("Esta cédula ya está registrada.")
-#         return ced
-
-class ClienteForm(forms.ModelForm):
-    class Meta:
-        model = Cliente
-        fields = [
-            'nombre', 'apellido', 'direccion', 'telefono', 'email',
-            'condicion_venta', 'limite_credito', 'activo'
-        ]
-
-class UsuarioForm(forms.ModelForm):
-    class Meta:
-        model = Usuario
-        fields = ['username', 'email', 'estado', 'empleado', 'rol']
-
-class RolForm(forms.ModelForm):
-    permisos = forms.ModelMultipleChoiceField(
-        queryset=Permiso.objects.filter(activo=True),
-        widget=forms.CheckboxSelectMultiple,
-        required=False
-    )
-    class Meta:
-        model = Rol
-        fields = ['nombre', 'descripcion', 'permisos']
-
-class PermisoForm(forms.ModelForm):
-    class Meta:
-        model = Permiso
-        fields = ['nombre', 'descripcion', 'url', 'activo']
-
-class ProductoForm(forms.ModelForm):
-    class Meta:
-        model = Producto
-        fields = [
-            'nombre', 'descripcion', 'marca', 'categoria',
-            'codigo', 'unidad_medida', 'tipo_bebida',
-            'precio_compra', 'margen_ganancia', 'iva',
-            'stock_minimo', 'fecha_vencimiento',
-            'proveedor', 'activo'
-        ]
-
-
-class MovimientoForm(forms.ModelForm):
-    class Meta:
-        model = Movimiento
-        fields = ['producto', 'almacen', 'tipo', 'cantidad', 'observacion']
-
-class ProveedorForm(forms.ModelForm):
-    class Meta:
-        model = Proveedor
-        fields = ['nombre', 'ruc', 'direccion', 'telefono', 'email', 'activo']
-
-class OrdenCompraForm(forms.ModelForm):
-    fecha_entrega = forms.DateField(
-        widget=DateInput(attrs={'type': 'date'}),  # genera <input type="date">
-        input_formats=['%Y-%m-%d']  # asegura el formato correcto
-    )
-    class Meta:
-        model = OrdenCompra
-        fields = ['proveedor', 'almacen_destino', 'nro_factura', 'fecha_entrega', 'estado', 'observacion']
-
-class DetalleOrdenCompraForm(forms.ModelForm):
-    class Meta:
-        model = DetalleOrdenCompra
-        fields = ['producto', 'cantidad', 'precio_unitario']
-
-class AlmacenForm(forms.ModelForm):
-    class Meta:
-        model = Almacen
-        fields = ['nombre', 'direccion', 'descripcion', 'activo']
-
-class CategoriaProductoForm(forms.ModelForm):
-    class Meta:
-        model = CategoriaProducto
-        fields = ['nombre', 'activo']
-
-class PedidoForm(forms.ModelForm):
-    class Meta:
-        model = Pedido
-        fields = ['cliente', 'estado', 'observacion']
-
-class DetallePedidoForm(forms.ModelForm):
-    class Meta:
-        model = DetallePedido
-        fields = ['producto', 'cantidad', 'precio_unitario']
-
-DetallePedidoFormSet = inlineformset_factory(
-    Pedido,
-    DetallePedido,
-    form=DetallePedidoForm,
-    extra=1,
-    can_delete=True
-)
-
-class FacturaForm(forms.ModelForm):
-    class Meta:
-        model = Factura
-        fields = ['cliente', 'nro_factura', 'timbrado', 'condicion_venta', 'estado', 'observacion']
-
-class DetalleFacturaForm(forms.ModelForm):
-    class Meta:
-        model = DetalleFactura
-        fields = ['producto', 'cantidad', 'precio_unitario', 'iva_aplicado']
-
-DetalleFacturaFormSet = inlineformset_factory(
-    Factura,
-    DetalleFactura,
-    form=DetalleFacturaForm,
-    extra=1,
-    can_delete=True
-)
-
-DetalleOrdenCompraFormSet = inlineformset_factory(
-    OrdenCompra,
-    DetalleOrdenCompra,
-    form=DetalleOrdenCompraForm,
-    extra=0,
-    can_delete=True
-)
-
-class CambiarPasswordForm(SetPasswordForm):
-    pass
-
-class CajaForm(forms.ModelForm):
-    class Meta:
-        model = Caja
-        fields = ['monto_inicial']
-
-class MovimientoCajaForm(forms.ModelForm):
-    class Meta:
-        model = MovimientoCaja
-        fields = ['tipo', 'descripcion', 'monto']
-
-class TipoProductoForm(forms.ModelForm):
-    class Meta:
-        model = TipoProducto
-        fields = ['nombre', 'categoria', 'activo']
