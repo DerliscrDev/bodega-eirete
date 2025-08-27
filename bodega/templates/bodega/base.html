@@ -11,14 +11,15 @@
 
   <style>
     /* ======= Tema / Colores ======= */
-    :root {
-      --brand: #3674B5;
-      --brand-hover: #578FCA;
-      --bg-body: #D1F8EF;
-      --link: #2b2b2b;
-      --link-hover-bg: #f3f6ff;
-      --active-bg: #e9f2ff;
-      --active-bd: #cfe2ff;
+   :root{
+      --brand:#3674B5;
+      --brand-hover:#578FCA;
+      --bg-body:#D1F8EF;
+      --link:#2b2b2b;
+      --link-hover-bg:#f3f6ff;
+      --active-bg:#e9f2ff;
+      --active-bd:#cfe2ff;
+      --navbar-h:56px;              /* <— altura del navbar */
     }
 
     body {
@@ -60,7 +61,7 @@
     .sidebar {
       width: var(--sidebar-width);
       position: fixed;
-      top: 56px; /* altura aprox del navbar */
+      top: var(--navbar-h);
       bottom: 0;
       left: 0;
       background: #fff;
@@ -69,6 +70,16 @@
       border-right: 1px solid #dee2e6;
       transition: transform .2s ease;
     }
+
+    /* Empuja el contenido hacia abajo para que no quede bajo el navbar fijo */
+    main.content{
+      margin-top: calc(var(--navbar-h) + 12px);  /* separación visual */
+    }
+
+    @media (max-width: 991.98px){
+      main.content{ margin-top: calc(var(--navbar-h) + 8px); }
+    }
+
     .content {
       margin-left: var(--sidebar-width);
       padding: 1rem;
@@ -94,10 +105,6 @@
       font-weight: 600;
       border: 1px solid var(--active-bd);
     }
-
-    /* Contenedor principal bajo la barra */
-    .content .container,
-    .content .container-fluid { margin-top: 10px; }
   </style>
 
   {% block extra_css %}{% endblock %}

@@ -1,131 +1,116 @@
-{% extends 'bodega/base.html' %}
+{% extends "bodega/base.html" %}
 {% load permisos_tags %}
-
 {% block title %}Personas - Bodega Eirete{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm mb-4">
-  <div class="card-body">
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h3 class="mb-0">Personas</h3>
+  {% if request.user|tiene_permiso:"crear_persona" %}
+    <a class="btn btn-custom" href="{% url 'persona_create' %}">
+      <i class="bi bi-person-plus me-1"></i> Nueva persona
+    </a>
+  {% endif %}
+</div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="card-title mb-0">Personas</h2>
-      {% if request.user|tiene_permiso:"crear_persona" %}
-        <a href="{% url 'persona_create' %}" class="btn btn-custom rounded-2">
-          <i class="bi bi-person-plus me-1"></i> Nueva Persona
-        </a>
-      {% endif %}
-    </div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-sm-8 col-md-6 col-lg-5">
+    <input type="text" name="q" value="{{ q }}" class="form-control"
+           placeholder="Buscar por cédula, nombre o apellido…">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-secondary" type="submit">
+      <i class="bi bi-search"></i>
+    </button>
+    <a class="btn btn-outline-secondary" href="{% url 'persona_list' %}">
+      <i class="bi bi-x-lg"></i>
+    </a>
+  </div>
+  <div class="col-12 text-muted small">
+    {% if filtrados %}Mostrando {{ filtrados }} de {{ total }}{% endif %}
+  </div>
+</form>
 
-    <form class="row g-2 mb-3" method="get">
-      <div class="col-md-9">
-        <input type="search"
-               class="form-control"
-               name="q"
-               placeholder="Buscar por cédula, nombre o apellido"
-               value="{{ q }}">
-      </div>
-      <div class="col-md-3 text-end">
-        <button type="submit" class="btn btn-outline-primary rounded-2">Buscar</button>
-        {% if q %}
-          <a href="{% url 'persona_list' %}" class="btn btn-outline-secondary rounded-2">Limpiar</a>
-        {% endif %}
-      </div>
-    </form>
-
-    <p class="text-muted mb-3">
-      Mostrando {{ personas|length }} de {{ filtrados }} (total {{ total }})
-    </p>
-
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped align-middle text-center">
-        <thead>
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 120px;">Cédula</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th style="width: 110px;">Estado</th>
+          <th style="width: 140px;" class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in personas %}
           <tr>
-            <th>Cédula</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Estado</th>
-            <th style="width: 220px;">Acciones</th>
+            <td class="text-nowrap">{{ p.cedula }}</td>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.apellido }}</td>
+            <td>
+              {% if p.activo %}
+                <span class="badge bg-success">Activo</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactivo</span>
+              {% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+              {% if request.user|tiene_permiso:"editar_persona" %}
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'persona_update' p.pk %}">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+              {% endif %}
+              {% if request.user|tiene_permiso:"inactivar_persona" %}
+                <a class="btn btn-sm {% if p.activo %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+                   href="{% url 'persona_inactivate' p.pk %}"
+                   onclick="return confirm('¿Confirmás {{ p.activo|yesno:'inactivar,reactivar' }} a {{ p.nombre }} {{ p.apellido }}?');">
+                  {% if p.activo %}
+                    <i class="bi bi-person-x"></i>
+                  {% else %}
+                    <i class="bi bi-person-check"></i>
+                  {% endif %}
+                </a>
+              {% endif %}
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {% for p in personas %}
-            <tr>
-              <td>{{ p.cedula }}</td>
-              <td>{{ p.nombre }}</td>
-              <td>{{ p.apellido }}</td>
-              <td>
-                {% if p.activo %}
-                  <span class="badge text-bg-success">Activo</span>
-                {% else %}
-                  <span class="badge text-bg-secondary">Inactivo</span>
-                {% endif %}
-              </td>
-              <td>
-                <div class="d-flex justify-content-center gap-2">
-                  {% if request.user|tiene_permiso:"editar_persona" %}
-                    <a href="{% url 'persona_update' p.pk %}" class="btn btn-outline-primary btn-sm rounded-2">
-                      <i class="bi bi-pencil-square me-1"></i> Editar
-                    </a>
-                  {% endif %}
-                  {% if request.user|tiene_permiso:"inactivar_persona" %}
-                    {% if p.activo %}
-                      <a href="{% url 'persona_inactivate' p.pk %}" class="btn btn-outline-danger btn-sm rounded-2">
-                        <i class="bi bi-x-circle me-1"></i> Inactivar
-                      </a>
-                    {% else %}
-                      <a href="{% url 'persona_inactivate' p.pk %}" class="btn btn-outline-success btn-sm rounded-2">
-                        <i class="bi bi-check-circle me-1"></i> Reactivar
-                      </a>
-                    {% endif %}
-                  {% endif %}
-                </div>
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="5" class="text-center text-muted py-4">
-                No hay personas que coincidan con tu búsqueda.
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        {% empty %}
+          <tr><td colspan="5" class="text-center py-4 text-muted">Sin resultados</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-    {% if is_paginated %}
-      <nav aria-label="Paginación">
-        <ul class="pagination pagination-sm justify-content-center">
+  {% if is_paginated %}
+    <div class="card-footer py-2">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
           {% if page_obj.has_previous %}
             <li class="page-item">
-              <a class="page-link" href="?q={{ q }}&page=1">&laquo;</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+              <a class="page-link" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">«</a>
             </li>
           {% else %}
-            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            <li class="page-item disabled"><span class="page-link">«</span></li>
           {% endif %}
 
-          <li class="page-item active">
-            <span class="page-link">{{ page_obj.number }}/{{ paginator.num_pages }}</span>
-          </li>
+          {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+              <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+              <li class="page-item"><a class="page-link" href="?q={{ q }}&page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+          {% endfor %}
 
           {% if page_obj.has_next %}
             <li class="page-item">
-              <a class="page-link" href="?q={{ q }}&page={{ page_obj.next_page_number }}">Siguiente</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="?q={{ q }}&page={{ paginator.num_pages }}">&raquo;</a>
+              <a class="page-link" href="?q={{ q }}&page={{ page_obj.next_page_number }}">»</a>
             </li>
           {% else %}
-            <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
-            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            <li class="page-item disabled"><span class="page-link">»</span></li>
           {% endif %}
         </ul>
       </nav>
-    {% endif %}
-
-  </div>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

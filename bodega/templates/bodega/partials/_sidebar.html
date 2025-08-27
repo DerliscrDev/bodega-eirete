@@ -1,58 +1,15 @@
 {% load nav_tags %}
 <aside id="sidebar" class="sidebar">
   <nav class="nav flex-column p-3">
-
     <div class="text-uppercase text-muted small px-2 mb-2">General</div>
-
     <a class="nav-link rounded-2 mb-1 {% active request 'home' %}" href="{% url 'home' %}">
       <i class="bi bi-house-door me-2"></i> Inicio
     </a>
-
     <a class="nav-link rounded-2 mb-1 {% active request 'persona_list' %}" href="{% url 'persona_list' %}">
       <i class="bi bi-person me-2"></i> Personas
     </a>
-
-    {% comment %} <a class="nav-link rounded-2 mb-1 {% active request 'empleado_list' %}" href="{% url 'empleado_list' %}">
-      <i class="bi bi-person-badge me-2"></i> Empleados
-    </a>
-
-    <a class="nav-link rounded-2 mb-1 {% active request 'producto_list' %}" href="{% url 'producto_list' %}">
-      <i class="bi bi-bag me-2"></i> Productos
-    </a>
-
-    <a class="nav-link rounded-2 mb-1 {% active request 'proveedor_list' %}" href="{% url 'proveedor_list' %}">
-      <i class="bi bi-truck me-2"></i> Proveedores
-    </a>
-
-    <a class="nav-link rounded-2 mb-1 {% active request 'inventario_list' %}" href="{% url 'inventario_list' %}">
-      <i class="bi bi-boxes me-2"></i> Inventario
-    </a>
-
-    <a class="nav-link rounded-2 mb-1 {% active request 'pedido_list' %}" href="{% url 'pedido_list' %}">
-      <i class="bi bi-receipt me-2"></i> Pedidos
-    </a>
-
-    <a class="nav-link rounded-2 mb-1 {% active request 'factura_list' %}" href="{% url 'factura_list' %}">
-      <i class="bi bi-file-earmark-text me-2"></i> Facturas
-    </a>
-
-    <a class="nav-link rounded-2 mb-3 {% active request 'orden_compra_list' %}" href="{% url 'orden_compra_list' %}">
-      <i class="bi bi-clipboard-check me-2"></i> Órdenes de compra
-    </a>
-
-    <div class="text-uppercase text-muted small px-2 mb-2">Seguridad</div>
-
-    <a class="nav-link rounded-2 mb-1 {% active request 'rol_list' %}" href="{% url 'rol_list' %}">
-      <i class="bi bi-diagram-3 me-2"></i> Roles
-    </a>
-
     <a class="nav-link rounded-2 mb-1 {% active request 'permiso_list' %}" href="{% url 'permiso_list' %}">
       <i class="bi bi-shield-lock me-2"></i> Permisos
     </a>
-
-    <a class="nav-link rounded-2 mb-1 {% active request 'usuario_list' %}" href="{% url 'usuario_list' %}">
-      <i class="bi bi-people me-2"></i> Usuarios
-    </a> {% endcomment %}
-
   </nav>
 </aside>

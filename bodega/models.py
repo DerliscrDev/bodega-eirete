@@ -35,6 +35,82 @@ GRUPO_SANGUINEO = (
     ('O+', 'O+'), ('O-', 'O-'),
 )
 
+ACCIONES = (
+    ("ver", "Ver/Consultar"),
+    ("crear", "Crear"),
+    ("editar", "Editar"),
+    ("inactivar", "Inactivar"),
+    # ("exportar", "Exportar/Descargar"),
+    # ("imprimir", "Imprimir"),
+    # ("aprobar", "Aprobar/Autorizar"),
+)
+
+
+MODULOS = (
+    ("home", "Inicio"),
+    ("personas", "Personas"),
+    ("empleados", "Empleados"),
+    ("permisos", "Permisos"),
+)
+
+
+class Usuario(AbstractUser):
+    # Campo opcional para no romper vistas que lo usaban
+    ESTADO_CHOICES = (('activo', 'Activo'), ('inactivo', 'Inactivo'))
+    estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='activo')
+
+    # Mientras rehacemos Seguridad, dejamos que el superusuario pase siempre.
+    # Si no quieres bloquearte en dev, puedes devolver True.
+    def has_custom_permission(self, permiso_str: str) -> bool:
+        return self.is_superuser or self.is_staff
+
+class Permiso(models.Model):
+    codigo = models.CharField(
+    max_length=50,
+    unique=True,
+    validators=[RegexValidator(
+        r'^[a-z]+(\.[a-z_]+)$',
+        'Usa formato modulo.accion en minúsculas (ej.: personas.ver).'
+    )],
+)
+
+    # visible/legible
+    nombre = models.CharField(max_length=80)
+
+    # clasificación / vínculo con la UI
+    modulo = models.CharField(max_length=30, choices=MODULOS, db_index=True)
+    accion = models.CharField(max_length=20, choices=ACCIONES, db_index=True)
+
+    # enrutamiento (opcional, para atar a vistas)
+    url_name = models.CharField(max_length=120, blank=True, null=True,
+                                help_text="Nombre de URL de Django (opcional)")
+
+    # menú / presentación (opcionales)
+    # visible_nav = models.BooleanField(default=False, help_text="Mostrar en el menú si el usuario tiene este permiso")
+    # icono = models.CharField(max_length=50, blank=True, default="bi-shield-lock")
+    # orden = models.PositiveIntegerField(default=0)    
+
+    # controles extra (opcionales)
+    # requires_mfa = models.BooleanField(default=False)
+    vigente_desde = models.DateField(blank=True, null=True)
+    vigente_hasta = models.DateField(blank=True, null=True)
+
+    # estado y auditoría
+    activo = models.BooleanField(default=True)
+    creado = models.DateTimeField(auto_now_add=True)
+    modificado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "bodega_permiso"
+        ordering = ["modulo", "nombre"]
+        indexes = [
+            models.Index(fields=["modulo", "accion"], name="idx_perm_mod_acc"),
+            models.Index(fields=["url_name"], name="idx_perm_urlname"),
+        ]
+
+    def __str__(self):
+        return f"{self.nombre} ({self.codigo})"
+
 class Persona(models.Model):
     cedula   = models.CharField(max_length=20, unique=True, db_index=True)
     nombre   = models.CharField(max_length=100)
@@ -67,469 +143,57 @@ class Persona(models.Model):
         super().save(*args, **kwargs)
 
 
-# -----------------
-# Catálogo de cargos
-# -----------------
-class Cargo(models.Model):
-    nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.TextField(blank=True, null=True)
-    activo = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = 'bodega_cargo'
-        ordering = ['nombre']
-
-    def __str__(self):
-        return self.nombre
-
-
-# -----------------
-# Empleado (hereda de Persona)
-# -----------------
-class Empleado(Persona):
-    # Datos personales extra
-    genero = models.CharField(max_length=1, choices=GENERO, null=True, blank=True)
-    fecha_nacimiento = models.DateField(null=True, blank=True)
-    grupo_sanguineo = models.CharField(max_length=3, choices=GRUPO_SANGUINEO, null=True, blank=True)
-
-    # Contacto / domicilio
-    telefono = models.CharField(max_length=20, validators=[TELEFONO_REGEX])
-    email = models.EmailField(unique=True)
-    direccion = models.CharField(max_length=255)
-    barrio = models.CharField(max_length=120)
-    ciudad = models.CharField(max_length=120)
-    departamento = models.CharField(max_length=120)
-    pais = models.CharField(max_length=120, default='Paraguay')
-    codigo_postal = models.CharField(max_length=12, blank=True, null=True)  # único opcional
-
-    # Laboral
-    fecha_contratacion = models.DateField()
-    sucursal = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
-    cargo = models.ForeignKey(Cargo, on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
-    fecha_baja = models.DateField(blank=True, null=True)
-    motivo_baja = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = 'bodega_empleado'
-        ordering = ['-activo', 'apellido', 'nombre']
-        indexes = [
-            models.Index(fields=['fecha_contratacion'], name='idx_empleado_fecha_ingreso'),
-            models.Index(fields=['email'], name='idx_empleado_email'),
-        ]
-
-    def save(self, *args, **kwargs):
-        if self.email:
-            self.email = self.email.strip().lower()
-        return super().save(*args, **kwargs)
-
-
-# === BASE ===
-# class Persona(models.Model):
-#     nombre = models.CharField(max_length=100)
-#     apellido = models.CharField(max_length=100)
-#     genero = models.CharField(max_length=1, choices=GENERO, blank=True, null=True)
-#     fecha_nacimiento = models.DateField(blank=True, null=True)
-#     documento_tipo = models.CharField(max_length=10, choices=TIPO_DOC, default='CI')
-#     documento_num = models.CharField(max_length=30, blank=True, null=True)
-#     ruc = models.CharField(max_length=20, blank=True, null=True)
-#     direccion = models.CharField(max_length=255, blank=True, null=True)
-#     barrio = models.CharField(max_length=120, blank=True, null=True)
-#     ciudad = models.CharField(max_length=120, blank=True, null=True)
-#     departamento = models.CharField(max_length=120, blank=True, null=True)
-#     pais = models.CharField(max_length=120, default='Paraguay')
-#     codigo_postal = models.CharField(max_length=12, blank=True, null=True)
-#     telefono = models.CharField(max_length=20, validators=[TELEFONO_REGEX], blank=True, null=True)
-#     email = models.EmailField(blank=True, null=True)  # unicidad case-insensitive con constraint abajo
-#     activo = models.BooleanField(default=True, db_index=True)
-
-#     class Meta:
-#         db_table = 'bodega_persona'   # para que Django cree la tabla, se managed=True por defecto
-#         # managed = False             # descomentar si ya se tiene la tabla creada manualmente
-#         ordering = ['apellido', 'nombre']
-#         indexes = [
-#             models.Index(fields=['apellido', 'nombre'], name='idx_persona_nombre'),
-#             models.Index(fields=['ruc'], name='idx_persona_ruc'),
-#             models.Index(fields=['documento_tipo', 'documento_num'], name='idx_persona_doc'),
-#         ]
-#         constraints = [
-#             # Documento único por tipo cuando está informado
-#             models.UniqueConstraint(
-#                 fields=['documento_tipo', 'documento_num'],
-#                 condition=Q(documento_num__isnull=False),
-#                 name='uq_persona_documento'
-#             ),
-#             # Email único case-insensitive cuando NO es NULL
-#             models.UniqueConstraint(
-#                 Lower('email'),
-#                 condition=Q(email__isnull=False),
-#                 name='uq_persona_email_lower'
-#             ),
-#         ]
-
-#     def __str__(self):
-#         return self.nombre_completo
-
-#     @property
-#     def nombre_completo(self) -> str:
-#         base = f"{self.nombre or ''} {self.apellido or ''}".strip()
-#         return base or f"Persona #{self.pk}"
-
-#     def save(self, *args, **kwargs):
-#         # Normalizaciones suaves
-#         if self.nombre:
-#             self.nombre = self.nombre.strip().title()
-#         if self.apellido:
-#             self.apellido = self.apellido.strip().title()
-#         if self.documento_tipo:
-#             self.documento_tipo = self.documento_tipo.strip().upper()
-#         if self.email:
-#             self.email = self.email.strip().lower()
-#         if self.pk is None:          # solo al crear
-#             self.activo = True
-#         super().save(*args, **kwargs)
-
-# # === RRHH ===
-# class Empleado(Persona):
-#     cedula = models.CharField(max_length=20, unique=True)
-#     fecha_contratacion = models.DateField()
-#     sucursal = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
-#     fecha_baja = models.DateField(blank=True, null=True)
-#     motivo_baja = models.CharField(max_length=255, blank=True, null=True)
-#     # 'activo' ya lo hereda de Persona
-
-#     class Meta:
-#         db_table = 'bodega_empleado'   # si ya existe, podés usar managed=False
-#         managed = False
-#         ordering = ['-activo', 'apellido', 'nombre']
-#         indexes = [
-#             models.Index(fields=['fecha_contratacion'], name='idx_empleado_estado_fecha'),
-#             models.Index(fields=['cedula'], name='idx_empleado_cedula'),
-#         ]
-
-class Cliente(Persona):
-    condicion_venta = models.CharField(max_length=20, choices=CONDICION_VENTA, default='contado', db_index=True)
-    limite_credito = models.DecimalField(max_digits=14, decimal_places=2, default=0, validators=[MinValueValidator(0)])
-    # 'activo' ya lo hereda de Persona
-
-    class Meta:
-        db_table = 'bodega_cliente'    # si ya existe, podés usar managed=False
-        managed = False
-        ordering = ['-activo', 'apellido', 'nombre']
-        indexes = [
-            models.Index(fields=['condicion_venta'], name='idx_cliente_cond_venta'),
-        ]
-        
-# === SEGURIDAD ===
-class Permiso(models.Model):
-    nombre = models.CharField(max_length=50)
-    descripcion = models.TextField()
-    url = models.CharField(max_length=255, blank=True, null=True)
-    activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.nombre
-
-class Rol(models.Model):
-    nombre = models.CharField(max_length=50)
-    descripcion = models.TextField()
-    permisos = models.ManyToManyField(Permiso, related_name="roles")
-    activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.nombre
-
-class Usuario(AbstractUser):
-    empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE, null=True, blank=True)
-
-    ESTADO_CHOICES = (('activo', 'Activo'), ('inactivo', 'Inactivo'))
-    estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='activo')
-
-    # 🔸 Campo antiguo (uno solo) — lo dejamos por compatibilidad con tu UI actual:
-    rol = models.ForeignKey('Rol', on_delete=models.SET_NULL, null=True, blank=True)
-
-    # 🔹 NUEVO: roles adicionales (varios)
-    roles = models.ManyToManyField('Rol', blank=True, related_name='usuarios')
-
-    # ===== Helpers para permisos efectivos =====
-    def effective_roles_qs(self):
-        """
-        Union de: roles M2M del usuario, rol simple (si existe),
-        y roles del cargo del empleado (si tiene).
-        """
-        from django.db.models import Q
-        base = self.roles.all()
-        extra_ids = []
-        if self.rol_id:
-            extra_ids.append(self.rol_id)
-        if getattr(self, 'empleado', None) and self.empleado and self.empleado.cargo:
-            extra_ids += list(self.empleado.cargo.roles.values_list('id', flat=True))
-        if extra_ids:
-            base = (base | Rol.objects.filter(id__in=extra_ids)).distinct()
-        return base
-
-    def has_custom_permission(self, permiso_nombre: str) -> bool:
-        """
-        Chequea si el user tiene un permiso (por nombre) en cualquiera de sus roles efectivos.
-        """
-        return self.effective_roles_qs().filter(permisos__nombre=permiso_nombre, permisos__activo=True).exists()
-
-
-# class Usuario(AbstractUser):
-#     empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE, null=True, blank=True)
-#     ESTADO_CHOICES = (
-#         ('activo', 'Activo'),
-#         ('inactivo', 'Inactivo'),
-#     )
-#     estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='activo')
-#     rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
-
-# === INVENTARIO ===
-class CategoriaProducto(models.Model):
-    nombre = models.CharField(max_length=100, unique=True)
-    activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.nombre
-
-class TipoProducto(models.Model):
-    nombre = models.CharField(max_length=100)
-    categoria = models.ForeignKey(CategoriaProducto, on_delete=models.CASCADE, related_name='tipos')
-    activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"{self.nombre} ({self.categoria.nombre})"
-
-class Producto(models.Model):
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True)
-    marca = models.CharField(max_length=100, blank=True)
-    categoria = models.ForeignKey('CategoriaProducto', on_delete=models.SET_NULL, null=True, blank=True)
-
-    # Datos logísticos y físicos
-    codigo = models.CharField(max_length=50, unique=True, help_text="Código interno del producto")
-    unidad_medida = models.CharField(max_length=50, default="unidad")  # Ej: botella, litro, caja
-    volumen = models.FloatField(help_text="Contenido neto en mililitros", null=True, blank=True)
-
-    # Información para bebidas alcohólicas
-    tipo_bebida = models.CharField(
-        max_length=50,
-        choices=[
-            ('vino', 'Vino'),
-            ('cerveza', 'Cerveza'),
-            ('otro', 'Otro'),
-        ],
-        blank=True
-    )
-
-    # Precios y tributación
-    precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
-    margen_ganancia = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'), help_text="Margen %")
-    precio_venta = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    iva = models.DecimalField(max_digits=4, decimal_places=2, default=Decimal('10.00'), help_text="IVA aplicado (%)")
-
-    # Control de stock
-    stock_minimo = models.PositiveIntegerField(default=0)
-    fecha_vencimiento = models.DateField(null=True, blank=True)
-    proveedor = models.ForeignKey('Proveedor', on_delete=models.SET_NULL, null=True, blank=True)
-
-    # Otros
-    activo = models.BooleanField(default=True)
-    
-    def save(self, *args, **kwargs):
-        """
-        Calcula precio_venta = precio_compra * (1 + margen/100) * (1 + iva/100)
-        Solo recalcula si hay precio_compra y margen definidos.
-        """
-        pc = Decimal(self.precio_compra or 0)
-        mg = Decimal(self.margen_ganancia or 0) / Decimal('100')
-        iva = Decimal(self.iva or 0) / Decimal('100')
-        base = pc * (Decimal('1') + mg)
-        self.precio_venta = (base * (Decimal('1') + iva)).quantize(Decimal('0.01'))
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.nombre} ({self.codigo})"
-
-# class Producto(models.Model):
-#     UNIDADES = [
-#         ("unidad", "Unidad"),
-#         ("litros", "Litros"),
-#         ("cajas", "Cajas"),
-#     ]
-#     IVA = [
-#         ("exento", "Exento"),
-#         ("5", "5%"),
-#         ("10", "10%"),
-#     ]
-
-#     nombre = models.CharField(max_length=100)
+# # -----------------
+# # Catálogo de cargos
+# # -----------------
+# class Cargo(models.Model):
+#     nombre = models.CharField(max_length=100, unique=True)
 #     descripcion = models.TextField(blank=True, null=True)
-#     categoria = models.ForeignKey(CategoriaProducto, on_delete=models.SET_NULL, null=True, blank=True)
-#     codigo = models.CharField(max_length=50, unique=True)
-#     precio = models.DecimalField(max_digits=10, decimal_places=0)
-#     stock = models.PositiveIntegerField(default=0)
-#     unidad_medida = models.CharField(max_length=20, choices=UNIDADES, default='unidad')
-#     iva = models.CharField(max_length=10, choices=IVA, default='10')
-#     marca = models.CharField(max_length=100, blank=True, null=True)
 #     activo = models.BooleanField(default=True)
 
+#     class Meta:
+#         db_table = 'bodega_cargo'
+#         ordering = ['nombre']
+
 #     def __str__(self):
-#         return f"{self.nombre} ({self.codigo})"
-
-class Almacen(models.Model):
-    nombre = models.CharField(max_length=100)
-    direccion = models.CharField(max_length=255)
-    descripcion = models.TextField(blank=True, null=True)
-    activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.nombre
-
-class Inventario(models.Model):
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE)
-    stock = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        unique_together = ('producto', 'almacen')
-
-    def __str__(self):
-        return f"{self.producto.nombre} - {self.almacen.nombre}"
-
-class Movimiento(models.Model):
-    TIPO_CHOICES = (
-        ('entrada', 'Entrada'),
-        ('salida', 'Salida'),
-    )
-
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    cantidad = models.PositiveIntegerField()
-    fecha = models.DateTimeField(auto_now_add=True)
-    observacion = models.TextField(blank=True, null=True)
-    realizado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True)
-    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.tipo.title()} - {self.producto.nombre} ({self.cantidad})"
-
-# === COMPRAS ===
-class Proveedor(models.Model):
-    nombre = models.CharField(max_length=100)
-    ruc = models.CharField(max_length=50)
-    direccion = models.CharField(max_length=255)
-    telefono = models.CharField(max_length=20)
-    email = models.EmailField()
-    activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.nombre
-
-class OrdenCompra(models.Model):
-    ESTADO_CHOICES = (
-        ('pendiente', 'Pendiente'),
-        ('recibido', 'Recibido'),
-        ('cancelado', 'Cancelado'),
-    )
-
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    almacen_destino = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True)
-    fecha = models.DateField(auto_now_add=True)
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
-    nro_factura = models.CharField(max_length=50, blank=True, null=True)
-    fecha_entrega = models.DateField(blank=True, null=True)
-    observacion = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"Orden #{self.pk} - {self.proveedor.nombre}"
-
-class DetalleOrdenCompra(models.Model):
-    orden = models.ForeignKey(OrdenCompra, on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.producto.nombre} x {self.cantidad}"
-
-# === VENTAS ===
-class Pedido(models.Model):
-    ESTADO_CHOICES = (
-        ('pendiente', 'Pendiente'),
-        ('enviado', 'Enviado'),
-        ('entregado', 'Entregado'),
-        ('cancelado', 'Cancelado'),
-    )
-
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    fecha = models.DateTimeField(auto_now_add=True)
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
-    observacion = models.TextField(blank=True, null=True)
-    facturado = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Pedido #{self.pk} - {self.cliente}"
-
-class DetallePedido(models.Model):
-    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=0)
-
-    def __str__(self):
-        return f"{self.producto.nombre} x {self.cantidad}"
-
-class Factura(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    fecha = models.DateTimeField(auto_now_add=True)
-    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    observacion = models.TextField(blank=True, null=True)
-    nro_factura = models.CharField(max_length=50)
-    timbrado = models.CharField(max_length=50)
-    condicion_venta = models.CharField(max_length=20, choices=[('contado', 'Contado'), ('credito', 'Crédito')], default='contado')
-    estado = models.CharField(max_length=20, choices=[('pendiente', 'Pendiente'), ('pagada', 'Pagada'), ('anulada', 'Anulada')], default='pendiente')
-
-    def __str__(self):
-        return f"Factura #{self.id} - {self.cliente}"
-
-class DetalleFactura(models.Model):
-    IVA = [
-        ("exento", "Exento"),
-        ("5", "5%"),
-        ("10", "10%")
-    ]
-    factura = models.ForeignKey(Factura, on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=0)
-    iva_aplicado = models.CharField(max_length=10, choices=IVA, default='10')
-
-    def subtotal(self):
-        return self.cantidad * self.precio_unitario
-
-    def __str__(self):
-        return f"{self.producto} x {self.cantidad}"
-
-class Caja(models.Model):
-    fecha_apertura = models.DateTimeField(auto_now_add=True)
-    fecha_cierre = models.DateTimeField(null=True, blank=True)
-    usuario_apertura = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='aperturas_caja')
-    usuario_cierre = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name='cierres_caja')
-    monto_inicial = models.DecimalField(max_digits=12, decimal_places=2)
-    monto_final = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    estado = models.CharField(max_length=10, choices=[('abierta', 'Abierta'), ('cerrada', 'Cerrada')], default='abierta')
-
-    def __str__(self):
-        return f"Caja {self.pk} - {self.estado}"
+#         return self.nombre
 
 
-class MovimientoCaja(models.Model):
-    caja = models.ForeignKey(Caja, on_delete=models.CASCADE, related_name='movimientos')
-    tipo = models.CharField(max_length=10, choices=[('ingreso', 'Ingreso'), ('egreso', 'Egreso')])
-    descripcion = models.TextField()
-    monto = models.DecimalField(max_digits=12, decimal_places=2)
-    fecha = models.DateTimeField(auto_now_add=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+# # -----------------
+# # Empleado (hereda de Persona)
+# # -----------------
+# class Empleado(Persona):
+#     # Datos personales extra
+#     genero = models.CharField(max_length=1, choices=GENERO, null=True, blank=True)
+#     fecha_nacimiento = models.DateField(null=True, blank=True)
+#     grupo_sanguineo = models.CharField(max_length=3, choices=GRUPO_SANGUINEO, null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.tipo.capitalize()} - {self.monto} Gs"
+#     # Contacto / domicilio
+#     telefono = models.CharField(max_length=20, validators=[TELEFONO_REGEX])
+#     email = models.EmailField(unique=True)
+#     direccion = models.CharField(max_length=255)
+#     barrio = models.CharField(max_length=120)
+#     ciudad = models.CharField(max_length=120)
+#     departamento = models.CharField(max_length=120)
+#     pais = models.CharField(max_length=120, default='Paraguay')
+#     codigo_postal = models.CharField(max_length=12, blank=True, null=True)  # único opcional
+
+#     # Laboral
+#     fecha_contratacion = models.DateField()
+#     sucursal = models.ForeignKey('Almacen', on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
+#     cargo = models.ForeignKey(Cargo, on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
+#     fecha_baja = models.DateField(blank=True, null=True)
+#     motivo_baja = models.CharField(max_length=255, blank=True, null=True)
+
+#     class Meta:
+#         db_table = 'bodega_empleado'
+#         ordering = ['-activo', 'apellido', 'nombre']
+#         indexes = [
+#             models.Index(fields=['fecha_contratacion'], name='idx_empleado_fecha_ingreso'),
+#             models.Index(fields=['email'], name='idx_empleado_email'),
+#         ]
+
+#     def save(self, *args, **kwargs):
+#         if self.email:
+#             self.email = self.email.strip().lower()
+#         return super().save(*args, **kwargs)

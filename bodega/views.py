@@ -5,15 +5,16 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
 from django.views.generic import ListView, CreateView, UpdateView, TemplateView
-from .models import Persona
-from .forms import PersonaForm
+from .models import Persona, Permiso
+from .forms import PersonaForm, PermisoForm
 from .decorators import permiso_requerido
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'bodega/home.html'
 
-@method_decorator(permiso_requerido('ver_persona'), name='dispatch')
+# @method_decorator(permiso_requerido('ver_persona'), name='dispatch')
+@method_decorator(permiso_requerido("personas.ver"), name="dispatch")
 class PersonaListView(ListView):
     model = Persona
     template_name = "bodega/persona_list.html"
@@ -38,8 +39,9 @@ class PersonaListView(ListView):
         ctx['filtrados'] = getattr(ctx.get('paginator'), 'count', len(ctx.get('personas', [])))
         return ctx
 
-@method_decorator(permiso_requerido('crear_persona'), name='dispatch')
-class PersonaCreateView(CreateView):
+# @method_decorator(permiso_requerido('crear_persona'), name='dispatch')
+@method_decorator(permiso_requerido("personas.crear"), name="dispatch")
+class PersonaCreateView(LoginRequiredMixin, CreateView):
     model = Persona
     form_class = PersonaForm
     template_name = "bodega/persona_form.html"
@@ -51,7 +53,8 @@ class PersonaCreateView(CreateView):
         messages.success(self.request, "Persona creada correctamente.")
         return super().form_valid(form)
 
-@method_decorator(permiso_requerido('editar_persona'), name='dispatch')
+# @method_decorator(permiso_requerido('editar_persona'), name='dispatch')
+@method_decorator(permiso_requerido("personas.editar"), name="dispatch")
 class PersonaUpdateView(UpdateView):
     model = Persona
     form_class = PersonaForm
@@ -62,10 +65,64 @@ class PersonaUpdateView(UpdateView):
         messages.success(self.request, "Persona actualizada correctamente.")
         return super().form_valid(form)
 
-@permiso_requerido('inactivar_persona')
+# @permiso_requerido('inactivar_persona')
+@method_decorator(permiso_requerido("personas.inactivar"), name="dispatch")
 def persona_inactivate(request, pk):
     p = get_object_or_404(Persona, pk=pk)
     p.activo = not p.activo
     p.save(update_fields=['activo'])
     messages.info(request, "Persona reactivada." if p.activo else "Persona inactivada.")
     return redirect('persona_list')
+
+# ====== PERMISOS ======
+@method_decorator(permiso_requerido("permisos.ver"), name="dispatch")
+class PermisoListView(ListView):
+    model = Permiso
+    template_name = "bodega/permiso_list.html"
+    context_object_name = "permisos"
+    paginate_by = 6
+
+    def get_queryset(self):
+        qs = Permiso.objects.all().order_by("modulo", "accion", "codigo", "id")
+        q = (self.request.GET.get("q") or "").strip()
+        estado = (self.request.GET.get("estado") or "").strip()
+
+        if q:
+            qs = qs.filter(
+                Q(codigo__icontains=q) |
+                Q(nombre__icontains=q) |
+                Q(url_name__icontains=q)
+            )
+
+        if estado == "activos":
+            qs = qs.filter(activo=True)
+        elif estado == "inactivos":
+            qs = qs.filter(activo=False)
+
+        return qs
+
+@method_decorator(permiso_requerido("permisos.crear"), name="dispatch")
+class PermisoCreateView(LoginRequiredMixin, CreateView):
+    model = Permiso
+    form_class = PermisoForm
+    template_name = "bodega/permiso_form.html"
+    success_url = reverse_lazy("permiso_list")
+
+@method_decorator(permiso_requerido("permisos.editar"), name="dispatch")
+class PermisoUpdateView(UpdateView):
+    model = Permiso
+    form_class = PermisoForm
+    template_name = "bodega/permiso_form.html"
+    success_url = reverse_lazy("permiso_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Permiso actualizado correctamente.")
+        return super().form_valid(form)
+
+@method_decorator(permiso_requerido("permisos.inactivar"), name="dispatch")
+def permiso_inactivate(request, pk):
+    p = get_object_or_404(Permiso, pk=pk)
+    p.activo = not p.activo
+    p.save(update_fields=["activo"])
+    messages.info(request, "Permiso reactivado." if p.activo else "Permiso inactivado.")
+    return redirect("permiso_list")
