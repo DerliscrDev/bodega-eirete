@@ -78,11 +78,11 @@
                 <a href="{% url 'permiso_update' p.pk %}" class="btn btn-sm btn-outline-primary">
                   <i class="bi bi-pencil"> Editar</i>
                 </a>
-                <a href="{% url 'permiso_inactivate' p.pk %}" class="btn btn-sm btn-outline-warning">
+                <a href="{% url 'permiso_inactivate' p.pk %}" class="">
                   {% if p.activo %}
-                    <i class="bi bi-x-circle"> Inactivar</i>
+                    <i class="bi bi-x-circle btn btn-sm btn-outline-warning"> Inactivar</i>
                   {% else %}
-                    <i class="bi bi-check-circle"> Reactivar</i>
+                    <i class="bi bi-check-circle btn btn-sm btn-outline-success"> Reactivar</i>
                   {% endif %}
                 </a>
               </td>

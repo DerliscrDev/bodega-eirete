@@ -23,6 +23,7 @@ def permiso_requerido(codigo_permiso: str):
             if hasattr(u, "has_custom_permission") and u.has_custom_permission(codigo_permiso):
                 return view_func(request, *args, **kwargs)
 
+            # acá pondrás tu chequeo real (roles, etc.)
             messages.warning(request, "No tenés permiso para acceder a esta página.")
             from django.shortcuts import redirect
             return redirect("home")

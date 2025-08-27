@@ -13,7 +13,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'bodega/home.html'
 
-# @method_decorator(permiso_requerido('ver_persona'), name='dispatch')
 @method_decorator(permiso_requerido("personas.ver"), name="dispatch")
 class PersonaListView(ListView):
     model = Persona
@@ -39,7 +38,6 @@ class PersonaListView(ListView):
         ctx['filtrados'] = getattr(ctx.get('paginator'), 'count', len(ctx.get('personas', [])))
         return ctx
 
-# @method_decorator(permiso_requerido('crear_persona'), name='dispatch')
 @method_decorator(permiso_requerido("personas.crear"), name="dispatch")
 class PersonaCreateView(LoginRequiredMixin, CreateView):
     model = Persona
@@ -53,7 +51,6 @@ class PersonaCreateView(LoginRequiredMixin, CreateView):
         messages.success(self.request, "Persona creada correctamente.")
         return super().form_valid(form)
 
-# @method_decorator(permiso_requerido('editar_persona'), name='dispatch')
 @method_decorator(permiso_requerido("personas.editar"), name="dispatch")
 class PersonaUpdateView(UpdateView):
     model = Persona
@@ -65,7 +62,6 @@ class PersonaUpdateView(UpdateView):
         messages.success(self.request, "Persona actualizada correctamente.")
         return super().form_valid(form)
 
-# @permiso_requerido('inactivar_persona')
 @method_decorator(permiso_requerido("personas.inactivar"), name="dispatch")
 def persona_inactivate(request, pk):
     p = get_object_or_404(Persona, pk=pk)
@@ -119,7 +115,7 @@ class PermisoUpdateView(UpdateView):
         messages.success(self.request, "Permiso actualizado correctamente.")
         return super().form_valid(form)
 
-@method_decorator(permiso_requerido("permisos.inactivar"), name="dispatch")
+@permiso_requerido("permisos.inactivar")
 def permiso_inactivate(request, pk):
     p = get_object_or_404(Permiso, pk=pk)
     p.activo = not p.activo
