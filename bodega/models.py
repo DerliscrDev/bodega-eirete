@@ -90,6 +90,23 @@ class Permiso(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.codigo})"
+    
+class Rol(models.Model):
+    nombre = models.CharField(max_length=80, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    permisos = models.ManyToManyField('Permiso', related_name='roles', blank=True)
+
+    # estado y auditoría (mismo criterio que Permiso)
+    activo = models.BooleanField(default=True)
+    creado = models.DateTimeField(auto_now_add=True)
+    modificado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "bodega_rol"
+        ordering = ["nombre"]
+
+    def __str__(self):
+        return self.nombre
 
 class Persona(models.Model):
     cedula   = models.CharField(max_length=20, unique=True, db_index=True)

@@ -3,7 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.text import capfirst
 from django.utils import timezone
-from .models import Persona, Permiso, MODULOS, ACCIONES
+from .models import Persona, Permiso, Rol, MODULOS, ACCIONES
 
 CODIGO_REGEX = re.compile(r"^[a-z]+(\.[a-z_]+)$")  # modulo.accion (minúsculas, _ permitido en accion)
 URLNAME_REGEX = re.compile(r"^[a-z0-9_]+$")        # nombre de url Django recomendado
@@ -91,6 +91,33 @@ class PermisoForm(forms.ModelForm):
         if commit:
             obj.save()
         return obj
+    
+class PermisoMultipleChoice(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        # Muestra el código y el nombre (ej.: permisos.crear — Crear permiso)
+        return f"{obj.codigo} — {obj.nombre}"
+
+class RolForm(forms.ModelForm):
+    permisos = PermisoMultipleChoice(
+        queryset=Permiso.objects.none(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={"class": "form-select", "size": 12}),
+        help_text="Seleccioná uno o más permisos."
+    )
+
+    class Meta:
+        model = Rol
+        fields = ["nombre", "descripcion", "permisos"]
+        widgets = {
+            "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Administrador"}),
+            "descripcion": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Rol con acceso total"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["permisos"].queryset = (
+            Permiso.objects.filter(activo=True).order_by("modulo", "accion", "codigo")
+        )
 
 
 class PersonaForm(forms.ModelForm):

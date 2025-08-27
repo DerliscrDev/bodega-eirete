@@ -19,14 +19,14 @@
   <div class="col-12">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h1 class="display-6 mb-1">Bienvenido <span class="wave">👋</span></h1>
-        <p class="text-muted mb-0">Elegí una opción del menú lateral para comenzar.</p>
+        <h1 class="display-6 mb-1 text-center">Bienvenido a SGBE <span class="wave">👋</span></h1>
+        <p class="text-muted mb-0 text-center">Elegí una opción del menú lateral para comenzar.</p>
       </div>
     </div>
   </div>
 
   <!-- Accesos rápidos (podés agregar más cuando quieras) -->
-  <div class="col-md-4">
+  {% comment %} <div class="col-md-4">
     <a href="{% url 'persona_list' %}" class="text-decoration-none">
       <div class="card h-100 shadow-sm hover-card">
         <div class="card-body d-flex align-items-center">
@@ -38,26 +38,6 @@
         </div>
       </div>
     </a>
-  </div>
-
-  {# Más tarjetas aquí… #}
+  </div> {% endcomment %}
 </div>
 {% endblock %}
-
-
-{% comment %} {% extends "bodega/base.html" %}
-{% block title %}Inicio - Bodega Eirete{% endblock %}
-
-{% block content %}
-<div class="row g-3">
-  <div class="col-12">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h3 class="mb-2">Bienvenido 👋</h3>
-        <p class="text-muted mb-0">Elegí una opción del menú lateral para comenzar.</p>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %} {% endcomment %}
-

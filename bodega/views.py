@@ -5,8 +5,8 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
 from django.views.generic import ListView, CreateView, UpdateView, TemplateView
-from .models import Persona, Permiso
-from .forms import PersonaForm, PermisoForm
+from .models import Persona, Permiso, Rol
+from .forms import PersonaForm, PermisoForm, RolForm
 from .decorators import permiso_requerido
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -122,3 +122,58 @@ def permiso_inactivate(request, pk):
     p.save(update_fields=["activo"])
     messages.info(request, "Permiso reactivado." if p.activo else "Permiso inactivado.")
     return redirect("permiso_list")
+
+@method_decorator(permiso_requerido("roles.ver"), name="dispatch")
+class RolListView(LoginRequiredMixin, ListView):
+    model = Rol
+    template_name = "bodega/rol_list.html"
+    context_object_name = "roles"
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = Rol.objects.all().order_by("nombre", "id")
+        q = (self.request.GET.get("q") or "").strip()
+        estado = (self.request.GET.get("estado") or "").strip()
+        if q:
+            qs = qs.filter(Q(nombre__icontains=q) | Q(descripcion__icontains=q))
+        if estado == "activos":
+            qs = qs.filter(activo=True)
+        elif estado == "inactivos":
+            qs = qs.filter(activo=False)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["q"] = (self.request.GET.get("q") or "").strip()
+        ctx["estado"] = (self.request.GET.get("estado") or "").strip()
+        return ctx
+
+@method_decorator(permiso_requerido("roles.crear"), name="dispatch")
+class RolCreateView(LoginRequiredMixin, CreateView):
+    model = Rol
+    form_class = RolForm
+    template_name = "bodega/rol_form.html"
+    success_url = reverse_lazy("rol_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Rol creado correctamente.")
+        return super().form_valid(form)
+
+@method_decorator(permiso_requerido("roles.editar"), name="dispatch")
+class RolUpdateView(LoginRequiredMixin, UpdateView):
+    model = Rol
+    form_class = RolForm
+    template_name = "bodega/rol_form.html"
+    success_url = reverse_lazy("rol_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Rol actualizado correctamente.")
+        return super().form_valid(form)
+
+@permiso_requerido("roles.inactivar")
+def rol_inactivate(request, pk):
+    r = get_object_or_404(Rol, pk=pk)
+    r.activo = not r.activo
+    r.save(update_fields=["activo"])
+    messages.info(request, "Rol reactivado." if r.activo else "Rol inactivado.")
+    return redirect("rol_list")

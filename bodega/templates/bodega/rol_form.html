@@ -1,52 +1,61 @@
-{% extends 'bodega/base.html' %}
-{% load permisos_tags %}
-
-{% block title %}
-  {% if object %}Editar Rol{% else %}Nuevo Rol{% endif %} - Bodega Eirete
-{% endblock %}
+{% extends "bodega/base.html" %}
+{% block title %}{% if object %}Editar Rol{% else %}Nuevo Rol{% endif %} - Bodega Eirete{% endblock %}
 
 {% block content %}
 <div class="row">
-  <div class="col-md-8 offset-md-2">
-    <div class="card shadow-sm mb-4">
+  <div class="col-lg-8 col-md-10">
+    <div class="card shadow-sm">
       <div class="card-body">
-        <h2 class="card-title mb-4">
-          {% if object %}Editar Rol{% else %}Nuevo Rol{% endif %}
-        </h2>
+        <h4 class="mb-3">{% if object %}Editar Rol{% else %}Nuevo Rol{% endif %}</h4>
 
-        {% if request.user|tiene_permiso:"crear_rol" or request.user|tiene_permiso:"editar_rol" %}
-        <form method="post">
+        <form method="post" novalidate>
           {% csrf_token %}
           {{ form.non_field_errors }}
 
           <div class="mb-3">
-            {{ form.nombre.label_tag }}
+            <label class="form-label" for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
             {{ form.nombre }}
             {{ form.nombre.errors }}
           </div>
 
           <div class="mb-3">
-            {{ form.descripcion.label_tag }}
+            <label class="form-label" for="{{ form.descripcion.id_for_label }}">{{ form.descripcion.label }}</label>
             {{ form.descripcion }}
             {{ form.descripcion.errors }}
           </div>
 
           <div class="mb-3">
-            <label><strong>Permisos Asociados:</strong></label>
+            <label class="form-label" for="{{ form.permisos.id_for_label }}">Permisos</label>
             {{ form.permisos }}
+            <div class="form-text">Usá Ctrl/Cmd para seleccionar múltiples.</div>
             {{ form.permisos.errors }}
           </div>
 
-          <button type="submit" class="btn btn-custom">
-            {% if object %}Actualizar{% else %}Guardar{% endif %}
-          </button>
-          <a href="{% url 'rol_list' %}" class="btn btn-secondary">Cancelar</a>
+          {% if object %}
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <label class="form-label m-0">Estado</label>
+              {% if object.activo %}
+                <span class="badge bg-success">Activo</span>
+                <a href="{% url 'rol_inactivate' object.pk %}" class="btn btn-sm btn-outline-warning ms-2" title="Inactivar">
+                  <i class="bi bi-x-circle"></i> Inactivar
+                </a>
+              {% else %}
+                <span class="badge bg-secondary">Inactivo</span>
+                <a href="{% url 'rol_inactivate' object.pk %}" class="btn btn-sm btn-outline-success ms-2" title="Reactivar">
+                  <i class="bi bi-check-circle"></i> Reactivar
+                </a>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <div class="mt-4">
+            <button class="btn btn-custom" type="submit">
+              {% if object %}Actualizar{% else %}Guardar{% endif %}
+            </button>
+            <a href="{% url 'rol_list' %}" class="btn btn-secondary">Cancelar</a>
+          </div>
         </form>
-        {% else %}
-        <div class="alert alert-warning">
-          No tienes permiso para crear o editar roles.
-        </div>
-        {% endif %}
+
       </div>
     </div>
   </div>
