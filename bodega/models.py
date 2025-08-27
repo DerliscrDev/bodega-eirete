@@ -9,6 +9,11 @@ TELEFONO_REGEX = RegexValidator(
     'Use formato internacional sin espacios, ej: +595981123456'
 )
 
+CEDULA_SOLO_DIGITOS = RegexValidator(
+    r'^\d+$',
+    'La cédula debe contener solo números (sin puntos, guiones ni espacios).'
+)
+
 GENERO = (
     ('M', 'Masculino'),
     ('F', 'Femenino'),
@@ -109,10 +114,14 @@ class Rol(models.Model):
         return self.nombre
 
 class Persona(models.Model):
-    cedula   = models.CharField(max_length=20, unique=True, db_index=True)
+    cedula   = models.CharField(
+        max_length=7,
+        unique=True,
+        db_index=True,
+        validators=[CEDULA_SOLO_DIGITOS],   # ← agregado
+    )
     nombre   = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    # Activo siempre verdadero por defecto y NO editable en formularios
     activo   = models.BooleanField(default=True, db_index=True, editable=False)
 
     class Meta:

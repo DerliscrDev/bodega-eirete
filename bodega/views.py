@@ -13,8 +13,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'bodega/home.html'
 
+# ====== PERSONA ======
 @method_decorator(permiso_requerido("personas.ver"), name="dispatch")
-class PersonaListView(ListView):
+class PersonaListView(LoginRequiredMixin, ListView):
     model = Persona
     template_name = "bodega/persona_list.html"
     context_object_name = "personas"
@@ -22,20 +23,27 @@ class PersonaListView(ListView):
 
     def get_queryset(self):
         qs = Persona.objects.all()
-        q = (self.request.GET.get('q') or '').strip()
+        q = (self.request.GET.get("q") or "").strip()
+        estado = (self.request.GET.get("estado") or "").strip()
+
         if q:
             qs = qs.filter(
                 Q(cedula__icontains=q) |
                 Q(nombre__icontains=q) |
                 Q(apellido__icontains=q)
             )
-        return qs.order_by('apellido', 'nombre', 'id')
+
+        if estado == "activos":
+            qs = qs.filter(activo=True)
+        elif estado == "inactivos":
+            qs = qs.filter(activo=False)
+
+        return qs.order_by("apellido", "nombre", "id")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['q'] = (self.request.GET.get('q') or '').strip()
-        ctx['total'] = Persona.objects.count()
-        ctx['filtrados'] = getattr(ctx.get('paginator'), 'count', len(ctx.get('personas', [])))
+        ctx["q"] = (self.request.GET.get("q") or "").strip()
+        ctx["estado"] = (self.request.GET.get("estado") or "").strip()
         return ctx
 
 @method_decorator(permiso_requerido("personas.crear"), name="dispatch")
@@ -43,32 +51,31 @@ class PersonaCreateView(LoginRequiredMixin, CreateView):
     model = Persona
     form_class = PersonaForm
     template_name = "bodega/persona_form.html"
-    success_url = reverse_lazy('persona_list')
+    success_url = reverse_lazy("persona_list")
 
     def form_valid(self, form):
-        # activo siempre True por defecto
-        form.instance.activo = True
+        # 'activo' es editable=False en el modelo → viene True por defecto
         messages.success(self.request, "Persona creada correctamente.")
         return super().form_valid(form)
 
 @method_decorator(permiso_requerido("personas.editar"), name="dispatch")
-class PersonaUpdateView(UpdateView):
+class PersonaUpdateView(LoginRequiredMixin, UpdateView):
     model = Persona
     form_class = PersonaForm
     template_name = "bodega/persona_form.html"
-    success_url = reverse_lazy('persona_list')
+    success_url = reverse_lazy("persona_list")
 
     def form_valid(self, form):
         messages.success(self.request, "Persona actualizada correctamente.")
         return super().form_valid(form)
 
-@method_decorator(permiso_requerido("personas.inactivar"), name="dispatch")
+@permiso_requerido("personas.inactivar")
 def persona_inactivate(request, pk):
     p = get_object_or_404(Persona, pk=pk)
     p.activo = not p.activo
-    p.save(update_fields=['activo'])
+    p.save(update_fields=["activo"])
     messages.info(request, "Persona reactivada." if p.activo else "Persona inactivada.")
-    return redirect('persona_list')
+    return redirect("persona_list")
 
 # ====== PERMISOS ======
 @method_decorator(permiso_requerido("permisos.ver"), name="dispatch")

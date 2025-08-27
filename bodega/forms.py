@@ -6,7 +6,8 @@ from django.utils import timezone
 from .models import Persona, Permiso, Rol, MODULOS, ACCIONES
 
 CODIGO_REGEX = re.compile(r"^[a-z]+(\.[a-z_]+)$")  # modulo.accion (minúsculas, _ permitido en accion)
-URLNAME_REGEX = re.compile(r"^[a-z0-9_]+$")        # nombre de url Django recomendado
+URLNAME_REGEX = re.compile(r"^[a-z0-9_]+$") 
+DIGITOS_RE = re.compile(r'^\d+$')# nombre de url Django recomendado
 
 class PermisoForm(forms.ModelForm):
     # Usamos campos DateTime explícitos para manejar el formato del input HTML5
@@ -121,29 +122,36 @@ class RolForm(forms.ModelForm):
             Permiso.objects.filter(activo=True).order_by("modulo", "accion", "codigo")
         )
 
-
 class PersonaForm(forms.ModelForm):
     class Meta:
         model = Persona
-        fields = ["cedula", "nombre", "apellido"]  # 'activo' no es editable
+        fields = ["cedula", "nombre", "apellido"]   # 'activo' no es editable
         widgets = {
-            "cedula": forms.TextInput(attrs={"class": "form-control", "placeholder": "Cédula"}),
+            "cedula": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Cédula (solo números)",
+                # UX: teclado numérico en móviles, y patrón de dígitos
+                "inputmode": "numeric",
+                "pattern": r"\d*",
+            }),
             "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre"}),
             "apellido": forms.TextInput(attrs={"class": "form-control", "placeholder": "Apellido"}),
         }
-        labels = {
-            "cedula": "Cédula",
-            "nombre": "Nombre",
-            "apellido": "Apellido",
-        }
+        labels = {"cedula": "Cédula", "nombre": "Nombre", "apellido": "Apellido"}
+
+    def clean_cedula(self):
+        v = (self.cleaned_data.get("cedula") or "").strip()
+        if not DIGITOS_RE.fullmatch(v):
+            raise ValidationError("La cédula debe contener solo números (sin puntos ni guiones).")
+        if Persona.objects.exclude(pk=self.instance.pk).filter(cedula=v).exists():
+            raise ValidationError("Ya existe una persona con esta cédula.")
+        return v
 
     def clean_nombre(self):
-        v = self.cleaned_data.get("nombre", "").strip()
-        return capfirst(v)
+        return capfirst((self.cleaned_data.get("nombre") or "").strip())
 
     def clean_apellido(self):
-        v = self.cleaned_data.get("apellido", "").strip()
-        return capfirst(v)
+        return capfirst((self.cleaned_data.get("apellido") or "").strip())
 
 
 # class EmpleadoForm(forms.ModelForm):
