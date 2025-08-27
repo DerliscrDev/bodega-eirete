@@ -40,10 +40,10 @@
             <th>Código</th>
             <th>Módulo</th>
             <th>Acción</th>
-            <th>URL permiso</th>
-            <th>Vigencia</th>
+            <th>URL_name permiso</th>
+            <th>Fecha/hora de alta</th>
             <th>Estado</th>
-            <th class="text-end">Acciones</th>
+            <th class="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -65,9 +65,7 @@
                 <code class="small">{{ p.url_name|default:"—" }}</code>
               </td>
               <td class="text-nowrap">
-                {% if p.vigente_desde %}{{ p.vigente_desde|date:"d/m/Y" }}{% else %}—{% endif %}
-                &nbsp;–&nbsp;
-                {% if p.vigente_hasta %}{{ p.vigente_hasta|date:"d/m/Y" }}{% else %}—{% endif %}
+                {% if p.vigente_desde %}{{ p.vigente_desde|date:"d/m/Y H:i" }}{% else %}—{% endif %}
               </td>
               <td>
                 {% if p.activo %}
@@ -76,16 +74,15 @@
                   <span class="badge bg-secondary">Inactivo</span>
                 {% endif %}
               </td>
-
               <td class="text-end">
                 <a href="{% url 'permiso_update' p.pk %}" class="btn btn-sm btn-outline-primary">
-                  <i class="bi bi-pencil"></i>
+                  <i class="bi bi-pencil"> Editar</i>
                 </a>
                 <a href="{% url 'permiso_inactivate' p.pk %}" class="btn btn-sm btn-outline-warning">
                   {% if p.activo %}
-                    <i class="bi bi-slash-circle"></i>
+                    <i class="bi bi-x-circle"> Inactivar</i>
                   {% else %}
-                    <i class="bi bi-check-circle"></i>
+                    <i class="bi bi-check-circle"> Reactivar</i>
                   {% endif %}
                 </a>
               </td>

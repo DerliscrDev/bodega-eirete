@@ -1,10 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models import Q
-from django.contrib.auth import get_user_model
-from django.db.models.functions import Lower
-from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
-from decimal import Decimal
+from django.core.validators import RegexValidator
+from django.utils import timezone
 
 # Helpers
 TELEFONO_REGEX = RegexValidator(
@@ -71,31 +68,14 @@ class Permiso(models.Model):
     validators=[RegexValidator(
         r'^[a-z]+(\.[a-z_]+)$',
         'Usa formato modulo.accion en minúsculas (ej.: personas.ver).'
-    )],
-)
-
-    # visible/legible
+        )],
+    )
     nombre = models.CharField(max_length=80)
-
-    # clasificación / vínculo con la UI
     modulo = models.CharField(max_length=30, choices=MODULOS, db_index=True)
     accion = models.CharField(max_length=20, choices=ACCIONES, db_index=True)
-
-    # enrutamiento (opcional, para atar a vistas)
     url_name = models.CharField(max_length=120, blank=True, null=True,
                                 help_text="Nombre de URL de Django (opcional)")
-
-    # menú / presentación (opcionales)
-    # visible_nav = models.BooleanField(default=False, help_text="Mostrar en el menú si el usuario tiene este permiso")
-    # icono = models.CharField(max_length=50, blank=True, default="bi-shield-lock")
-    # orden = models.PositiveIntegerField(default=0)    
-
-    # controles extra (opcionales)
-    # requires_mfa = models.BooleanField(default=False)
-    vigente_desde = models.DateField(blank=True, null=True)
-    vigente_hasta = models.DateField(blank=True, null=True)
-
-    # estado y auditoría
+    vigente_desde = models.DateTimeField(auto_now_add=True, editable=False)# ← ahora con hora
     activo = models.BooleanField(default=True)
     creado = models.DateTimeField(auto_now_add=True)
     modificado = models.DateTimeField(auto_now=True)

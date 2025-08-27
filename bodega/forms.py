@@ -2,45 +2,47 @@ import re
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.text import capfirst
+from django.utils import timezone
 from .models import Persona, Permiso, MODULOS, ACCIONES
 
 CODIGO_REGEX = re.compile(r"^[a-z]+(\.[a-z_]+)$")  # modulo.accion (minúsculas, _ permitido en accion)
 URLNAME_REGEX = re.compile(r"^[a-z0-9_]+$")        # nombre de url Django recomendado
 
 class PermisoForm(forms.ModelForm):
+    # Usamos campos DateTime explícitos para manejar el formato del input HTML5
+    vigente_desde = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+        input_formats=["%Y-%m-%dT%H:%M"],
+    )
+    vigente_hasta = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+        input_formats=["%Y-%m-%dT%H:%M"],
+    )
+    
     class Meta:
         model = Permiso
         fields = [
             "codigo", "nombre",
             "modulo", "accion",
             "url_name",
-            "vigente_desde", "vigente_hasta",
-            "activo",
         ]
         widgets = {
-            "codigo": forms.TextInput(attrs={"class": "form-control", "placeholder": "personas.ver"}),
-            "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ver personas"}),
+            "codigo": forms.TextInput(attrs={"class": "form-control", "placeholder": "permisos.crear"}),
+            "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Crear permisos"}),
             "modulo": forms.Select(attrs={"class": "form-select"}),
             "accion": forms.Select(attrs={"class": "form-select"}),
-            "url_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "persona_list"}),
-            "vigente_desde": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-            "vigente_hasta": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-            "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "url_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "permiso_create"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # crear: oculto 'activo' y lo seteo True
-        if not self.instance or not self.instance.pk:
-            self.fields["activo"].initial = True
-            self.fields["activo"].widget = forms.HiddenInput()
 
-    # helpers
     def _split_codigo(self, codigo: str):
         if "." not in codigo:
-            raise ValidationError("El código debe tener el formato modulo.accion (ej.: personas.ver).")
-        modulo, accion = codigo.split(".", 1)
-        return modulo, accion
+            raise ValidationError("El código debe tener formato modulo.accion (ej.: personas.ver).")
+        return codigo.split(".", 1)
 
     # validaciones campo a campo
     def clean_codigo(self):
@@ -60,30 +62,32 @@ class PermisoForm(forms.ModelForm):
     # validaciones cruzadas
     def clean(self):
         cleaned = super().clean()
-        d, h = cleaned.get("vigente_desde"), cleaned.get("vigente_hasta")
-        if d and h and d > h:
-            self.add_error("vigente_hasta", "La fecha 'Vigente hasta' debe ser mayor o igual a 'Vigente desde'.")
 
+        # validar rango usando la fecha de alta REAL de la instancia
+        d = getattr(self.instance, "vigente_desde", None)
+
+        # consistencia con el código
         codigo = cleaned.get("codigo")
         if codigo:
-            modulo_from_code, accion_from_code = self._split_codigo(codigo)
+            m, a = self._split_codigo(codigo)
             if not cleaned.get("modulo"):
-                cleaned["modulo"] = modulo_from_code
-            elif str(cleaned["modulo"]) != str(modulo_from_code):
-                self.add_error("modulo", f"Debe coincidir con el código: '{modulo_from_code}'.")
+                cleaned["modulo"] = m
+            elif str(cleaned["modulo"]) != str(m):
+                self.add_error("modulo", f"Debe coincidir con el código: '{m}'.")
             if not cleaned.get("accion"):
-                cleaned["accion"] = accion_from_code
-            elif str(cleaned["accion"]) != str(accion_from_code):
-                self.add_error("accion", f"Debe coincidir con el código: '{accion_from_code}'.")
+                cleaned["accion"] = a
+            elif str(cleaned["accion"]) != str(a):
+                self.add_error("accion", f"Debe coincidir con el código: '{a}'.")
         return cleaned
 
+    
     def save(self, commit=True):
         obj = super().save(commit=False)
+        # sincronizar módulo/acción desde el código
+        m, a = self._split_codigo(obj.codigo)
+        obj.modulo, obj.accion = m, a
         if not obj.pk:
             obj.activo = True
-        modulo_from_code, accion_from_code = self._split_codigo(obj.codigo)
-        obj.modulo = modulo_from_code
-        obj.accion = accion_from_code
         if commit:
             obj.save()
         return obj

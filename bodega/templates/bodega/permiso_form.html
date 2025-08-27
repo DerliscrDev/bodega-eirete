@@ -8,8 +8,6 @@
     <div class="card shadow-sm">
       <div class="card-body">
         <h4 class="mb-3">{% if object %}Editar Permiso{% else %}Nuevo Permiso{% endif %}</h4>
-
-        {% comment %} {% if request.user|tiene_permiso:"permisos.crear_permiso" or request.user|tiene_permiso:"permisos.editar_permiso" or request.user|tiene_permiso:"crear_permiso" or request.user|tiene_permiso:"editar_permiso" %} {% endcomment %}
           <form method="post" novalidate>
             {% csrf_token %}
             {{ form.non_field_errors }}
@@ -43,34 +41,26 @@
               <div class="col-md-6">
                 <label class="form-label" for="{{ form.url_name.id_for_label }}">{{ form.url_name.label }}</label>
                 {{ form.url_name }}
-                {% comment %} <div class="form-text">Nombre de URL Django (opcional)</div> {% endcomment %}
                 {{ form.url_name.errors }}
               </div>
 
-              <div class="col-md-6">
-                <label class="form-label" for="{{ form.vigente_desde.id_for_label }}">{{ form.vigente_desde.label }}</label>
-                {{ form.vigente_desde }}
-                {{ form.vigente_desde.errors }}
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label" for="{{ form.vigente_hasta.id_for_label }}">{{ form.vigente_hasta.label }}</label>
-                {{ form.vigente_hasta }}
-                {{ form.vigente_hasta.errors }}
-              </div>
-
               {% if object %}
-              <div class="col-12">
-                <div class="form-check">
-                  {{ form.activo }} {{ form.activo.label_tag }}
+                <div class="mb-3 d-flex align-items-center gap-2">
+                  <label class="form-label m-0">Estado</label>
+                  {% if object.activo %}
+                    <span class="badge bg-success">Activo</span>
+                    <a href="{% url 'permiso_inactivate' object.pk %}" class="btn btn-sm btn-outline-warning ms-2">
+                      <i class="bi-x-circle"></i> Inactivar
+                    </a>
+                  {% else %}
+                    <span class="badge bg-secondary">Inactivo</span>
+                    <a href="{% url 'permiso_inactivate' object.pk %}" class="btn btn-sm btn-outline-success ms-2">
+                      <i class="bi bi-check-circle"></i> Reactivar
+                    </a>
+                  {% endif %}
                 </div>
-                {{ form.activo.errors }}
-              </div>
-              {% else %}
-                {{ form.activo }}
               {% endif %}
             </div>
-
             <div class="mt-4">
               <button class="btn btn-custom" type="submit">
                 {% if object %}Actualizar{% else %}Guardar{% endif %}
@@ -78,9 +68,6 @@
               <a href="{% url 'permiso_list' %}" class="btn btn-secondary">Cancelar</a>
             </div>
           </form>
-        {% comment %} {% else %}
-          <div class="alert alert-warning mt-3">No tenés permiso para crear o editar permisos.</div>
-        {% endif %} {% endcomment %}
       </div>
     </div>
   </div>
