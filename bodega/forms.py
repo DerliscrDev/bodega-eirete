@@ -101,7 +101,9 @@ class RolForm(forms.ModelForm):
     permisos = PermisoMultipleChoice(
         queryset=Permiso.objects.none(),
         required=False,
-        widget=forms.SelectMultiple(attrs={"class": "form-select", "size": 12}),
+        widget=forms.SelectMultiple(attrs={
+            "class": "form-select",   # <- sin size, Tom Select lo transforma en dropdown
+        }),
         help_text="Seleccioná uno o más permisos."
     )
 

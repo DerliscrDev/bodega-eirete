@@ -27,8 +27,11 @@
           <div class="mb-3">
             <label class="form-label" for="{{ form.permisos.id_for_label }}">Permisos</label>
             {{ form.permisos }}
-            <div class="form-text">Usá Ctrl/Cmd para seleccionar múltiples.</div>
+            <div class="form-text">Escribí para buscar; Enter para agregar.</div>
             {{ form.permisos.errors }}
+
+            <!-- listado abajo de los seleccionados -->
+            <div id="permiso-chips" class="mt-2"></div>
           </div>
 
           {% if object %}
@@ -60,4 +63,61 @@
     </div>
   </div>
 </div>
+
+<!-- Tom Select -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<!-- Estilo: ocultamos los “items” dentro del input para que solo se vea el buscador -->
+<style>
+  .ts-wrapper.multi .ts-control .item { display: none; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const selectEl = document.getElementById('id_permisos');
+  const chipsBox = document.getElementById('permiso-chips');
+  if (!selectEl || !chipsBox) return;
+
+  const ts = new TomSelect(selectEl, {
+    plugins: ['remove_button'],
+    placeholder: 'Buscar permisos…',
+    closeAfterSelect: true,
+    allowEmptyOption: true,
+    hideSelected: true,
+    maxOptions: 2000,
+    render: {
+      option: (data, esc) => '<div class="py-1 px-2">' + esc(data.text) + '</div>'
+      // los items dentro del control los ocultamos por CSS
+    },
+    onInitialize: function(){ renderSelected(this); },
+    onChange: function(){ renderSelected(this); }
+  });
+
+  function renderSelected(instance){
+    chipsBox.innerHTML = '';
+    if (!instance.items.length){
+      chipsBox.innerHTML = '<span class="text-muted small">Sin permisos seleccionados.</span>';
+      return;
+    }
+    instance.items.forEach(function(value){
+      const opt = instance.options[value];
+      const pill = document.createElement('span');
+      pill.className = 'badge bg-light text-dark border me-1 mb-1 d-inline-flex align-items-center';
+      pill.textContent = opt.text;
+
+      // botón para quitar desde el listado
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-sm btn-link p-0 ms-2';
+      btn.setAttribute('aria-label','Quitar');
+      btn.innerHTML = '&times;';
+      btn.addEventListener('click', function(){ instance.removeItem(value); });
+
+      pill.appendChild(btn);
+      chipsBox.appendChild(pill);
+    });
+  }
+});
+</script>
 {% endblock %}

@@ -18,21 +18,3 @@
     </a>
   </nav>
 </aside>
-
-
-
-{% comment %} {% load nav_tags %}
-<aside id="sidebar" class="sidebar">
-  <nav class="nav flex-column p-3">
-    <div class="text-uppercase text-muted small px-2 mb-2">General</div>
-    <a class="nav-link rounded-2 mb-1 {% active request 'home' %}" href="{% url 'home' %}">
-      <i class="bi bi-house-door me-2"></i> Inicio
-    </a>
-    <a class="nav-link rounded-2 mb-1 {% active request 'persona_list' %}" href="{% url 'persona_list' %}">
-      <i class="bi bi-person me-2"></i> Personas
-    </a>
-    <a class="nav-link rounded-2 mb-1 {% active request 'permiso_list' %}" href="{% url 'permiso_list' %}">
-      <i class="bi bi-shield-lock me-2"></i> Permisos
-    </a>
-  </nav>
-</aside> {% endcomment %}
