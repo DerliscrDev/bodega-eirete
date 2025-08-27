@@ -8,6 +8,9 @@
     <a class="nav-link rounded-2 mb-1 {% active request 'persona_list' %}" href="{% url 'persona_list' %}">
       <i class="bi bi-person me-2"></i> Personas
     </a>
+    <a class="nav-link rounded-2 mb-1 {% active request 'empleado_list' %}" href="{% url 'empleado_list' %}">
+      <i class="bi bi-person-badge me-2"></i> Empleados
+    </a>
 
     <div class="text-uppercase text-muted small px-2 mt-3 mb-2">Seguridad</div>
     <a class="nav-link rounded-2 mb-1 {% active request 'rol_list' %}" href="{% url 'rol_list' %}">
@@ -16,5 +19,6 @@
     <a class="nav-link rounded-2 mb-1 {% active request 'permiso_list' %}" href="{% url 'permiso_list' %}">
       <i class="bi bi-shield-lock me-2"></i> Permisos
     </a>
+
   </nav>
 </aside>

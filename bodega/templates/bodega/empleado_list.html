@@ -1,138 +1,84 @@
-{% extends 'bodega/base.html' %}
-{% load permisos_tags %}
-
+{% extends "bodega/base.html" %}
+{% load tz %}
 {% block title %}Empleados - Bodega Eirete{% endblock %}
 
 {% block content %}
-<style>
-  /* Espaciado entre botones del grupo (Bootstrap 4/5) */
-  .btn-group.btn-spacing > .btn { margin-right: .5rem; }
-  .btn-group.btn-spacing > .btn:last-child { margin-right: 0; }
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="m-0">Empleados</h3>
+  <a href="{% url 'empleado_create' %}" class="btn btn-custom">
+    <i class="bi bi-plus-lg me-1"></i> Nuevo empleado
+  </a>
+</div>
 
-  /* Centrar todo el texto de la tabla */
-  .table-center th, .table-center td { text-align: center; }
-</style>
-
-<div class="card shadow-sm mb-4">
-  <div class="card-body">
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="card-title mb-0">Empleados</h2>
-      {% if request.user|tiene_permiso:"crear_empleado" %}
-      <a href="{% url 'empleado_create' %}" class="btn btn-custom">Nuevo Empleado</a>
-      {% endif %}
-    </div>
-
-    <!-- Formulario de búsqueda -->
-    <form class="row g-2 mb-3" method="get">
+<form method="get" class="row g-2 mb-3">
   <div class="col-md-6">
-    <input type="search"
-           class="form-control"
-           name="q"
-           placeholder="Buscar por nombre, apellido, cédula, teléfono o email"
-           value="{{ q }}">
+    <input type="text" name="q" value="{{ q }}" class="form-control"
+           placeholder="Buscar por cédula, nombre, apellido o email...">
   </div>
   <div class="col-md-3">
-    <select class="form-select" name="estado" aria-label="Filtrar por estado">
+    <select name="estado" class="form-select">
       <option value="">Todos</option>
-      <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Activos</option>
+      <option value="activos"   {% if estado == 'activos' %}selected{% endif %}>Activos</option>
       <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Inactivos</option>
     </select>
   </div>
-  <div class="col-md-3 text-end">
-    <button type="submit" class="btn btn-outline-primary">Buscar</button>
-    {% if q or estado %}
-      <a href="{% url 'empleado_list' %}" class="btn btn-outline-secondary">Limpiar</a>
-    {% endif %}
+  <div class="col-md-3 d-grid">
+    <button class="btn btn-outline-secondary" type="submit">
+      <i class="bi bi-search me-1"></i> Filtrar
+    </button>
   </div>
 </form>
 
-  <p class="text-muted">
-  Mostrando {{ empleados|length }} de {{ filtrados }} (total {{ total }})
-</p>
-
+<div class="card shadow-sm">
+  <div class="card-body p-0">
     <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle table-center">
-      <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Cédula</th>
-        <th>Sucursal</th>
-        <th>Teléfono</th>
-        <th>Email</th>
-        <th>F. Contratación</th>
-        <th>Estado</th>
-        <th style="width: 200px;">Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for e in empleados %}
-        <tr>
-          <td>{{ e.nombre }} {{ e.apellido }}</td>
-          <td>{{ e.cedula|default:"—" }}</td>
-          <td>{{ e.sucursal.nombre|default:"—" }}</td>
-          <td>{{ e.telefono|default:"—" }}</td>
-          <td>{{ e.email|default:"—" }}</td>
-          <td>{{ e.fecha_contratacion|date:"Y-m-d" }}</td>
-          <td>
-            {% if e.activo %}
-              <span class="badge text-bg-success">Activo</span>
-            {% else %}
-              <span class="badge text-bg-secondary">Inactivo</span>
-            {% endif %}
-          </td>
-          <td>
-                <!-- Agrego btn-spacing para separar botones; con btn-group mantenés el estilo -->
-                <div class="btn-group btn-group-sm btn-spacing" role="group" aria-label="Acciones">
-                  {% if request.user|tiene_permiso:"editar_empleado" %}
-                    <a href="{% url 'empleado_update' e.pk %}" class="btn btn-outline-primary rounded-2">Editar</a>
-                  {% endif %}
-                  {% if request.user|tiene_permiso:"inactivar_empleado" %}
-                    {% if e.activo %}
-                      <a href="{% url 'empleado_inactivate' e.pk %}" class="btn btn-outline-danger rounded-2">Inactivar</a>
-                    {% else %}
-                      <a href="{% url 'empleado_inactivate' e.pk %}?reactivar=1" class="btn btn-outline-success rounded-2">Reactivar</a>
-                    {% endif %}
-                  {% endif %}
-                </div>
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Cargo</th>
+            <th>Alta</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in empleados %}
+            <tr>
+              <td><code>{{ e.cedula }}</code></td>
+              <td class="fw-semibold">{{ e.apellido }}, {{ e.nombre }}</td>
+              <td class="text-muted small">{{ e.email }}</td>
+              <td class="text-muted small">{{ e.cargo }}</td>
+              <td class="text-nowrap">{{ e.fecha_alta|localtime|date:"d/m/Y H:i" }}</td>
+              <td>
+                {% if e.activo %}
+                  <span class="badge bg-success">Activo</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inactivo</span>
+                {% endif %}
               </td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="9" class="text-center text-muted py-4">
-            No hay empleados que coincidan con tu búsqueda.
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-    <!-- Paginación -->
-    {% if is_paginated %}
-    <nav aria-label="Paginación">
-  <ul class="pagination pagination-sm">
-    {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?q={{ q }}&estado={{ estado }}&page=1">&laquo;</a></li>
-      <li class="page-item"><a class="page-link" href="?q={{ q }}&estado={{ estado }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
-    {% else %}
-      <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-    {% endif %}
-
-    <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ paginator.num_pages }}</span></li>
-
-    {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?q={{ q }}&estado={{ estado }}&page={{ page_obj.next_page_number }}">Siguiente</a></li>
-      <li class="page-item"><a class="page-link" href="?q={{ q }}&estado={{ estado }}&page={{ paginator.num_pages }}">&raquo;</a></li>
-    {% else %}
-      <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
-      <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
-    {% endif %}
-  </ul>
-</nav>
-    {% endif %}
-
+              <td class="text-end">
+                <a href="{% url 'empleado_update' e.pk %}" class="btn btn-sm btn-outline-primary" title="Editar" aria-label="Editar">
+                  <i class="bi bi-pencil"></i> Editar
+                </a>
+                <a href="{% url 'empleado_inactivate' e.pk %}" class="" title="{% if e.activo %}Inactivar{% else %}Reactivar{% endif %}">
+                  {% if e.activo %}
+                    <i class="bi bi-x-circle btn btn-sm btn-outline-warning"> Inactivar</i>
+                  {% else %}
+                    <i class="bi bi-check-circle btn btn-sm btn-outline-success"> Reactivar</i>
+                  {% endif %}
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td class="text-center text-muted py-4" colspan="7">Sin resultados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
 {% endblock %}

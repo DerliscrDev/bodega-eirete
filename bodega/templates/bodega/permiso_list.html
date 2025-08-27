@@ -1,5 +1,6 @@
 {% extends "bodega/base.html" %}
 {% load permisos_tags %}
+{% load tz %}
 
 {% block title %}Permisos - Bodega Eirete{% endblock %}
 
@@ -65,7 +66,7 @@
                 <code class="small">{{ p.url_name|default:"—" }}</code>
               </td>
               <td class="text-nowrap">
-                {% if p.vigente_desde %}{{ p.vigente_desde|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+                {% if p.vigente_desde %}{{ p.vigente_desde|localtime|date:"d/m/Y H:i" }}{% else %}—{% endif %}
               </td>
               <td>
                 {% if p.activo %}

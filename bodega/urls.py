@@ -4,7 +4,9 @@ from .views import (
     HomeView,
     PersonaListView, PersonaCreateView, PersonaUpdateView, persona_inactivate,
     PermisoListView, PermisoCreateView, PermisoUpdateView, permiso_inactivate,
-    RolListView, RolCreateView, RolUpdateView, rol_inactivate
+    RolListView, RolCreateView, RolUpdateView, rol_inactivate,
+    EmpleadoListView, EmpleadoCreateView, EmpleadoUpdateView, empleado_inactivate,
+    persona_lookup,
 )
 
 urlpatterns = [
@@ -27,4 +29,11 @@ urlpatterns = [
     path("roles/nuevo/", RolCreateView.as_view(), name="rol_create"),
     path("roles/<int:pk>/editar/", RolUpdateView.as_view(), name="rol_update"),
     path("roles/<int:pk>/toggle/", rol_inactivate, name="rol_inactivate"),
+    
+    # Empleados
+    path("empleados/", EmpleadoListView.as_view(), name="empleado_list"),
+    path("empleados/nuevo/", EmpleadoCreateView.as_view(), name="empleado_create"),
+    path("empleados/<int:pk>/editar/", EmpleadoUpdateView.as_view(), name="empleado_update"),
+    path("empleados/<int:pk>/toggle/", empleado_inactivate, name="empleado_inactivate"),
+    path("api/personas/buscar/", persona_lookup, name="persona_lookup"),
 ]

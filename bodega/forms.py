@@ -3,7 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.text import capfirst
 from django.utils import timezone
-from .models import Persona, Permiso, Rol, MODULOS, ACCIONES
+from .models import Persona, Permiso, Rol, Empleado, MODULOS, ACCIONES
 
 CODIGO_REGEX = re.compile(r"^[a-z]+(\.[a-z_]+)$")  # modulo.accion (minúsculas, _ permitido en accion)
 URLNAME_REGEX = re.compile(r"^[a-z0-9_]+$") 
@@ -153,25 +153,147 @@ class PersonaForm(forms.ModelForm):
     def clean_apellido(self):
         return capfirst((self.cleaned_data.get("apellido") or "").strip())
 
+class BaseEmpleadoForm(forms.ModelForm):
+    persona_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+
+    class Meta:
+        model = Empleado
+        fields = [
+            # Persona base (requeridos)
+            "cedula", "nombre", "apellido",
+            # Empleado
+            "genero", "fecha_nacimiento", "grupo_sanguineo",
+            "telefono", "email",
+            "direccion", "barrio", "ciudad", "departamento", "pais",
+            "fecha_contratacion", "cargo",
+        ]
+        widgets = {
+            "cedula": forms.TextInput(attrs={"class":"form-control","placeholder":"Cédula (solo números)","inputmode":"numeric","pattern":r"\d*"}),
+            "nombre": forms.TextInput(attrs={"class":"form-control","placeholder":"Nombre"}),
+            "apellido": forms.TextInput(attrs={"class":"form-control","placeholder":"Apellido"}),
+
+            "genero": forms.Select(attrs={"class":"form-select"}),
+            "fecha_nacimiento": forms.DateInput(attrs={"type":"date","class":"form-control"}),
+            "grupo_sanguineo": forms.Select(attrs={"class":"form-select"}),
+
+            "telefono": forms.TextInput(attrs={"class":"form-control","placeholder":"+595..."}),
+            "email": forms.EmailInput(attrs={"class":"form-control"}),
+
+            "direccion": forms.TextInput(attrs={"class":"form-control"}),
+            "barrio": forms.TextInput(attrs={"class":"form-control"}),
+            "ciudad": forms.TextInput(attrs={"class":"form-control"}),
+            "departamento": forms.TextInput(attrs={"class":"form-control"}),
+            "pais": forms.TextInput(attrs={"class":"form-control"}),
+
+            "fecha_contratacion": forms.DateInput(attrs={"type":"date","class":"form-control"}),
+            "cargo": forms.Select(attrs={"class":"form-select"}),
+        }
+        labels = {
+            "cedula":"Cédula","nombre":"Nombre","apellido":"Apellido",
+            "genero":"Género","fecha_nacimiento":"Fecha de nacimiento","grupo_sanguineo":"Grupo sanguíneo",
+            "telefono":"Teléfono","email":"Email",
+            "direccion":"Dirección","barrio":"Barrio","ciudad":"Ciudad","departamento":"Departamento","pais":"País",
+            "fecha_contratacion":"Fecha de contratación","cargo":"Cargo (rol)",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["cargo"].queryset = Rol.objects.filter(activo=True).order_by("nombre")
+        for f in self.fields.values():
+            f.required = True
+
+        # ---- Bloquear cédula/nombre/apellido si:
+        # - se seleccionó una Persona desde el buscador (persona_id en POST)
+        # - o es edición (instance.pk existe)
+        persona_id = (self.data.get("persona_id")
+                      or self.initial.get("persona_id")
+                      or (self.instance.pk if getattr(self.instance, "pk", None) else None))
+        if persona_id:
+            self._make_readonly("cedula", "nombre", "apellido")
+            
+    def _make_readonly(self, *field_names):
+        for name in field_names:
+            w = self.fields[name].widget
+            # readonly mantiene el envío del valor (a diferencia de disabled)
+            attrs = getattr(w, "attrs", {})
+            attrs.update({"readonly": "readonly", "tabindex": "-1", "class": (attrs.get("class","") + " bg-light")})
+            w.attrs = attrs
+    
+    # ----- Validaciones que fuerzan los datos de Persona si viene persona_id
+    def _persona_from_form(self):
+        pid = self.data.get("persona_id") or self.cleaned_data.get("persona_id")
+        if not pid:
+            return None
+        try:
+            return Persona.objects.get(pk=pid)
+        except Persona.DoesNotExist:
+            return None
+
+
+    # Validaciones base Persona
+    def clean_cedula(self):
+        v = (self.cleaned_data.get("cedula") or "").strip()
+        if not DIGITOS_RE.fullmatch(v):
+            raise ValidationError("La cédula debe contener solo números (sin puntos ni guiones).")
+        p = self._persona_from_form()
+        if p:
+            return p.cedula  # fuerza lo que viene de Persona
+        # unicidad normal (evita duplicar Personas)
+        if Persona.objects.exclude(pk=self.instance.pk).filter(cedula=v).exists():
+            raise ValidationError("Ya existe una persona con esta cédula. Usá el buscador para seleccionarla.")
+        return v
+
+    def clean_nombre(self):
+        p = self._persona_from_form()
+        if p:
+            return p.nombre
+        return capfirst((self.cleaned_data.get("nombre") or "").strip())
+
+    def clean_apellido(self):
+        p = self._persona_from_form()
+        if p:
+            return p.apellido
+        return capfirst((self.cleaned_data.get("apellido") or "").strip())
+
+
+class EmpleadoCreateForm(BaseEmpleadoForm):
+    """Alta: sin fecha/motivo de baja, fecha_alta se setea sola."""
+
+
+class EmpleadoUpdateForm(BaseEmpleadoForm):
+    """Edición: permite setear baja si corresponde."""
+    class Meta(BaseEmpleadoForm.Meta):
+        fields = BaseEmpleadoForm.Meta.fields + ["fecha_baja", "motivo_baja"]
+        widgets = dict(BaseEmpleadoForm.Meta.widgets, **{
+            "fecha_baja": forms.DateInput(attrs={"type":"date","class":"form-control"}),
+            "motivo_baja": forms.TextInput(attrs={"class":"form-control"}),
+        })
+        labels = dict(BaseEmpleadoForm.Meta.labels, **{
+            "fecha_baja":"Fecha de baja", "motivo_baja":"Motivo de baja",
+        })
+
+
 
 # class EmpleadoForm(forms.ModelForm):
+#     # Hidden: se completa cuando elegís una Persona del buscador
+#     persona_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+
 #     class Meta:
 #         model = Empleado
-#         # Incluye campos de Persona + Empleado
 #         fields = [
-#             # Persona
+#             # Persona (base)
 #             "cedula", "nombre", "apellido",
 #             # Empleado
 #             "genero", "fecha_nacimiento", "grupo_sanguineo",
 #             "telefono", "email",
 #             "direccion", "barrio", "ciudad", "departamento", "pais", "codigo_postal",
-#             "fecha_contratacion", "cargo", "sucursal",
-#             # "fecha_baja", "motivo_baja",  # podés exponerlos si querés administrar bajas desde el form
+#             "fecha_contratacion", "cargo",
+#             "fecha_baja", "motivo_baja",
 #         ]
 #         widgets = {
-#             "cedula": forms.TextInput(attrs={"class": "form-control", "placeholder": "Cédula"}),
-#             "nombre": forms.TextInput(attrs={"class": "form-control"}),
-#             "apellido": forms.TextInput(attrs={"class": "form-control"}),
+#             "cedula": forms.TextInput(attrs={"class": "form-control", "placeholder": "Cédula (solo números)", "inputmode":"numeric", "pattern": r"\d*"}),
+#             "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre"}),
+#             "apellido": forms.TextInput(attrs={"class": "form-control", "placeholder": "Apellido"}),
 #             "genero": forms.Select(attrs={"class": "form-select"}),
 #             "fecha_nacimiento": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
 #             "grupo_sanguineo": forms.Select(attrs={"class": "form-select"}),
@@ -184,38 +306,45 @@ class PersonaForm(forms.ModelForm):
 #             "pais": forms.TextInput(attrs={"class": "form-control"}),
 #             "codigo_postal": forms.TextInput(attrs={"class": "form-control", "placeholder": "(opcional)"}),
 #             "fecha_contratacion": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-#             "cargo": forms.Select(attrs={"class": "form-select"}),
-#             "sucursal": forms.Select(attrs={"class": "form-select"}),
+#             "cargo": forms.Select(attrs={"class": "form-select"}),  # ← poblado desde Rol
+#             "fecha_baja": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+#             "motivo_baja": forms.TextInput(attrs={"class": "form-control", "placeholder": "(opcional)"}),
 #         }
 #         labels = {
-#             "cedula": "Cédula",
-#             "nombre": "Nombre",
-#             "apellido": "Apellido",
-#             "genero": "Género",
-#             "fecha_nacimiento": "Fecha de nacimiento",
-#             "grupo_sanguineo": "Grupo sanguíneo",
-#             "telefono": "Teléfono",
-#             "email": "Email",
-#             "direccion": "Dirección",
-#             "barrio": "Barrio",
-#             "ciudad": "Ciudad",
-#             "departamento": "Departamento",
-#             "pais": "País",
-#             "codigo_postal": "Código postal (opcional)",
-#             "fecha_contratacion": "Fecha de contratación",
-#             "cargo": "Cargo",
-#             "sucursal": "Sucursal",
+#             "cedula": "Cédula", "nombre": "Nombre", "apellido": "Apellido",
+#             "genero": "Género", "fecha_nacimiento": "Fecha de nacimiento", "grupo_sanguineo": "Grupo sanguíneo",
+#             "telefono": "Teléfono", "email": "Email",
+#             "direccion": "Dirección", "barrio": "Barrio", "ciudad": "Ciudad", "departamento": "Departamento", "pais": "País",
+#             "codigo_postal": "Código postal", "fecha_contratacion": "Fecha de contratación",
+#             "cargo": "Cargo (rol)", "fecha_baja": "Fecha de baja", "motivo_baja": "Motivo de baja",
 #         }
 
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Cargo = lista de Roles activos (ordenados)
+#         self.fields["cargo"].queryset = Rol.objects.filter(activo=True).order_by("nombre")
+
+#     # --- Validaciones base Persona
+#     def clean_cedula(self):
+#         v = (self.cleaned_data.get("cedula") or "").strip()
+#         if not DIGITOS_RE.fullmatch(v):
+#             raise ValidationError("La cédula debe contener solo números (sin puntos ni guiones).")
+#         # Si se seleccionó una Persona desde el buscador, permitir la misma cédula
+#         persona_id = self.data.get("persona_id") or self.cleaned_data.get("persona_id")
+#         if persona_id:
+#             try:
+#                 p = Persona.objects.get(pk=persona_id)
+#                 # opcional: si difiere de lo tipeado, priorizá la de la BD
+#                 return p.cedula
+#             except Persona.DoesNotExist:
+#                 pass
+#         # Unicidad normal
+#         if Persona.objects.exclude(pk=self.instance.pk).filter(cedula=v).exists():
+#             raise ValidationError("Ya existe una persona con esta cédula. Usá el buscador para seleccionarla.")
+#         return v
+
 #     def clean_nombre(self):
-#         return capfirst(self.cleaned_data.get("nombre", "").strip())
+#         return capfirst((self.cleaned_data.get("nombre") or "").strip())
 
 #     def clean_apellido(self):
-#         return capfirst(self.cleaned_data.get("apellido", "").strip())
-
-#     def clean_email(self):
-#         email = (self.cleaned_data.get("email") or "").strip().lower()
-#         # el modelo ya lo tiene unique, esto es sólo por UX
-#         if email and Empleado.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
-#             raise ValidationError("Ya existe un empleado con este email.")
-#         return email
+#         return capfirst((self.cleaned_data.get("apellido") or "").strip())
