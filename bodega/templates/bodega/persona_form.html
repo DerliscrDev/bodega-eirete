@@ -8,48 +8,51 @@
       <div class="card-body">
         <h4 class="mb-3">{% if object %}Editar Persona{% else %}Nueva Persona{% endif %}</h4>
 
-        <form method="post" novalidate>
+        <form method="post" novalidate id="persona-form">
           {% csrf_token %}
           {{ form.non_field_errors }}
 
+          <!-- Paso 1: Tipo de persona -->
           <div class="mb-3">
-            <label class="form-label" for="{{ form.cedula.id_for_label }}">{{ form.cedula.label }}</label>
-            {{ form.cedula }}
-            {{ form.cedula.errors }}
+            <label class="form-label" for="{{ form.tipo_persona.id_for_label }}">{{ form.tipo_persona.label }}</label>
+            {{ form.tipo_persona }} {{ form.tipo_persona.errors }}
           </div>
 
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label" for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
-              {{ form.nombre }}
-              {{ form.nombre.errors }}
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="{{ form.apellido.id_for_label }}">{{ form.apellido.label }}</label>
-              {{ form.apellido }}
-              {{ form.apellido.errors }}
-            </div>
+          <!-- Paso 2: Tipo de documento -->
+          <div id="wrap-tipo-doc" class="mb-3">
+            <label class="form-label" for="{{ form.tipo_documento.id_for_label }}">{{ form.tipo_documento.label }}</label>
+            {{ form.tipo_documento }} {{ form.tipo_documento.errors }}
           </div>
 
-          {% if object %}
-            <div class="mt-3 d-flex align-items-center gap-2">
-              <label class="form-label m-0">Estado</label>
-              {% if object.activo %}
-                <span class="badge bg-success">Activo</span>
-                <a href="{% url 'persona_inactivate' object.pk %}" class="btn btn-sm btn-outline-warning ms-2" title="Inactivar">
-                  <i class="bi bi-x-circle"></i> Inactivar
-                </a>
-              {% else %}
-                <span class="badge bg-secondary">Inactivo</span>
-                <a href="{% url 'persona_inactivate' object.pk %}" class="btn btn-sm btn-outline-success ms-2" title="Reactivar">
-                  <i class="bi bi-check-circle"></i> Reactivar
-                </a>
-              {% endif %}
-            </div>
-          {% endif %}
+          <!-- Campos que dependen del tipo -->
+          <div id="campo-doc" class="mb-3">
+            <label class="form-label" for="{{ form.numero_de_documento.id_for_label }}">{{ form.numero_de_documento.label }}</label>
+            {{ form.numero_de_documento }} {{ form.numero_de_documento.errors }}
+          </div>
 
-          <div class="mt-4">
-            <button class="btn btn-custom" type="submit">
+          <div id="campo-nombre" class="mb-3">
+            <label id="label-nombre" class="form-label" for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
+            {{ form.nombre }} {{ form.nombre.errors }}
+          </div>
+
+          <div id="campo-apellido" class="mb-3">
+            <label class="form-label" for="{{ form.apellido.id_for_label }}">{{ form.apellido.label }}</label>
+            {{ form.apellido }} {{ form.apellido.errors }}
+          </div>
+
+          <div id="campo-ruc" class="mb-3">
+            <label class="form-label">RUC</label>
+            <div class="input-group">
+              {{ form.ruc_base }}
+              <span class="input-group-text">-</span>
+              <div style="max-width:90px">{{ form.ruc_dv }}</div>
+            </div>
+            <div class="small text-muted">Ingresá el RUC sin guión y el DV por separado.</div>
+            {{ form.ruc_base.errors }} {{ form.ruc_dv.errors }}
+          </div>
+
+          <div class="mt-3 d-flex gap-2">
+            <button id="btn-submit" class="btn btn-custom" type="submit">
               {% if object %}Actualizar{% else %}Guardar{% endif %}
             </button>
             <a href="{% url 'persona_list' %}" class="btn btn-secondary">Cancelar</a>
@@ -60,4 +63,75 @@
     </div>
   </div>
 </div>
+
+<style>.is-hidden{display:none!important}</style>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const tipo   = document.getElementById('id_tipo_persona');
+  const tdoc   = document.getElementById('id_tipo_documento');
+  const lblNom = document.getElementById('label-nombre');
+
+  const wTipoDoc = document.getElementById('wrap-tipo-doc');
+  const wDoc     = document.getElementById('campo-doc');
+  const wNom     = document.getElementById('campo-nombre');
+  const wApe     = document.getElementById('campo-apellido');
+  const wRuc     = document.getElementById('campo-ruc');
+
+  const doc  = document.getElementById('id_numero_de_documento');
+  const nom  = document.getElementById('id_nombre');
+  const ape  = document.getElementById('id_apellido');
+  const rucb = document.getElementById('id_ruc_base');
+  const rucd = document.getElementById('id_ruc_dv');
+
+  function setReq(el, r){ if(el){ el.toggleAttribute('required', !!r); } }
+  function show(el, v){ if(el){ el.classList.toggle('is-hidden', !v); } }
+  function disable(el, d){ if(el){ el.disabled = !!d; } }
+
+  function syncForTipoPersona(){
+    const v = tipo.value;
+    if(!v){
+      // Solo mostrar tipo de persona
+      show(wTipoDoc,false); show(wDoc,false); show(wNom,false); show(wApe,false); show(wRuc,false);
+      return;
+    }
+    show(wTipoDoc,true);
+
+    if(v === 'F'){
+      // habilito select con opciones (el backend validará que no sea RUC)
+      disable(tdoc, false);
+      // si quedó RUC de antes, pásalo a CI
+      if(tdoc.value === 'RUC'){ tdoc.value = 'CI'; }
+      syncForTipoDocumento();
+    }else if(v === 'J'){
+      // Forzar RUC y bloquear el select
+      tdoc.value = 'RUC';
+      disable(tdoc, true);
+      syncForTipoDocumento();
+    }
+  }
+
+  function syncForTipoDocumento(){
+    const v = tipo.value;
+    const d = tdoc.value;
+
+    if(v === 'F'){
+      lblNom.textContent = 'Nombre';
+      show(wDoc, true);  setReq(doc, true);
+      show(wNom, true);  setReq(nom, true);
+      show(wApe, true);  setReq(ape, true);
+      show(wRuc, false); setReq(rucb, false); setReq(rucd, false);
+    }else if(v === 'J'){
+      lblNom.textContent = 'Razón social';
+      show(wDoc, false); setReq(doc, false); if(doc) doc.value = '';
+      show(wApe, false); setReq(ape, false); if(ape) ape.value = '';
+      show(wNom, true);  setReq(nom, true);
+      show(wRuc, true);  setReq(rucb, true); setReq(rucd, true);
+    }
+  }
+
+  tipo?.addEventListener('change', syncForTipoPersona);
+  tdoc?.addEventListener('change', syncForTipoDocumento);
+  syncForTipoPersona(); // estado inicial
+});
+</script>
 {% endblock %}

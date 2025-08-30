@@ -14,15 +14,21 @@ CEDULA_SOLO_DIGITOS = RegexValidator(
     'La cédula debe contener solo números (sin puntos, guiones ni espacios).'
 )
 
+DOCUMENTO_ALFANUM = RegexValidator(
+    r'^[A-Za-z0-9]+$',
+    'El número de documento debe ser alfanumérico (sin espacios ni símbolos).'
+)
+
 GENERO = (
     ('M', 'Masculino'),
     ('F', 'Femenino'),
 )
 
-TIPO_DOC = (
-    ('CI', 'Cédula'),
+TIPO_DOCUMENTO = (
+    ('CI',  'Cédula de identidad'),
+    ('PAS', 'Pasaporte'),
     ('RUC', 'RUC'),
-    ('OTRO', 'Otro'),
+    ('OTRO','Otro documento'),
 )
 
 CONDICION_VENTA = (
@@ -44,13 +50,17 @@ ACCIONES = (
     ("inactivar", "Inactivar"),
 )
 
-
 MODULOS = (
     ("home", "Inicio"),
     ("personas", "Personas"),
     ("empleados", "Empleados"),
     ("permisos", "Permisos"),
     ("roles", "Roles"),
+)
+
+TIPO_PERSONA = (
+    ('F', 'Persona Física'),
+    ('J', 'Persona Jurídica'),
 )
 
 class Permiso(models.Model):
@@ -67,7 +77,7 @@ class Permiso(models.Model):
     accion = models.CharField(max_length=20, choices=ACCIONES, db_index=True)
     url_name = models.CharField(max_length=120, blank=True, null=True,
                                 help_text="Nombre de URL de Django (opcional)")
-    vigente_desde = models.DateTimeField(auto_now_add=True, editable=False)# ← ahora con hora
+    vigente_desde = models.DateTimeField(auto_now_add=True, editable=False)
     activo = models.BooleanField(default=True)
     creado = models.DateTimeField(auto_now_add=True)
     modificado = models.DateTimeField(auto_now=True)
@@ -99,37 +109,49 @@ class Rol(models.Model):
         return self.nombre
 
 class Persona(models.Model):
-    cedula   = models.CharField(
-        max_length=7,
-        unique=True,
-        db_index=True,
-        validators=[CEDULA_SOLO_DIGITOS],
+    tipo_persona = models.CharField(max_length=1, choices=TIPO_PERSONA, db_index=True)
+
+    # NUEVO
+    tipo_documento = models.CharField(
+        max_length=4,
+        choices=TIPO_DOCUMENTO,
+        null=True, blank=True, db_index=True,
     )
+
+    numero_de_documento = models.CharField(
+        unique=True, db_index=True,
+        validators=[DOCUMENTO_ALFANUM],
+        null=True, blank=True
+    )
+
     nombre   = models.CharField(max_length=100)
-    apellido = models.CharField(max_length=100)
+    apellido = models.CharField(max_length=100, blank=True)
+
+    ruc_base = models.CharField(max_length=12, null=True, blank=True, db_index=True)
+    ruc_dv   = models.CharField(max_length=1,  null=True, blank=True, db_index=True)
+
     activo   = models.BooleanField(default=True, db_index=True, editable=False)
 
     class Meta:
         db_table = 'bodega_persona'
         ordering = ['apellido', 'nombre']
-        indexes = [
-            models.Index(fields=['apellido', 'nombre'], name='idx_persona_nombre'),
+        indexes = [models.Index(fields=['apellido', 'nombre'], name='idx_persona_nombre')]
+        constraints = [
+            models.UniqueConstraint(fields=['ruc_base', 'ruc_dv'], name='uniq_persona_ruc'),
         ]
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido} — CI {self.cedula}"
-
-    @property
-    def nombre_completo(self):
-        return f"{self.nombre} {self.apellido}".strip()
+        doc = self.numero_de_documento or '—'
+        ruc = f"{self.ruc_base}-{self.ruc_dv}" if self.ruc_base and self.ruc_dv else '—'
+        tipo = 'J' if self.tipo_persona == 'J' else 'F'
+        base = self.nombre if tipo == 'J' else f"{self.nombre} {self.apellido}".strip()
+        return f"{base} — Doc {doc} — RUC {ruc}"
 
     def save(self, *args, **kwargs):
-        if self.nombre:
-            self.nombre = self.nombre.strip().title()
-        if self.apellido:
-            self.apellido = self.apellido.strip().title()
-        if self.cedula:
-            self.cedula = self.cedula.strip()
+        if self.nombre:   self.nombre = self.nombre.strip().title()
+        if self.apellido: self.apellido = self.apellido.strip().title()
+        if self.numero_de_documento:
+            self.numero_de_documento = self.numero_de_documento.strip()
         super().save(*args, **kwargs)
 
 class Empleado(Persona):
@@ -144,12 +166,8 @@ class Empleado(Persona):
     departamento = models.CharField(max_length=120)
     pais = models.CharField(max_length=120, default='Paraguay')
     fecha_contratacion = models.DateField()
-    cargo = models.ForeignKey(
-        'Rol',
-        on_delete=models.PROTECT,
-        related_name='empleados_cargo',
-    )
-    fecha_alta = models.DateTimeField(default=timezone.now, editable=False)  # PY local al mostrar
+    cargo = models.ForeignKey('Rol', on_delete=models.PROTECT, related_name='empleados_cargo')
+    fecha_alta = models.DateTimeField(default=timezone.now, editable=False)
     fecha_baja = models.DateField(blank=True, null=True)
     motivo_baja = models.CharField(max_length=255, blank=True, null=True)
 
@@ -162,7 +180,8 @@ class Empleado(Persona):
         ]
 
     def __str__(self):
-        return f"{self.apellido}, {self.nombre} — CI {self.cedula}"
+        return f"{self.apellido}, {self.nombre} — Doc {self.numero_de_documento or '—'}"
+
 
 class Usuario(AbstractUser):
     # ahora: varios roles por usuario
@@ -196,59 +215,3 @@ class Cargo(models.Model):
 
     def __str__(self):
         return self.nombre
-
-
-
-# # -----------------
-# # Catálogo de cargos
-# # -----------------
-# class Cargo(models.Model):
-#     nombre = models.CharField(max_length=100, unique=True)
-#     descripcion = models.TextField(blank=True, null=True)
-#     activo = models.BooleanField(default=True)
-
-#     class Meta:
-#         db_table = 'bodega_cargo'
-#         ordering = ['nombre']
-
-#     def __str__(self):
-#         return self.nombre
-
-
-# # -----------------
-# # Empleado (hereda de Persona)
-# # -----------------
-class Empleado(Persona):
-    # Datos personales extra
-    genero = models.CharField(max_length=1, choices=GENERO, null=True, blank=True)
-    fecha_nacimiento = models.DateField(null=True, blank=True)
-    grupo_sanguineo = models.CharField(max_length=3, choices=GRUPO_SANGUINEO, null=True, blank=True)
-
-    # Contacto / domicilio
-    telefono = models.CharField(max_length=20, validators=[TELEFONO_REGEX])
-    email = models.EmailField(unique=True)
-    direccion = models.CharField(max_length=255)
-    barrio = models.CharField(max_length=120)
-    ciudad = models.CharField(max_length=120)
-    departamento = models.CharField(max_length=120)
-    pais = models.CharField(max_length=120, default='Paraguay')
-    codigo_postal = models.CharField(max_length=12, blank=True, null=True)  # único opcional
-
-    # Laboral
-    fecha_contratacion = models.DateField()
-    cargo = models.ForeignKey(Cargo, on_delete=models.SET_NULL, null=True, blank=True, related_name='empleados')
-    fecha_baja = models.DateField(blank=True, null=True)
-    motivo_baja = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = 'bodega_empleado'
-        ordering = ['-activo', 'apellido', 'nombre']
-        indexes = [
-            models.Index(fields=['fecha_contratacion'], name='idx_empleado_fecha_ingreso'),
-            models.Index(fields=['email'], name='idx_empleado_email'),
-        ]
-
-    def save(self, *args, **kwargs):
-        if self.email:
-            self.email = self.email.strip().lower()
-        return super().save(*args, **kwargs)

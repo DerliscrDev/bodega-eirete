@@ -16,22 +16,24 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
 # ====== PERSONA ======
 @method_decorator(permiso_requerido("personas.ver"), name="dispatch")
-class PersonaListView(LoginRequiredMixin, ListView):
+class PersonaListView(ListView):
     model = Persona
     template_name = "bodega/persona_list.html"
     context_object_name = "personas"
-    paginate_by = 7
+    paginate_by = 20
 
     def get_queryset(self):
         qs = Persona.objects.all()
-        q = (self.request.GET.get("q") or "").strip()
-        estado = (self.request.GET.get("estado") or "").strip()
+        q = (self.request.GET.get('q') or '').strip()
+        estado = (self.request.GET.get('estado') or '').strip()
 
         if q:
             qs = qs.filter(
-                Q(cedula__icontains=q) |
+                Q(numero_de_documento__icontains=q) |
                 Q(nombre__icontains=q) |
-                Q(apellido__icontains=q)
+                Q(apellido__icontains=q) |
+                Q(ruc_base__icontains=q) |
+                Q(ruc_dv__icontains=q)
             )
 
         if estado == "activos":
@@ -39,12 +41,12 @@ class PersonaListView(LoginRequiredMixin, ListView):
         elif estado == "inactivos":
             qs = qs.filter(activo=False)
 
-        return qs.order_by("apellido", "nombre", "id")
+        return qs.order_by('apellido', 'nombre', 'id')
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["q"] = (self.request.GET.get("q") or "").strip()
-        ctx["estado"] = (self.request.GET.get("estado") or "").strip()
+        ctx['q'] = (self.request.GET.get('q') or '').strip()
+        ctx['estado'] = (self.request.GET.get('estado') or '').strip()
         return ctx
 
 @method_decorator(permiso_requerido("personas.crear"), name="dispatch")
@@ -199,7 +201,7 @@ class EmpleadoListView(LoginRequiredMixin, ListView):
         estado = (self.request.GET.get("estado") or "").strip()
         if q:
             qs = qs.filter(
-                Q(cedula__icontains=q) |
+                Q(numero_de_documento__icontains=q) |
                 Q(nombre__icontains=q) |
                 Q(apellido__icontains=q) |
                 Q(email__icontains=q)
@@ -279,7 +281,7 @@ def persona_lookup(request):
     if not q:
         return JsonResponse({"results": []})
     qs = Persona.objects.filter(
-        Q(cedula__icontains=q) | Q(nombre__icontains=q) | Q(apellido__icontains=q)
+        Q(numero_de_documento__icontains=q) | Q(nombre__icontains=q) | Q(apellido__icontains=q)
     ).order_by("apellido","nombre")[:10]
-    data = [{"id": p.id, "cedula": p.cedula, "nombre": p.nombre, "apellido": p.apellido} for p in qs]
+    data = [{"id": p.id, "numero_de_documento": p.numero_de_documento, "nombre": p.nombre, "apellido": p.apellido} for p in qs]
     return JsonResponse({"results": data})

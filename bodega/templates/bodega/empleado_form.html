@@ -37,8 +37,8 @@
 
           <div class="row g-2 row-cols-1 row-cols-md-2 row-cols-lg-4">
             <div class="col">
-              <label class="form-label" for="{{ form.cedula.id_for_label }}">{{ form.cedula.label }}</label>
-              {{ form.cedula }} {{ form.cedula.errors }}
+              <label class="form-label" for="{{ form.numero_de_documento.id_for_label }}">{{ form.numero_de_documento.label }}</label>
+              {{ form.numero_de_documento }} {{ form.numero_de_documento.errors }}
             </div>
             <div class="col">
               <label class="form-label" for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
@@ -148,12 +148,12 @@ document.addEventListener('DOMContentLoaded', function(){
   const btn    = document.getElementById('btn-persona-buscar');
   const menu   = document.getElementById('persona-results');
   const personaId = document.getElementById('id_persona_id');
-  const cedula = document.getElementById('id_cedula');
+  const numero_de_documento = document.getElementById('id_numero_de_documento');
   const nombre = document.getElementById('id_nombre');
   const apellido = document.getElementById('id_apellido');
 
   function lockBaseFields(lock=true){
-    [cedula,nombre,apellido].forEach(el=>{
+    [numero_de_documento,nombre,apellido].forEach(el=>{
       if(!el) return;
       el.readOnly = !!lock;
       el.tabIndex = lock ? -1 : 0;
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function applyPersona(p){
     personaId.value = p.id;
-    cedula.value = p.cedula;
+    numero_de_documento.value = p.numero_de_documento;
     nombre.value = p.nombre;
     apellido.value = p.apellido;
     lockBaseFields(true);
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function(){
     (items.length ? items : [{_empty:true}]).forEach(p=>{
       const a = document.createElement('a');
       a.href='#'; a.className='dropdown-item';
-      a.textContent = p._empty ? 'Sin resultados.' : `${p.apellido}, ${p.nombre} — CI ${p.cedula}`;
+      a.textContent = p._empty ? 'Sin resultados.' : `${p.apellido}, ${p.nombre} — CI ${p.numero_de_documento}`;
       if (!p._empty){
         a.addEventListener('click', e => { e.preventDefault(); applyPersona(p); closeMenu(); });
       } else {
@@ -204,12 +204,12 @@ document.addEventListener('DOMContentLoaded', function(){
   {% if object %} lockBaseFields(true); {% endif %}
 
   // Si el usuario escribe una cédula exacta y existe Persona, autolock
-  cedula?.addEventListener('blur', ()=>{
-    const v = (cedula.value||'').trim();
+  numero_de_documento?.addEventListener('blur', ()=>{
+    const v = (numero_de_documento.value||'').trim();
     if(!v) return;
     fetch(`{% url 'persona_lookup' %}?q=${encodeURIComponent(v)}`)
       .then(r=>r.json()).then(data=>{
-        const m = (data.results||[]).find(x=>x.cedula===v);
+        const m = (data.results||[]).find(x=>x.numero_de_documento===v);
         if(m){ applyPersona(m); }
       }).catch(()=>{});
   });

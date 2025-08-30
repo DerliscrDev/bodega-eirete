@@ -8,6 +8,7 @@ from .models import Persona, Permiso, Rol, Empleado, MODULOS, ACCIONES
 CODIGO_REGEX = re.compile(r"^[a-z]+(\.[a-z_]+)$")  # modulo.accion (minúsculas, _ permitido en accion)
 URLNAME_REGEX = re.compile(r"^[a-z0-9_]+$") 
 DIGITOS_RE = re.compile(r'^\d+$')# nombre de url Django recomendado
+DOC_RE = re.compile(r'^[A-Za-z0-9]+$')
 
 class PermisoForm(forms.ModelForm):
     # Usamos campos DateTime explícitos para manejar el formato del input HTML5
@@ -125,33 +126,141 @@ class RolForm(forms.ModelForm):
 class PersonaForm(forms.ModelForm):
     class Meta:
         model = Persona
-        fields = ["cedula", "nombre", "apellido"]   # 'activo' no es editable
+        fields = ["tipo_persona", "tipo_documento", "numero_de_documento",
+                  "nombre", "apellido", "ruc_base", "ruc_dv"]
         widgets = {
-            "cedula": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Cédula (solo números)",
-                # UX: teclado numérico en móviles, y patrón de dígitos
-                "inputmode": "numeric",
-                "pattern": r"\d*",
+            "tipo_persona": forms.Select(attrs={"class":"form-select"}),
+            "tipo_documento": forms.Select(attrs={"class":"form-select"}),
+            "numero_de_documento": forms.TextInput(attrs={
+                "class":"form-control",
+                "inputmode":"text", "pattern":"[A-Za-z0-9]+",
             }),
-            "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre"}),
-            "apellido": forms.TextInput(attrs={"class": "form-control", "placeholder": "Apellido"}),
+            "nombre": forms.TextInput(attrs={"class":"form-control"}),
+            "apellido": forms.TextInput(attrs={"class":"form-control"}),
+            "ruc_base": forms.TextInput(attrs={
+                "class":"form-control", "placeholder":"RUC",
+                "inputmode":"numeric", "pattern": r"\d+",
+            }),
+            "ruc_dv": forms.TextInput(attrs={
+                "class":"form-control", "placeholder":"DV",
+                "inputmode":"numeric", "pattern": r"\d",
+            }),
         }
-        labels = {"cedula": "Cédula", "nombre": "Nombre", "apellido": "Apellido"}
+        labels = {
+            "tipo_persona": "Tipo de persona",
+            "tipo_documento": "Tipo de documento",
+            "numero_de_documento": "Número de documento",
+            "nombre": "Nombre/s  / Razón social",
+            "apellido": "Apellido/s",
+            "ruc_base": "RUC",
+            "ruc_dv": "DV",
+        }
 
-    def clean_cedula(self):
-        v = (self.cleaned_data.get("cedula") or "").strip()
-        if not DIGITOS_RE.fullmatch(v):
-            raise ValidationError("La cédula debe contener solo números (sin puntos ni guiones).")
-        if Persona.objects.exclude(pk=self.instance.pk).filter(cedula=v).exists():
-            raise ValidationError("Ya existe una persona con esta cédula.")
-        return v
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+        # Siempre obligatorios
+        self.fields["tipo_persona"].required = True
+        self.fields["nombre"].required = True
+        self.fields["tipo_persona"].error_messages["required"] = "Seleccioná el tipo de persona."
+        self.fields["nombre"].error_messages["required"] = "Ingresá el nombre."
+        
+        # Si es edición y es J pero tipo_documento viene vacío, prellenar
+        if (self.instance and self.instance.pk and 
+            getattr(self.instance, "tipo_persona", None) == "J" and
+            not (self.initial.get("tipo_documento") or self.instance.tipo_documento)):
+            self.initial["tipo_documento"] = "RUC"
+
+        # Condicionales: NO required a nivel field
+        for fname in ("tipo_documento", "numero_de_documento", "apellido", "ruc_base", "ruc_dv"):
+            self.fields[fname].required = False
+            self.fields[fname].error_messages["required"] = "Campo obligatorio."
+
+    # normalizaciones
     def clean_nombre(self):
         return capfirst((self.cleaned_data.get("nombre") or "").strip())
 
     def clean_apellido(self):
         return capfirst((self.cleaned_data.get("apellido") or "").strip())
+
+    def clean_numero_de_documento(self):
+        v = (self.cleaned_data.get("numero_de_documento") or "").strip()
+        if not v:
+            return None
+        if not DOC_RE.fullmatch(v):
+            raise ValidationError("El número de documento debe ser alfanumérico (sin espacios ni símbolos).")
+        if Persona.objects.exclude(pk=self.instance.pk).filter(numero_de_documento=v).exists():
+            raise ValidationError("Ya existe una persona con este número de documento.")
+        return v
+
+    def clean_ruc_base(self):
+        v = (self.cleaned_data.get("ruc_base") or "").strip()
+        if not v:
+            return None
+        if not DIGITOS_RE.fullmatch(v):
+            raise ValidationError("El RUC debe contener solo dígitos.")
+        return v
+
+    def clean_ruc_dv(self):
+        v = (self.cleaned_data.get("ruc_dv") or "").strip()
+        if not v:
+            return None
+        if not DIGITOS_RE.fullmatch(v) or len(v) != 1:
+            raise ValidationError("El dígito verificador (DV) debe ser un solo dígito.")
+        return v
+
+    # def clean(self):
+    #     cleaned = super().clean()
+    #     tipo = cleaned.get("tipo_persona")
+    #     tdoc = cleaned.get("tipo_documento")
+    #     doc  = cleaned.get("numero_de_documento")
+    #     ape  = cleaned.get("apellido")
+    #     rucb = cleaned.get("ruc_base")
+    #     rucd = cleaned.get("ruc_dv")
+
+    #     if not tipo:
+    #         # self.add_error("tipo_persona", "Seleccioná el tipo de persona.")
+    #         return cleaned
+
+    #     if tipo == 'F':
+    #         # Tipo de documento válido para F: CI, PAS u OTRO (RUC no corresponde acá)
+    #         if tdoc not in ('CI', 'PAS', 'OTRO'):
+    #             self.add_error("tipo_documento", "Elegí CI, Pasaporte u Otro documento.")
+
+    #         # Requeridos para F
+    #         if not doc:
+    #             self.add_error("numero_de_documento", "Ingresá el número de documento.")
+    #         if not ape:
+    #             self.add_error("apellido", "Ingresá el apellido.")
+
+    #         # RUC para F: OPCIONAL, pero si lo cargan debe ser válido y único
+    #         if rucb or rucd:
+    #             if not rucb:
+    #                 self.add_error("ruc_base", "Ingresá el RUC (solo números).")
+    #             if not rucd:
+    #                 self.add_error("ruc_dv", "Ingresá el DV.")
+    #             if rucb and rucd:
+    #                 if Persona.objects.exclude(pk=self.instance.pk).filter(ruc_base=rucb, ruc_dv=rucd).exists():
+    #                     self.add_error("ruc_base", "Ya existe una persona con este RUC.")
+    #                     self.add_error("ruc_dv", "Revisá el dígito verificador.")
+
+    #     elif tipo == 'J':
+    #         # Para J el documento no aplica, y el tipo_documento debe ser RUC
+    #         if tdoc != 'RUC':
+    #             self.add_error("tipo_documento", "Para persona jurídica el tipo de documento debe ser RUC.")
+    #         if not rucb:
+    #             self.add_error("ruc_base", "Ingresá el RUC (solo números).")
+    #         if not rucd:
+    #             self.add_error("ruc_dv", "Ingresá el DV.")
+    #         cleaned["numero_de_documento"] = None
+    #         cleaned["apellido"] = ""
+
+    #         if rucb and rucd:
+    #             if Persona.objects.exclude(pk=self.instance.pk).filter(ruc_base=rucb, ruc_dv=rucd).exists():
+    #                 self.add_error("ruc_base", "Ya existe una persona con este RUC.")
+    #                 self.add_error("ruc_dv", "Revisá el dígito verificador.")
+
+        return cleaned
 
 class BaseEmpleadoForm(forms.ModelForm):
     persona_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
@@ -160,7 +269,7 @@ class BaseEmpleadoForm(forms.ModelForm):
         model = Empleado
         fields = [
             # Persona base (requeridos)
-            "cedula", "nombre", "apellido",
+            "numero_de_documento", "nombre", "apellido",
             # Empleado
             "genero", "fecha_nacimiento", "grupo_sanguineo",
             "telefono", "email",
@@ -168,7 +277,7 @@ class BaseEmpleadoForm(forms.ModelForm):
             "fecha_contratacion", "cargo",
         ]
         widgets = {
-            "cedula": forms.TextInput(attrs={"class":"form-control","placeholder":"Cédula (solo números)","inputmode":"numeric","pattern":r"\d*"}),
+            "numero_de_documento": forms.TextInput(attrs={"class":"form-control","placeholder":"Cédula (solo números)","inputmode":"numeric","pattern":r"\d*"}),
             "nombre": forms.TextInput(attrs={"class":"form-control","placeholder":"Nombre"}),
             "apellido": forms.TextInput(attrs={"class":"form-control","placeholder":"Apellido"}),
 
@@ -189,7 +298,7 @@ class BaseEmpleadoForm(forms.ModelForm):
             "cargo": forms.Select(attrs={"class":"form-select"}),
         }
         labels = {
-            "cedula":"Cédula","nombre":"Nombre","apellido":"Apellido",
+            "numero_de_documento":"Número de documento","nombre":"Nombre","apellido":"Apellido",
             "genero":"Género","fecha_nacimiento":"Fecha de nacimiento","grupo_sanguineo":"Grupo sanguíneo",
             "telefono":"Teléfono","email":"Email",
             "direccion":"Dirección","barrio":"Barrio","ciudad":"Ciudad","departamento":"Departamento","pais":"País",
@@ -209,7 +318,7 @@ class BaseEmpleadoForm(forms.ModelForm):
                       or self.initial.get("persona_id")
                       or (self.instance.pk if getattr(self.instance, "pk", None) else None))
         if persona_id:
-            self._make_readonly("cedula", "nombre", "apellido")
+            self._make_readonly("numero_de_documento", "nombre", "apellido")
             
     def _make_readonly(self, *field_names):
         for name in field_names:
@@ -231,16 +340,15 @@ class BaseEmpleadoForm(forms.ModelForm):
 
 
     # Validaciones base Persona
-    def clean_cedula(self):
-        v = (self.cleaned_data.get("cedula") or "").strip()
-        if not DIGITOS_RE.fullmatch(v):
-            raise ValidationError("La cédula debe contener solo números (sin puntos ni guiones).")
+    def clean_numero_de_documento(self):  # ← renombrado
+        v = (self.cleaned_data.get("numero_de_documento") or "").strip()
+        if not DOC_RE.fullmatch(v):
+            raise ValidationError("El número de documento debe ser alfanumérico (sin espacios ni símbolos).")
         p = self._persona_from_form()
         if p:
-            return p.cedula  # fuerza lo que viene de Persona
-        # unicidad normal (evita duplicar Personas)
-        if Persona.objects.exclude(pk=self.instance.pk).filter(cedula=v).exists():
-            raise ValidationError("Ya existe una persona con esta cédula. Usá el buscador para seleccionarla.")
+            return p.numero_de_documento  # ← fuerza lo que viene de Persona
+        if Persona.objects.exclude(pk=self.instance.pk).filter(numero_de_documento=v).exists():
+            raise ValidationError("Ya existe una persona con este documento. Usá el buscador para seleccionarla.")
         return v
 
     def clean_nombre(self):
@@ -271,80 +379,3 @@ class EmpleadoUpdateForm(BaseEmpleadoForm):
         labels = dict(BaseEmpleadoForm.Meta.labels, **{
             "fecha_baja":"Fecha de baja", "motivo_baja":"Motivo de baja",
         })
-
-
-
-# class EmpleadoForm(forms.ModelForm):
-#     # Hidden: se completa cuando elegís una Persona del buscador
-#     persona_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
-
-#     class Meta:
-#         model = Empleado
-#         fields = [
-#             # Persona (base)
-#             "cedula", "nombre", "apellido",
-#             # Empleado
-#             "genero", "fecha_nacimiento", "grupo_sanguineo",
-#             "telefono", "email",
-#             "direccion", "barrio", "ciudad", "departamento", "pais", "codigo_postal",
-#             "fecha_contratacion", "cargo",
-#             "fecha_baja", "motivo_baja",
-#         ]
-#         widgets = {
-#             "cedula": forms.TextInput(attrs={"class": "form-control", "placeholder": "Cédula (solo números)", "inputmode":"numeric", "pattern": r"\d*"}),
-#             "nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre"}),
-#             "apellido": forms.TextInput(attrs={"class": "form-control", "placeholder": "Apellido"}),
-#             "genero": forms.Select(attrs={"class": "form-select"}),
-#             "fecha_nacimiento": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-#             "grupo_sanguineo": forms.Select(attrs={"class": "form-select"}),
-#             "telefono": forms.TextInput(attrs={"class": "form-control", "placeholder": "+595..."}),
-#             "email": forms.EmailInput(attrs={"class": "form-control"}),
-#             "direccion": forms.TextInput(attrs={"class": "form-control"}),
-#             "barrio": forms.TextInput(attrs={"class": "form-control"}),
-#             "ciudad": forms.TextInput(attrs={"class": "form-control"}),
-#             "departamento": forms.TextInput(attrs={"class": "form-control"}),
-#             "pais": forms.TextInput(attrs={"class": "form-control"}),
-#             "codigo_postal": forms.TextInput(attrs={"class": "form-control", "placeholder": "(opcional)"}),
-#             "fecha_contratacion": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-#             "cargo": forms.Select(attrs={"class": "form-select"}),  # ← poblado desde Rol
-#             "fecha_baja": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-#             "motivo_baja": forms.TextInput(attrs={"class": "form-control", "placeholder": "(opcional)"}),
-#         }
-#         labels = {
-#             "cedula": "Cédula", "nombre": "Nombre", "apellido": "Apellido",
-#             "genero": "Género", "fecha_nacimiento": "Fecha de nacimiento", "grupo_sanguineo": "Grupo sanguíneo",
-#             "telefono": "Teléfono", "email": "Email",
-#             "direccion": "Dirección", "barrio": "Barrio", "ciudad": "Ciudad", "departamento": "Departamento", "pais": "País",
-#             "codigo_postal": "Código postal", "fecha_contratacion": "Fecha de contratación",
-#             "cargo": "Cargo (rol)", "fecha_baja": "Fecha de baja", "motivo_baja": "Motivo de baja",
-#         }
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         # Cargo = lista de Roles activos (ordenados)
-#         self.fields["cargo"].queryset = Rol.objects.filter(activo=True).order_by("nombre")
-
-#     # --- Validaciones base Persona
-#     def clean_cedula(self):
-#         v = (self.cleaned_data.get("cedula") or "").strip()
-#         if not DIGITOS_RE.fullmatch(v):
-#             raise ValidationError("La cédula debe contener solo números (sin puntos ni guiones).")
-#         # Si se seleccionó una Persona desde el buscador, permitir la misma cédula
-#         persona_id = self.data.get("persona_id") or self.cleaned_data.get("persona_id")
-#         if persona_id:
-#             try:
-#                 p = Persona.objects.get(pk=persona_id)
-#                 # opcional: si difiere de lo tipeado, priorizá la de la BD
-#                 return p.cedula
-#             except Persona.DoesNotExist:
-#                 pass
-#         # Unicidad normal
-#         if Persona.objects.exclude(pk=self.instance.pk).filter(cedula=v).exists():
-#             raise ValidationError("Ya existe una persona con esta cédula. Usá el buscador para seleccionarla.")
-#         return v
-
-#     def clean_nombre(self):
-#         return capfirst((self.cleaned_data.get("nombre") or "").strip())
-
-#     def clean_apellido(self):
-#         return capfirst((self.cleaned_data.get("apellido") or "").strip())
