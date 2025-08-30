@@ -89,24 +89,27 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function syncForTipoPersona(){
     const v = tipo.value;
+
     if(!v){
-      // Solo mostrar tipo de persona
       show(wTipoDoc,false); show(wDoc,false); show(wNom,false); show(wApe,false); show(wRuc,false);
       return;
     }
     show(wTipoDoc,true);
 
     if(v === 'F'){
-      // habilito select con opciones (el backend validará que no sea RUC)
-      disable(tdoc, false);
-      // si quedó RUC de antes, pásalo a CI
-      if(tdoc.value === 'RUC'){ tdoc.value = 'CI'; }
-      syncForTipoDocumento();
+      disable(tdoc, false);                      // Física puede elegir cualquier tipo (incluye RUC)
+      if(!tdoc.value) tdoc.value = 'CI';
+      lblNom.textContent = 'Nombre';
+      show(wNom,true);  setReq(nom,true);
+      show(wApe,true);  setReq(ape,true);
+      syncForTipoDocumento();                    // decide entre doc o RUC según el select
     }else if(v === 'J'){
-      // Forzar RUC y bloquear el select
-      tdoc.value = 'RUC';
-      disable(tdoc, true);
-      syncForTipoDocumento();
+      tdoc.value = 'RUC'; disable(tdoc,true);    // Jurídica: RUC fijo
+      lblNom.textContent = 'Razón social';
+      show(wNom,true);  setReq(nom,true);
+      show(wDoc,false); setReq(doc,false); if(doc) doc.value = '';
+      show(wApe,false); setReq(ape,false); if(ape) ape.value = '';
+      show(wRuc,true);  setReq(rucb,true); setReq(rucd,true);
     }
   }
 
@@ -114,18 +117,17 @@ document.addEventListener('DOMContentLoaded', function(){
     const v = tipo.value;
     const d = tdoc.value;
 
-    if(v === 'F'){
-      lblNom.textContent = 'Nombre';
-      show(wDoc, true);  setReq(doc, true);
-      show(wNom, true);  setReq(nom, true);
-      show(wApe, true);  setReq(ape, true);
-      show(wRuc, false); setReq(rucb, false); setReq(rucd, false);
-    }else if(v === 'J'){
-      lblNom.textContent = 'Razón social';
-      show(wDoc, false); setReq(doc, false); if(doc) doc.value = '';
-      show(wApe, false); setReq(ape, false); if(ape) ape.value = '';
-      show(wNom, true);  setReq(nom, true);
-      show(wRuc, true);  setReq(rucb, true); setReq(rucd, true);
+    if(v !== 'F') return;                        // Jurídica ya se maneja arriba
+
+    if(d === 'RUC'){
+      // Física + RUC -> mostrar SOLO RUC/DV (obligatorios) y ocultar Documento
+      show(wDoc,false); setReq(doc,false); if(doc) doc.value = '';
+      show(wRuc,true);  setReq(rucb,true); setReq(rucd,true);
+    }else{
+      // Física + (CI/PAS/OTRO) -> mostrar Documento (obligatorio) y ocultar RUC (opc.)
+      show(wDoc,true);  setReq(doc,true);
+      show(wRuc,false); setReq(rucb,false); setReq(rucd,false);
+      if(rucb) rucb.value = ''; if(rucd) rucd.value = '';
     }
   }
 

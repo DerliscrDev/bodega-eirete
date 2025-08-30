@@ -54,11 +54,6 @@
                 {% endif %}
               </td>
 
-              {% comment %} <td>
-                <span class="badge bg-light text-dark border">
-                  {{ p.get_tipo_documento_display|default:"—" }}
-                </span>
-              </td> {% endcomment %}
               <td>
                 <span class="badge bg-light text-dark border">
                   {% if p.tipo_persona == 'J' %}
@@ -68,10 +63,14 @@
                   {% endif %}
                 </span>
               </td>
-              
+
               <td>
-                {% if p.tipo_persona == 'J' and p.ruc_base and p.ruc_dv %}
-                  <code>{{ p.ruc_base }}-{{ p.ruc_dv }}</code>
+                {% if p.tipo_documento == 'RUC' or p.tipo_persona == 'J' %}
+                  {% if p.ruc_base and p.ruc_dv %}
+                    <code>{{ p.ruc_base }}-{{ p.ruc_dv }}</code>
+                  {% else %}
+                    —
+                  {% endif %}
                 {% else %}
                   <code>{{ p.numero_de_documento|default:"—" }}</code>
                 {% endif %}
